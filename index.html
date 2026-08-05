@@ -761,7 +761,7 @@
     <!-- ФОН: видео-скраб + заглушка -->
     <div class="bg" id="bg">
       <!-- Фон-видео (скраб по скроллу). Оптимизировано: все кадры ключевые, 1280px, ~3МБ. -->
-      <video class="bg__video" id="clip" data-src="assets/scrub-final.mp4" muted playsinline preload="auto"></video>
+      <video class="bg__video" id="clip" data-src="assets/scrub-final-web.mp4" muted playsinline webkit-playsinline preload="auto"></video>
       <div class="bg__fallback"></div>
       <div class="bg__scrim"></div>
     </div>
@@ -1159,7 +1159,9 @@
 
   function onScroll() {
     const p = computeProgress();
-    if (videoReady && videoDuration) targetTime = p * videoDuration;
+    // Не запрашиваем точное значение duration: часть Chromium-браузеров
+    // воспринимает его как позицию уже за последним декодируемым кадром.
+    if (videoReady && videoDuration) targetTime = p * Math.max(0, videoDuration - 0.04);
     applyOverlays(p);
     if (!rafId) tick();
   }
@@ -1168,7 +1170,11 @@
     if (videoReady) {
       smoothTime += (targetTime - smoothTime) * 0.12;
       if (Math.abs(targetTime - smoothTime) > 0.005) {
-        try { clip.currentTime = smoothTime; } catch (e) {}
+        // Yandex/Chromium может отменять ещё не завершённый seek, если менять
+        // currentTime каждый кадр. Ждём завершения текущего декодирования.
+        if (!clip.seeking) {
+          try { clip.currentTime = smoothTime; } catch (e) {}
+        }
         rafId = requestAnimationFrame(tick);
         return;
       }
