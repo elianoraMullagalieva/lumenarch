@@ -376,14 +376,16 @@
        но без которых стекло выглядит плоским: подъём насыщенности
        фона, световые кромки и тень. Никакого will-change/transform —
        любой composited-слой отключает backdrop-filter.              */
-    /* Плотное тёмное стекло БЕЗ обводки — как в макете: карточка читается
-       за счёт затемнения и мягкой тени, а не за счёт рамки. */
-    background: rgba(28, 32, 44, 0.62);
-    backdrop-filter: blur(24px) saturate(150%);
-    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    /* Плотное стекло БЕЗ обводки — как в макете: карточка читается
+       за счёт затемнения и мягкой тени, а не за счёт рамки.
+       Оттенок чуть светлее фона + лёгкий подъём яркости подложки,
+       чтобы плашка не сливалась с тёмной ночной сценой. */
+    background: rgba(52, 58, 74, 0.60);
+    backdrop-filter: blur(24px) saturate(150%) brightness(1.14);
+    -webkit-backdrop-filter: blur(24px) saturate(150%) brightness(1.14);
     border: none;
     box-shadow:
-      inset 0 0 68px rgba(255, 255, 255, 0.045),
+      inset 0 0 68px rgba(255, 255, 255, 0.07),
       0 18px 40px rgba(4, 6, 16, 0.30),
       0 40px 90px rgba(4, 6, 16, 0.26);
   }
