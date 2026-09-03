@@ -714,11 +714,22 @@
   .reveal__frame {
     position: absolute; left: 50%; bottom: 0; z-index: 3;
     transform: translateX(-50%); transform-origin: bottom center;
-    /* стартовое состояние = «половинка» кадра снизу, как в макете:
-       картинка видна с первого кадра сцены, а не вырастает из нуля */
-    width: 62vw; height: 46vh; overflow: hidden;
+    /* стартовое состояние = широкая «половинка» кадра снизу, как в макете:
+       картинка сразу во всю ширину, растёт только по высоте */
+    width: 100vw; height: 46vh; overflow: hidden;
     will-change: height, width, border-radius;
   }
+  /* Слои слайдшоу: все 6 кадров лежат друг над другом и переключаются
+     кросс-фейдом. БЕЗ этих правил браузер показывает последнюю картинку
+     в стопке — именно из-за их пропажи на белом блоке был коридор. */
+  .reveal__shots { position: absolute; inset: 0; }
+  .reveal__shot {
+    opacity: 0;
+    transition: opacity 1s var(--ease-out);
+    z-index: 1;
+  }
+  .reveal__shot.is-on { opacity: 1; z-index: 2; }
+
   .reveal__frame img {
     /* Размеры жёстко по вьюпорту и привязка к низу: кадр внутри растущей
        рамки стоит НЕПОДВИЖНО — «раскрывается» именно окно, а не картинка.
@@ -1854,16 +1865,11 @@
 
       // ---- фаза 2: медленное раскрытие кадра (почти половина сцены) ----
       const g = eInOut(cl((p - 0.20) / 0.48));
-      if (g >= 0.999) {
-        frame.style.width = "100vw";
-        frame.style.height = "100vh";
-        frame.style.borderRadius = "0px";
-      } else {
-        // растём от «половинки» (62vw × 46vh) до полного экрана
-        frame.style.width = (62 + g * 38) + "vw";        // 62vw → 100vw
-        frame.style.height = (46 + g * 54) + "vh";       // 46vh → 100vh
-        frame.style.borderRadius = (1 - g) * 16 + "px";
-      }
+      // кадр всегда во всю ширину; растёт только по высоте: 46vh → 100vh,
+      // то есть плавно «вытягивается» вверх, как в макете
+      frame.style.width = "100vw";
+      frame.style.height = (g >= 0.999 ? 100 : 46 + g * 54) + "vh";
+      frame.style.borderRadius = "0px";
       // лёгкий контр-зум в начале: кадр «дышит», а не растягивается
       img.style.transform = g >= 0.999
         ? "translateX(-50%)"
@@ -1875,6 +1881,9 @@
       // ---- фаза 3: карточка проекта поверх раскрытого кадра ----
       const pr = cl((p - 0.62) / 0.16);
       const prE = eo(pr);
+      // Слайдшоу крутится только пока карточка кейса на экране.
+      // На белом блоке выше кадр стоит на Атриуме — как в макете.
+      if (window.__prSetRunning) window.__prSetRunning(pr > 0.5);
       if (scrim) scrim.style.opacity = prE;
       prUi.style.opacity = prE;
       prUi.style.pointerEvents = prE > 0.6 ? "auto" : "none";
@@ -1994,7 +2003,23 @@
     function goCase(i) {
       caseIdx = ((i % CASES.length) + CASES.length) % CASES.length;
       shotIdx = 0;
-      paintShot(); paintText(); restart();
+      // Слайдшоу стартует ТОЛЬКО когда кадр раскрылся и карточка проекта
+    // проявилась. Пока идёт белый блок «Согласовываем архитектуру»,
+    // в кадре всегда первый кадр Атриума — как в макете.
+    let running = false;
+    function setRunning(on) {
+      if (on === running) return;
+      running = on;
+      if (on) { restart(); }
+      else {
+        clearInterval(timer); timer = null;
+        // возвращаемся к началу: Атриум, вид снаружи
+        caseIdx = 0; shotIdx = 0; paintShot(); paintText();
+      }
+    }
+    window.__prSetRunning = setRunning;
+
+    paintShot(); paintText();
     }
     document.getElementById("prPrev")?.addEventListener("click", () => goCase(caseIdx - 1));
     document.getElementById("prNext")?.addEventListener("click", () => goCase(caseIdx + 1));
@@ -2007,7 +2032,23 @@
       requestAnimationFrame(bar);
     })();
 
-    paintShot(); paintText(); restart();
+    // Слайдшоу стартует ТОЛЬКО когда кадр раскрылся и карточка проекта
+    // проявилась. Пока идёт белый блок «Согласовываем архитектуру»,
+    // в кадре всегда первый кадр Атриума — как в макете.
+    let running = false;
+    function setRunning(on) {
+      if (on === running) return;
+      running = on;
+      if (on) { restart(); }
+      else {
+        clearInterval(timer); timer = null;
+        // возвращаемся к началу: Атриум, вид снаружи
+        caseIdx = 0; shotIdx = 0; paintShot(); paintText();
+      }
+    }
+    window.__prSetRunning = setRunning;
+
+    paintShot(); paintText();
 
   })();
 
