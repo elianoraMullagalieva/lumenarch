@@ -832,6 +832,517 @@
 
 
   /* ================================================================
+     04 · КАК ИМЕННО — горизонтальный pin-scroll
+     Не сетка и не карточки: три принципа проезжают вбок сплошной
+     лентой, пока страница «стоит». Номер набран огромным контуром,
+     под ним прочерчивается линия — как чертёжная выноска.
+     ================================================================ */
+  .how {
+    position: relative;
+    background: var(--l-ink);
+    color: #fff;
+    /* высота = длина горизонтального проезда */
+    height: 320vh;
+  }
+  .how__vp {
+    position: sticky; top: 0; height: 100vh;
+    overflow: hidden;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  /* шапка блока — на месте, лента едет под ней */
+  .how__head {
+    position: absolute; top: clamp(70px, 11vh, 130px);
+    left: var(--pad-x); right: var(--pad-x);
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 20px; z-index: 3;
+  }
+  .how__eyebrow {
+    font-family: "Onest", sans-serif; font-size: clamp(12px, 1.05vw, 17px);
+    letter-spacing: .06em; text-transform: uppercase;
+    color: rgba(255,255,255,.55);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .how__eyebrow::before { content: ""; width: 40px; height: 1px; background: rgba(255,255,255,.4); }
+  .how__counter {
+    font-family: "Onest", sans-serif; font-size: clamp(12px, .95vw, 16px);
+    letter-spacing: .04em; color: rgba(255,255,255,.45);
+    font-variant-numeric: tabular-nums;
+  }
+  .how__counter b { color: #fff; font-weight: 400; }
+
+  /* лента, которая едет вбок */
+  .how__track {
+    display: flex; align-items: center;
+    gap: clamp(60px, 9vw, 170px);
+    padding: 0 var(--pad-x);
+    will-change: transform;
+  }
+  .how__item {
+    flex: none;
+    width: min(760px, 74vw);
+    display: flex; align-items: flex-start;
+    gap: clamp(20px, 2.6vw, 48px);
+  }
+  /* огромный контурный номер — фирменная деталь вместо иконки */
+  .how__num {
+    flex: none;
+    font-family: "Onest", sans-serif; font-weight: 400;
+    font-size: clamp(64px, 9vw, 168px); line-height: .78;
+    letter-spacing: -0.05em;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(255, 255, 255, 0.38);
+    transition: -webkit-text-stroke-color .6s var(--ease-out);
+  }
+  .how__item.is-near .how__num { -webkit-text-stroke-color: rgba(255,255,255,.85); }
+
+  .how__body { padding-top: clamp(6px, 1vw, 18px); }
+  .how__text {
+    font-family: "Onest", sans-serif; font-weight: 400;
+    font-size: clamp(21px, 2.35vw, 46px); line-height: 1.16;
+    letter-spacing: -0.03em; color: #fff;
+  }
+  /* «до/после» — ключевое слово принципа подчёркнуто чертёжной линией */
+  .how__text u {
+    text-decoration: none;
+    position: relative; white-space: nowrap;
+  }
+  .how__text u::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: -.12em;
+    height: 1px; background: #fff;
+    transform: scaleX(0); transform-origin: left center;
+    transition: transform .9s var(--ease-out);
+  }
+  .how__item.is-near .how__text u::after { transform: scaleX(1); }
+
+  .how__note {
+    margin-top: clamp(14px, 1.6vw, 26px);
+    max-width: 46ch;
+    font-family: "Onest", sans-serif;
+    font-size: clamp(13px, 1vw, 17px); line-height: 1.45;
+    color: rgba(255, 255, 255, 0.62);
+  }
+  /* тонкая чертёжная выноска под текстом */
+  .how__rule {
+    margin-top: clamp(18px, 2vw, 32px);
+    height: 1px; width: 100%;
+    background: rgba(255, 255, 255, 0.22);
+    transform: scaleX(0); transform-origin: left center;
+    transition: transform 1.1s var(--ease-out);
+  }
+  .how__item.is-near .how__rule { transform: scaleX(1); }
+
+  /* полоса прогресса проезда */
+  .how__bar {
+    position: absolute; left: var(--pad-x); right: var(--pad-x);
+    bottom: clamp(40px, 6vh, 70px); height: 1px;
+    background: rgba(255, 255, 255, 0.16); z-index: 3;
+  }
+  .how__bar i {
+    display: block; height: 100%; width: 0;
+    background: #fff; transform-origin: left;
+  }
+
+  @media (max-width: 860px) {
+    .how { height: 300vh; }
+    .how__item { width: 84vw; gap: 16px; }
+    .how__num { font-size: clamp(46px, 15vw, 90px); }
+  }
+
+  /* ================================================================
+     05 · ЧТО ВХОДИТ В ПРОЕКТ — чертёжный таймлайн
+     Не таблица и не карточки: одна вертикальная линия прочерчивается
+     по скроллу, этапы «прицепляются» к ней узлами-крестами (фирменный
+     знак). Справа от каждого этапа — что клиент получает на руки.
+     ================================================================ */
+  .flow {
+    background: var(--l-bg);
+    color: var(--l-ink);
+    padding: clamp(90px, 15vh, 180px) 0 clamp(70px, 12vh, 150px);
+  }
+  .flow__head {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 24px; flex-wrap: wrap;
+    margin-bottom: clamp(50px, 8vh, 110px);
+  }
+  .flow__title {
+    font-family: "Onest", sans-serif; font-weight: 400;
+    font-size: clamp(28px, 3.6vw, 68px); line-height: 1;
+    letter-spacing: -0.04em; text-transform: uppercase;
+    max-width: 16ch;
+  }
+  .flow__lead {
+    max-width: 40ch;
+    font-family: "Onest", sans-serif;
+    font-size: clamp(14px, 1.05vw, 18px); line-height: 1.5;
+    color: var(--l-ink-mid);
+  }
+
+  /* ---- сам таймлайн ---- */
+  .flow__list { position: relative; }
+  /* линия-стержень: рисуется по скроллу */
+  .flow__spine {
+    position: absolute; left: clamp(26px, 4.6vw, 78px); top: 0; bottom: 0;
+    width: 1px; background: var(--l-line);
+    overflow: hidden;
+  }
+  .flow__spine i {
+    position: absolute; inset: 0;
+    background: var(--l-ink);
+    transform: scaleY(0); transform-origin: top center;
+    will-change: transform;
+  }
+
+  .flow__step {
+    position: relative;
+    display: grid;
+    grid-template-columns: clamp(26px, 4.6vw, 78px) 1fr minmax(220px, 34%);
+    gap: clamp(20px, 3vw, 64px);
+    align-items: start;
+    padding: clamp(30px, 5vh, 62px) 0;
+  }
+  .flow__step + .flow__step { border-top: 1px solid var(--l-line); }
+
+  /* узел-крест на линии — фирменный знак вместо иконки */
+  .flow__node {
+    position: relative; width: 100%; height: clamp(20px, 1.7vw, 26px);
+    display: flex; align-items: center;
+  }
+  .flow__node svg {
+    position: absolute; left: 50%; top: 50%;
+    width: clamp(16px, 1.35vw, 22px); height: clamp(16px, 1.35vw, 22px);
+    transform: translate(-50%, -50%) scale(.5) rotate(-45deg);
+    color: var(--l-ink); opacity: 0;
+    transition: opacity .6s var(--ease-out), transform .8s var(--ease-out);
+  }
+  .flow__step.is-on .flow__node svg {
+    opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0deg);
+  }
+  /* подложка, чтобы линия не просвечивала сквозь узел */
+  .flow__node::before {
+    content: ""; position: absolute; left: 50%; top: 50%;
+    width: clamp(26px, 2.4vw, 38px); height: clamp(26px, 2.4vw, 38px);
+    transform: translate(-50%, -50%);
+    background: var(--l-bg); border-radius: 50%;
+  }
+
+  /* левая колонка: номер этапа + что делает бюро */
+  .flow__main { min-width: 0; }
+  .flow__num {
+    font-family: "Onest", sans-serif;
+    font-size: clamp(11px, .82vw, 14px); letter-spacing: .12em;
+    color: var(--l-ink-low); margin-bottom: clamp(8px, 1vw, 14px);
+  }
+  .flow__name {
+    font-family: "Onest", sans-serif; font-weight: 400;
+    font-size: clamp(24px, 2.9vw, 54px); line-height: 1.02;
+    letter-spacing: -0.035em; text-transform: uppercase;
+    margin-bottom: clamp(10px, 1.3vw, 20px);
+  }
+  .flow__do {
+    font-family: "Onest", sans-serif;
+    font-size: clamp(14px, 1.05vw, 18px); line-height: 1.45;
+    color: var(--l-ink-mid); max-width: 46ch;
+  }
+
+  /* правая колонка: что клиент получает на руки */
+  .flow__get { padding-top: clamp(4px, .8vw, 12px); }
+  .flow__get-label {
+    font-family: "Onest", sans-serif;
+    font-size: clamp(10px, .78vw, 13px); letter-spacing: .12em;
+    text-transform: uppercase; color: var(--l-ink-low);
+    margin-bottom: clamp(10px, 1.2vw, 16px);
+  }
+  /* документы — строки со счётной нумерацией, без буллетов и иконок */
+  .flow__docs { list-style: none; counter-reset: doc; }
+  .flow__docs li {
+    counter-increment: doc;
+    position: relative;
+    padding: clamp(8px, .9vw, 12px) 0 clamp(8px, .9vw, 12px) clamp(26px, 2.2vw, 36px);
+    border-top: 1px solid var(--l-line);
+    font-family: "Onest", sans-serif;
+    font-size: clamp(13px, .98vw, 17px); line-height: 1.35;
+    color: var(--l-ink);
+  }
+  .flow__docs li::before {
+    content: counter(doc, decimal-leading-zero);
+    position: absolute; left: 0; top: clamp(8px, .9vw, 12px);
+    font-size: clamp(10px, .74vw, 12px); letter-spacing: .06em;
+    color: var(--l-ink-low);
+  }
+
+  /* появление содержимого этапа */
+  .flow__main, .flow__get { opacity: 0; transform: translateY(22px); }
+  .flow__step.is-on .flow__main,
+  .flow__step.is-on .flow__get { opacity: 1; transform: none; }
+  .flow__main { transition: opacity .8s var(--ease-out), transform .9s var(--ease-out); }
+  .flow__get  { transition: opacity .8s var(--ease-out) .12s, transform .9s var(--ease-out) .12s; }
+
+  @media (max-width: 860px) {
+    .flow__step { grid-template-columns: 22px 1fr; }
+    .flow__get { grid-column: 2; padding-top: 18px; }
+    .flow__spine { left: 11px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .flow__main, .flow__get { opacity: 1; transform: none; }
+    .flow__spine i { transform: scaleY(1); }
+  }
+
+  /* ================================================================
+     04 · КАК ИМЕННО — горизонтальный проезд по вертикальному скроллу
+     Секция «прилипает», лента едет вбок. Активный принцип подсвечивает
+     контурный номер и прочерчивает подчёркивание.
+     ================================================================ */
+  (function () {
+    const sec = document.getElementById("how");
+    if (!sec) return;
+    const track = document.getElementById("howTrack");
+    const bar = document.getElementById("howBar");
+    const numEl = document.getElementById("howNum");
+    const items = [...track.querySelectorAll(".how__item")];
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const cl = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+    const pad = (n) => String(n).padStart(2, "0");
+
+    let last = -1, raf = null, idle = 0;
+
+    function progress() {
+      const r = sec.getBoundingClientRect();
+      const s = r.height - window.innerHeight;
+      if (s <= 0) return 0;
+      return cl(-r.top / s);
+    }
+
+    // длина проезда = ширина ленты минус экран
+    function span() {
+      return Math.max(0, track.scrollWidth - window.innerWidth);
+    }
+
+    function draw(p) {
+      // небольшая «полка» в начале и конце, чтобы первый и последний
+      // принцип успели прочитаться, а не проскочили
+      const e = cl((p - 0.06) / 0.88);
+      track.style.transform = `translate3d(${-e * span()}px, 0, 0)`;
+      if (bar) bar.style.width = (e * 100) + "%";
+
+      // активным считаем тот принцип, чей центр ближе к центру экрана
+      const mid = window.innerWidth / 2;
+      let best = 0, bd = 1e9;
+      items.forEach((el, i) => {
+        const r = el.getBoundingClientRect();
+        const d = Math.abs(r.left + r.width / 2 - mid);
+        if (d < bd) { bd = d; best = i; }
+        el.classList.toggle("is-near", r.left < window.innerWidth * 0.72);
+      });
+      if (numEl) numEl.textContent = pad(best + 1);
+    }
+
+    function loop() {
+      const p = progress();
+      let busy = false;
+      if (Math.abs(p - last) > 0.0004) { draw(p); last = p; busy = true; }
+      idle = busy ? 0 : idle + 1;
+      if (idle > 12) { raf = null; return; }
+      raf = requestAnimationFrame(loop);
+    }
+    const kick = () => { idle = 0; if (!raf) raf = requestAnimationFrame(loop); };
+
+    if (reduce) {
+      // без движения: показываем всё сразу, лента скроллится пальцем
+      items.forEach(el => el.classList.add("is-near"));
+      track.style.overflowX = "auto";
+    } else {
+      addEventListener("scroll", kick, { passive: true });
+      addEventListener("resize", () => { last = -1; kick(); }, { passive: true });
+      draw(progress());
+      kick();
+    }
+  })();
+
+  /* ================================================================
+     05 · ЧТО ВХОДИТ В ПРОЕКТ — чертёжный таймлайн
+     Линия-стержень прочерчивается по мере прохода секции, узлы-кресты
+     раскрываются, содержимое этапа поднимается.
+     ================================================================ */
+  (function () {
+    const list = document.getElementById("flowList");
+    if (!list) return;
+    const spine = document.getElementById("flowSpine");
+    const steps = [...list.querySelectorAll(".flow__step")];
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const cl = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+
+    // этапы включаются по одному, когда доходят до середины экрана
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) e.target.classList.add("is-on");
+      });
+    }, { rootMargin: "-18% 0px -28% 0px" });
+    steps.forEach(st => io.observe(st));
+
+    if (reduce || !spine) { steps.forEach(st => st.classList.add("is-on")); return; }
+
+    let last = -1, raf = null, idle = 0;
+
+    function draw() {
+      const r = list.getBoundingClientRect();
+      const vh = window.innerHeight;
+      // линия растёт от момента, когда список вошёл в кадр,
+      // до момента, когда его низ дошёл до низа экрана
+      const p = cl((vh * 0.82 - r.top) / (r.height * 0.86));
+      if (Math.abs(p - last) < 0.002) return false;
+      spine.style.transform = `scaleY(${p})`;
+      last = p;
+      return true;
+    }
+
+    function loop() {
+      const busy = draw();
+      idle = busy ? 0 : idle + 1;
+      if (idle > 12) { raf = null; return; }
+      raf = requestAnimationFrame(loop);
+    }
+    const kick = () => { idle = 0; if (!raf) raf = requestAnimationFrame(loop); };
+
+    addEventListener("scroll", kick, { passive: true });
+    addEventListener("resize", () => { last = -1; kick(); }, { passive: true });
+    draw(); kick();
+  })();
+
+  /* ================================================================
+     07 · АВТОРСКИЙ НАДЗОР — фрагмент реального отчёта
+     Не иконки «контроль качества», а документ: строки замечаний
+     со статусом, датой и ответственным. Слева — «шапка» выезда,
+     справа — журнал, который заполняется по скроллу.
+     ================================================================ */
+  .sup {
+    background: var(--l-bg2);
+    color: var(--l-ink);
+    padding: clamp(90px, 15vh, 180px) 0 clamp(80px, 13vh, 160px);
+    position: relative;
+    overflow: hidden;
+  }
+  /* миллиметровка на фоне — намёк на чертёж, очень слабая */
+  .sup::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background-image:
+      linear-gradient(to right, rgba(22,21,15,.045) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(22,21,15,.045) 1px, transparent 1px);
+    background-size: clamp(40px, 4vw, 64px) clamp(40px, 4vw, 64px);
+    mask-image: radial-gradient(120% 90% at 70% 40%, #000 20%, transparent 78%);
+  }
+  .sup__inner { position: relative; z-index: 1; }
+
+  .sup__head {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 24px; flex-wrap: wrap; margin-bottom: clamp(40px, 6vh, 76px);
+  }
+  .sup__title {
+    font-family: "Onest", sans-serif; font-weight: 400;
+    font-size: clamp(28px, 3.6vw, 68px); line-height: 1;
+    letter-spacing: -0.04em; text-transform: uppercase; max-width: 18ch;
+  }
+  .sup__lead {
+    max-width: 38ch; font-family: "Onest", sans-serif;
+    font-size: clamp(14px, 1.05vw, 18px); line-height: 1.5;
+    color: var(--l-ink-mid);
+  }
+
+  /* сам «бланк» отчёта */
+  .sup__doc {
+    background: #fff;
+    border: 1px solid var(--l-line);
+    border-radius: 4px;
+    box-shadow: 0 30px 70px rgba(22, 21, 15, .07);
+    overflow: hidden;
+  }
+  /* шапка бланка */
+  .sup__meta {
+    display: flex; flex-wrap: wrap; gap: clamp(20px, 3vw, 56px);
+    padding: clamp(20px, 2.2vw, 34px) clamp(20px, 2.4vw, 40px);
+    border-bottom: 1px solid var(--l-line);
+  }
+  .sup__meta div { min-width: 0; }
+  .sup__meta dt {
+    font-family: "Onest", sans-serif; font-size: clamp(10px, .74vw, 12px);
+    letter-spacing: .12em; text-transform: uppercase; color: var(--l-ink-low);
+    margin-bottom: 6px;
+  }
+  .sup__meta dd {
+    font-family: "Onest", sans-serif; font-size: clamp(14px, 1.05vw, 18px);
+    letter-spacing: -0.01em; color: var(--l-ink);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* строки журнала */
+  .sup__rows { list-style: none; }
+  .sup__row {
+    display: grid;
+    grid-template-columns: clamp(30px, 3vw, 46px) 1fr auto;
+    gap: clamp(14px, 1.6vw, 28px);
+    align-items: baseline;
+    padding: clamp(16px, 1.7vw, 26px) clamp(20px, 2.4vw, 40px);
+    border-top: 1px solid var(--l-line);
+    opacity: 0; transform: translateY(16px);
+    transition: opacity .7s var(--ease-out), transform .8s var(--ease-out);
+  }
+  .sup__row:first-child { border-top: none; }
+  .sup__doc.is-on .sup__row { opacity: 1; transform: none; }
+  .sup__doc.is-on .sup__row:nth-child(2) { transition-delay: .1s; }
+  .sup__doc.is-on .sup__row:nth-child(3) { transition-delay: .2s; }
+  .sup__doc.is-on .sup__row:nth-child(4) { transition-delay: .3s; }
+
+  .sup__idx {
+    font-family: "Onest", sans-serif; font-size: clamp(10px, .78vw, 13px);
+    letter-spacing: .06em; color: var(--l-ink-low);
+    font-variant-numeric: tabular-nums;
+  }
+  .sup__what {
+    font-family: "Onest", sans-serif; font-size: clamp(14px, 1.08vw, 19px);
+    line-height: 1.38; letter-spacing: -0.01em; color: var(--l-ink);
+  }
+  .sup__what b { font-weight: 500; }
+  .sup__who {
+    display: block; margin-top: 5px;
+    font-size: clamp(12px, .88vw, 15px); color: var(--l-ink-low);
+  }
+  /* статус — текстовая метка с точкой, без иконок */
+  .sup__st {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: "Onest", sans-serif; font-size: clamp(11px, .82vw, 14px);
+    letter-spacing: .04em; text-transform: uppercase; white-space: nowrap;
+    color: var(--l-ink-mid);
+  }
+  .sup__st::before {
+    content: ""; width: 6px; height: 6px; border-radius: 50%;
+    background: currentColor; flex: none;
+  }
+  .sup__st--fix { color: #8a6a1f; }
+  .sup__st--ok  { color: #4a6b3f; }
+
+  /* подпись под бланком */
+  .sup__foot {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 20px; flex-wrap: wrap;
+    padding: clamp(16px, 1.8vw, 26px) clamp(20px, 2.4vw, 40px);
+    border-top: 1px solid var(--l-line);
+    background: var(--l-bg);
+    font-family: "Onest", sans-serif; font-size: clamp(12px, .9vw, 15px);
+    color: var(--l-ink-mid);
+  }
+  .sup__foot b { color: var(--l-ink); font-weight: 400; }
+
+  @media (max-width: 760px) {
+    .sup__row { grid-template-columns: 26px 1fr; }
+    .sup__st { grid-column: 2; margin-top: 6px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sup__row { opacity: 1; transform: none; }
+  }
+
+  /* ================================================================
      04 · УСЛУГИ — hover image reveal
      Логика Originkit: наведение на строку выдвигает её картинку
      снизу/сверху (в зависимости от направления), остальные строки
@@ -1184,6 +1695,191 @@
     .site *, .site *::before, .site *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
   }
 
+
+  /* ================================================================
+     08 · FAQ — вопросы как чертёжные строки
+     Не «карточки-аккордеоны», а список: вопрос набран крупно, при
+     раскрытии слева прочерчивается вертикальная линия и появляется
+     ответ. Знак — фирменный крест, поворачивается в «минус».
+     ================================================================ */
+  .faq {
+    background: var(--l-ink); color: #fff;
+    padding: clamp(90px, 15vh, 180px) 0 clamp(80px, 13vh, 160px);
+  }
+  .faq__head {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 24px; flex-wrap: wrap; margin-bottom: clamp(40px, 6vh, 80px);
+  }
+  .faq__title {
+    font-family: "Onest", sans-serif; font-weight: 400;
+    font-size: clamp(28px, 3.6vw, 68px); line-height: 1;
+    letter-spacing: -0.04em; text-transform: uppercase; max-width: 14ch;
+  }
+  .faq__lead {
+    max-width: 34ch; font-family: "Onest", sans-serif;
+    font-size: clamp(14px, 1.05vw, 18px); line-height: 1.5;
+    color: rgba(255,255,255,.55);
+  }
+
+  .faq__item { border-top: 1px solid rgba(255,255,255,.16); }
+  .faq__item:last-child { border-bottom: 1px solid rgba(255,255,255,.16); }
+
+  .faq__q {
+    width: 100%; background: none; border: none; cursor: pointer;
+    display: grid; grid-template-columns: 1fr auto;
+    gap: clamp(20px, 3vw, 60px); align-items: start;
+    padding: clamp(22px, 2.6vw, 40px) 0;
+    text-align: left; color: #fff;
+    font-family: "Onest", sans-serif; font-weight: 400;
+    font-size: clamp(17px, 1.75vw, 34px); line-height: 1.2;
+    letter-spacing: -0.025em;
+    transition: color .4s var(--ease-out);
+  }
+  .faq__q:hover { color: rgba(255,255,255,.72); }
+
+  /* знак-крест → минус */
+  .faq__sign {
+    flex: none; width: clamp(20px, 1.8vw, 28px); height: clamp(20px, 1.8vw, 28px);
+    position: relative; margin-top: .28em;
+  }
+  .faq__sign::before, .faq__sign::after {
+    content: ""; position: absolute; left: 50%; top: 50%;
+    background: currentColor; border-radius: 1px;
+    transform: translate(-50%, -50%);
+    transition: transform .5s var(--ease-out), opacity .4s var(--ease-out);
+  }
+  .faq__sign::before { width: 100%; height: 1.5px; }
+  .faq__sign::after  { width: 1.5px; height: 100%; }
+  .faq__item.is-open .faq__sign::after { transform: translate(-50%, -50%) scaleY(0); }
+  .faq__item.is-open .faq__sign::before { transform: translate(-50%, -50%) rotate(180deg); }
+
+  /* ответ: раскрывается по высоте, слева чертится линия */
+  .faq__a {
+    display: grid; grid-template-rows: 0fr;
+    transition: grid-template-rows .6s var(--ease-out);
+  }
+  .faq__item.is-open .faq__a { grid-template-rows: 1fr; }
+  .faq__a > div { overflow: hidden; }
+  .faq__a p {
+    position: relative;
+    max-width: 62ch; margin: 0 0 clamp(24px, 3vw, 44px);
+    padding-left: clamp(18px, 2vw, 34px);
+    font-family: "Onest", sans-serif;
+    font-size: clamp(14px, 1.05vw, 18px); line-height: 1.55;
+    color: rgba(255,255,255,.66);
+  }
+  .faq__a p::before {
+    content: ""; position: absolute; left: 0; top: .35em; bottom: .2em;
+    width: 1px; background: rgba(255,255,255,.3);
+    transform: scaleY(0); transform-origin: top;
+    transition: transform .7s var(--ease-out) .1s;
+  }
+  .faq__item.is-open .faq__a p::before { transform: scaleY(1); }
+
+  /* ================================================================
+     09 · ЗАЯВКА — форма как бланк первого разговора
+     ================================================================ */
+  .ask {
+    background: var(--l-bg); color: var(--l-ink);
+    padding: clamp(90px, 15vh, 180px) 0 clamp(70px, 11vh, 140px);
+  }
+  .ask__grid {
+    display: grid; grid-template-columns: 1fr minmax(320px, 46%);
+    gap: clamp(36px, 6vw, 110px); align-items: start;
+  }
+  .ask__title {
+    font-family: "Onest", sans-serif; font-weight: 400;
+    font-size: clamp(30px, 4.2vw, 78px); line-height: 1;
+    letter-spacing: -0.04em; text-transform: uppercase;
+    max-width: 15ch; margin-bottom: clamp(20px, 2.6vw, 38px);
+  }
+  .ask__lead {
+    max-width: 42ch; font-family: "Onest", sans-serif;
+    font-size: clamp(14px, 1.1vw, 19px); line-height: 1.5;
+    color: var(--l-ink-mid); margin-bottom: clamp(24px, 3vw, 44px);
+  }
+  /* что подготовить — как чек-лист бланка */
+  .ask__prep { list-style: none; max-width: 40ch; }
+  .ask__prep li {
+    position: relative; padding: clamp(9px, 1vw, 13px) 0 clamp(9px, 1vw, 13px) clamp(24px, 2vw, 32px);
+    border-top: 1px solid var(--l-line);
+    font-family: "Onest", sans-serif;
+    font-size: clamp(13px, .98vw, 17px); color: var(--l-ink);
+  }
+  .ask__prep li::before {
+    content: ""; position: absolute; left: 0; top: 50%;
+    width: clamp(10px, .9vw, 13px); height: 1px; background: var(--l-ink);
+  }
+
+  /* сама форма */
+  .ask__form { display: flex; flex-direction: column; gap: clamp(14px, 1.6vw, 22px); }
+  .ask__field { position: relative; }
+  .ask__field input, .ask__field textarea {
+    width: 100%; background: transparent; border: none;
+    border-bottom: 1px solid var(--l-line);
+    padding: clamp(16px, 1.8vw, 24px) 0 clamp(9px, 1vw, 13px);
+    font-family: "Onest", sans-serif;
+    font-size: clamp(15px, 1.1vw, 18px); color: var(--l-ink);
+    letter-spacing: -0.01em; border-radius: 0;
+    transition: border-color .4s var(--ease-out);
+  }
+  .ask__field textarea { resize: none; min-height: clamp(70px, 8vh, 100px); }
+  .ask__field input:focus, .ask__field textarea:focus {
+    outline: none; border-color: var(--l-ink);
+  }
+  /* плавающая подпись поля */
+  .ask__field label {
+    position: absolute; left: 0; top: clamp(16px, 1.8vw, 24px);
+    font-family: "Onest", sans-serif;
+    font-size: clamp(13px, 1vw, 17px); color: var(--l-ink-low);
+    pointer-events: none;
+    transition: transform .4s var(--ease-out), font-size .4s var(--ease-out), color .4s var(--ease-out);
+  }
+  .ask__field input:focus + label,
+  .ask__field textarea:focus + label,
+  .ask__field input:not(:placeholder-shown) + label,
+  .ask__field textarea:not(:placeholder-shown) + label {
+    transform: translateY(calc(-1 * clamp(16px, 1.8vw, 24px)));
+    font-size: clamp(10px, .74vw, 12px);
+    letter-spacing: .1em; text-transform: uppercase; color: var(--l-ink-low);
+  }
+
+  .ask__consent {
+    display: flex; gap: 12px; align-items: flex-start;
+    font-family: "Onest", sans-serif;
+    font-size: clamp(11px, .8vw, 13px); line-height: 1.45;
+    color: var(--l-ink-low); margin-top: clamp(4px, .6vw, 10px);
+  }
+  .ask__consent input { margin-top: 3px; accent-color: var(--l-ink); flex: none; }
+  .ask__consent a { color: var(--l-ink-mid); }
+
+  /* кнопка — фирменная, с крестом как в шапке */
+  .ask__submit {
+    align-self: flex-start;
+    display: inline-flex; align-items: center; gap: clamp(14px, 1.4vw, 24px);
+    margin-top: clamp(10px, 1.4vw, 20px);
+    padding: clamp(14px, 1.35vw, 20px) clamp(22px, 2.2vw, 34px);
+    background: var(--l-ink); color: var(--l-bg);
+    border: none; border-radius: 100px; cursor: pointer;
+    font-family: "Onest", sans-serif; font-weight: 400;
+    font-size: clamp(13px, .95vw, 16px); letter-spacing: .02em;
+    text-transform: uppercase;
+    transition: transform .4s var(--ease-out), box-shadow .4s var(--ease-out);
+  }
+  .ask__submit:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(22,21,15,.22); }
+  .ask__submit svg { width: 16px; height: 16px; transition: transform .45s var(--ease-out); }
+  .ask__submit:hover svg { transform: rotate(90deg); }
+  .ask__submit[disabled] { opacity: .5; pointer-events: none; }
+
+  .ask__status {
+    font-family: "Onest", sans-serif; font-size: clamp(12px, .9vw, 15px);
+    color: var(--l-ink-mid); min-height: 1.4em;
+  }
+
+  @media (max-width: 900px) {
+    .ask__grid { grid-template-columns: 1fr; gap: 40px; }
+  }
+
 </style>
 
 <div class="progress"><div class="progress__bar" id="progressBar"></div></div>
@@ -1399,7 +2095,269 @@
         </div>
       </div>
   </section>
-  <!-- ============ 04 · УСЛУГИ (hover image reveal) ============ -->
+  <!-- ============ 04 · КАК ИМЕННО (горизонтальный проезд) ============ -->
+  <section class="how" id="how">
+    <div class="how__vp">
+      <div class="how__head">
+        <div class="how__eyebrow">Как именно</div>
+        <div class="how__counter"><b id="howNum">01</b> / 03</div>
+      </div>
+
+      <div class="how__track" id="howTrack">
+        <div class="how__item">
+          <div class="how__num">01</div>
+          <div class="how__body">
+            <p class="how__text">
+              Проверяем, где можно строить,
+              <u>до того</u> как вы влюбитесь в планировку
+            </p>
+            <p class="how__note">
+              Геология, рельеф, инсоляция, подъезды и ограничения участка —
+              до концепции. Иначе красивая планировка упирается в то,
+              что на этом пятне её построить нельзя.
+            </p>
+            <span class="how__rule"></span>
+          </div>
+        </div>
+
+        <div class="how__item">
+          <div class="how__num">02</div>
+          <div class="how__body">
+            <p class="how__text">
+              Согласовываем архитектуру, конструктив и инженерию
+              <u>до стройки</u>, а не решаем конфликты на объекте
+            </p>
+            <p class="how__note">
+              Все три раздела сводятся в одной модели. Коллизии видно
+              на экране, а не в момент, когда балка проходит там,
+              где по проекту шёл воздуховод.
+            </p>
+            <span class="how__rule"></span>
+          </div>
+        </div>
+
+        <div class="how__item">
+          <div class="how__num">03</div>
+          <div class="how__body">
+            <p class="how__text">
+              Критические узлы проверяем
+              <u>до того</u>, как их закроет отделка
+            </p>
+            <p class="how__note">
+              Гидроизоляция, примыкания, уклоны и доступ к обслуживанию —
+              на выезде, пока к ним есть доступ. После отделки любая
+              ошибка стоит демонтажа.
+            </p>
+            <span class="how__rule"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="how__bar"><i id="howBar"></i></div>
+    </div>
+  </section>
+
+  <!-- ============ 05 · ЧТО ВХОДИТ В ПРОЕКТ (чертёжный таймлайн) ============ -->
+  <section class="flow" id="flow">
+    <div class="container">
+      <div class="flow__head">
+        <h2 class="flow__title">Что входит в проект</h2>
+        <p class="flow__lead">
+          Четыре этапа с понятным составом работ. В правой колонке —
+          что остаётся у вас на руках после каждого из них.
+        </p>
+      </div>
+
+      <div class="flow__list" id="flowList">
+        <div class="flow__spine"><i id="flowSpine"></i></div>
+
+        <div class="flow__step">
+          <div class="flow__node">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 3v18M3 12h18" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+            </svg>
+          </div>
+          <div class="flow__main">
+            <div class="flow__num">01</div>
+            <h3 class="flow__name">Старт и участок</h3>
+            <p class="flow__do">
+              Изучаем ограничения участка, рельеф, инсоляцию, подъезды
+              и сценарии жизни семьи: где работают, как приезжают гости,
+              где хранятся вещи и как меняется дом зимой.
+            </p>
+          </div>
+          <div class="flow__get">
+            <div class="flow__get-label">Вы получаете</div>
+            <ul class="flow__docs">
+              <li>Техническое задание</li>
+              <li>Выводы по участку</li>
+              <li>Согласованный состав задач</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="flow__step">
+          <div class="flow__node">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 3v18M3 12h18" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+            </svg>
+          </div>
+          <div class="flow__main">
+            <div class="flow__num">02</div>
+            <h3 class="flow__name">Концепция</h3>
+            <p class="flow__do">
+              Собираем планировки, объём, логику света, приватности
+              и маршрутов. Проверяем ключевые решения на реализуемость
+              в целевом бюджете до финального утверждения.
+            </p>
+          </div>
+          <div class="flow__get">
+            <div class="flow__get-label">Вы получаете</div>
+            <ul class="flow__docs">
+              <li>Выбранную концепцию</li>
+              <li>Планировочное решение</li>
+              <li>Ключевые визуальные материалы</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="flow__step">
+          <div class="flow__node">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 3v18M3 12h18" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+            </svg>
+          </div>
+          <div class="flow__main">
+            <div class="flow__num">03</div>
+            <h3 class="flow__name">Проектирование</h3>
+            <p class="flow__do">
+              Согласовываем архитектуру, конструктив, инженерные системы,
+              материалы и ключевые узлы. Фиксируем отметки, спецификации
+              и привязки, по которым подрядчик может строить.
+            </p>
+          </div>
+          <div class="flow__get">
+            <div class="flow__get-label">Вы получаете</div>
+            <ul class="flow__docs">
+              <li>Рабочую документацию</li>
+              <li>Спецификации</li>
+              <li>Понятный состав решений</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="flow__step">
+          <div class="flow__node">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 3v18M3 12h18" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+            </svg>
+          </div>
+          <div class="flow__main">
+            <div class="flow__num">04</div>
+            <h3 class="flow__name">Реализация</h3>
+            <p class="flow__do">
+              Отвечаем на вопросы подрядчиков, выезжаем на объект,
+              фиксируем изменения и замечания. Критические узлы проверяем
+              до того, как их закроет отделка.
+            </p>
+          </div>
+          <div class="flow__get">
+            <div class="flow__get-label">Вы получаете</div>
+            <ul class="flow__docs">
+              <li>Отчёты с выездов</li>
+              <li>Журнал изменений</li>
+              <li>Актуальную документацию</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 07 · АВТОРСКИЙ НАДЗОР (фрагмент отчёта) ============ -->
+  <section class="sup" id="supervision">
+    <div class="container sup__inner">
+      <div class="sup__head">
+        <h2 class="sup__title">Авторский надзор — это документ, а не заезд «посмотреть»</h2>
+        <p class="sup__lead">
+          После каждого выезда вы получаете отчёт: что проверено,
+          что не соответствует проекту, что исправить и кто отвечает.
+          Ниже — фрагмент реального бланка.
+        </p>
+      </div>
+
+      <div class="sup__doc" id="supDoc">
+        <dl class="sup__meta">
+          <div>
+            <dt>Объект</dt>
+            <dd>Частный дом, 340 м²</dd>
+          </div>
+          <div>
+            <dt>Выезд</dt>
+            <dd>№ 07 · 14.03.2026</dd>
+          </div>
+          <div>
+            <dt>Этап</dt>
+            <dd>Кровля и фасадный контур</dd>
+          </div>
+          <div>
+            <dt>От бюро</dt>
+            <dd>Дмитрий Соловьёв</dd>
+          </div>
+        </dl>
+
+        <ul class="sup__rows">
+          <li class="sup__row">
+            <span class="sup__idx">01</span>
+            <span class="sup__what">
+              <b>Примыкание кровли к парапету</b> выполнено без заведения
+              гидроизоляции на вертикаль. Узел К-04 в рабочей документации.
+              <span class="sup__who">Ответственный: подрядчик по кровле · срок 21.03</span>
+            </span>
+            <span class="sup__st sup__st--fix">Исправить</span>
+          </li>
+
+          <li class="sup__row">
+            <span class="sup__idx">02</span>
+            <span class="sup__what">
+              <b>Уклон террасы</b> 1,8% вместо проектных 2%. Проверено
+              нивелиром до укладки покрытия — переделка не потребуется.
+              <span class="sup__who">Ответственный: прораб · срок 18.03</span>
+            </span>
+            <span class="sup__st sup__st--fix">Исправить</span>
+          </li>
+
+          <li class="sup__row">
+            <span class="sup__idx">03</span>
+            <span class="sup__what">
+              <b>Закладные под внешние блоки</b> вынесены на техфасад
+              согласно проекту. Доступ для обслуживания сохранён.
+              <span class="sup__who">Проверено на объекте</span>
+            </span>
+            <span class="sup__st sup__st--ok">Принято</span>
+          </li>
+
+          <li class="sup__row">
+            <span class="sup__idx">04</span>
+            <span class="sup__what">
+              <b>Замена профиля остекления</b> по инициативе подрядчика.
+              Влияние на бюджет и вид фасада зафиксировано, изменение
+              внесено в журнал и обновлённый чертёж.
+              <span class="sup__who">Согласовано с заказчиком 14.03</span>
+            </span>
+            <span class="sup__st sup__st--ok">В документации</span>
+          </li>
+        </ul>
+
+        <div class="sup__foot">
+          <span>Замечания из отчёта попадают в <b>журнал изменений</b> и в актуальный комплект документации.</span>
+          <span>Следующий выезд — <b>28.03.2026</b></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 06 · УСЛУГИ (hover image reveal) ============ -->
   <section class="svc" id="services">
     <div class="container">
       <div class="svc__head">
@@ -1525,7 +2483,152 @@
     </div>
   </section>
 
-  <!-- ============ 06 · КОНТАКТ + ФУТЕР ============ -->
+  <!-- ============ 08 · FAQ ============ -->
+  <section class="faq" id="faq">
+    <div class="container">
+      <div class="faq__head">
+        <h2 class="faq__title">Вопросы, которые задают до первой встречи</h2>
+        <p class="faq__lead">
+          Здесь нет обещаний, за которые мы не отвечаем.
+          Только то, что можем подтвердить процессом и документами.
+        </p>
+      </div>
+
+      <div class="faq__list" id="faqList">
+        <div class="faq__item">
+          <button class="faq__q" type="button">
+            <span>Когда лучше обращаться?</span>
+            <span class="faq__sign" aria-hidden="true"></span>
+          </button>
+          <div class="faq__a"><div><p>
+            До покупки участка или до выбора подрядчика. На этом этапе
+            проще всего повлиять на ограничения и бюджет: мы посмотрим
+            геологию, рельеф, инсоляцию и подъезды до того, как появится
+            привязанность к конкретной планировке.
+          </p></div></div>
+        </div>
+
+        <div class="faq__item">
+          <button class="faq__q" type="button">
+            <span>Можно прийти со своим строителем?</span>
+            <span class="faq__sign" aria-hidden="true"></span>
+          </button>
+          <div class="faq__a"><div><p>
+            Да, мы работаем с внешними подрядчиками. Наша зона —
+            проект и авторский контроль: помогаем прочитать сложные узлы
+            до начала работ, отвечаем на вопросы по документации
+            и фиксируем несоответствия в отчёте.
+          </p></div></div>
+        </div>
+
+        <div class="faq__item">
+          <button class="faq__q" type="button">
+            <span>Можно назвать точную стоимость стройки сразу?</span>
+            <span class="faq__sign" aria-hidden="true"></span>
+          </button>
+          <div class="faq__a"><div><p>
+            Нет. До геологии, проекта и состава работ честно назвать можно
+            только диапазон и факторы, которые на него влияют: тип фундамента,
+            конструктив, площадь остекления, инженерия и класс отделки.
+            Мы не продаём иллюзию точной цены, чтобы потом её пересматривать.
+          </p></div></div>
+        </div>
+
+        <div class="faq__item">
+          <button class="faq__q" type="button">
+            <span>Как часто вы бываете на объекте?</span>
+            <span class="faq__sign" aria-hidden="true"></span>
+          </button>
+          <div class="faq__a"><div><p>
+            Периодичность фиксируется договором и зависит от этапа.
+            На ответственных работах — чаще: критические узлы проверяем
+            до того, как их закроет отделка. После каждого выезда вы
+            получаете отчёт с замечаниями, сроками и ответственными.
+          </p></div></div>
+        </div>
+
+        <div class="faq__item">
+          <button class="faq__q" type="button">
+            <span>Можно работать удалённо?</span>
+            <span class="faq__sign" aria-hidden="true"></span>
+          </button>
+          <div class="faq__a"><div><p>
+            Да. Встречи и согласования проходят онлайн, образцы материалов
+            сверяем по фото при дневном свете и дублируем очной приёмкой
+            на объекте. Выезды на площадку в любом случае очные.
+          </p></div></div>
+        </div>
+
+        <div class="faq__item">
+          <button class="faq__q" type="button">
+            <span>Что будет, если решение нужно изменить на стройке?</span>
+            <span class="faq__sign" aria-hidden="true"></span>
+          </button>
+          <div class="faq__a"><div><p>
+            Сначала обсуждаем влияние на бюджет, срок и смежные разделы.
+            Если изменение принимается — оно попадает в чертёж и журнал
+            изменений, а не остаётся решением «на глаз» в переписке.
+            В финале у вас остаётся актуальный комплект документации.
+          </p></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 09 · ЗАЯВКА ============ -->
+  <section class="ask" id="ask">
+    <div class="container">
+      <div class="ask__grid">
+        <div>
+          <h2 class="ask__title">Расскажите, каким должен быть ваш дом</h2>
+          <p class="ask__lead">
+            На первой встрече разберём участок, задачи семьи и подскажем,
+            с какого этапа лучше начать. Это разговор, а не продажа проекта.
+          </p>
+          <ul class="ask__prep">
+            <li>Адрес или кадастровый номер участка</li>
+            <li>Желаемые сроки</li>
+            <li>Ориентир по бюджету</li>
+          </ul>
+        </div>
+
+        <form class="ask__form" id="askForm" novalidate>
+          <div class="ask__field">
+            <input type="text" id="fName" name="name" placeholder=" " autocomplete="name" required />
+            <label for="fName">Как вас зовут</label>
+          </div>
+          <div class="ask__field">
+            <input type="tel" id="fPhone" name="phone" placeholder=" " autocomplete="tel" required />
+            <label for="fPhone">Телефон или телеграм</label>
+          </div>
+          <div class="ask__field">
+            <input type="text" id="fPlot" name="plot" placeholder=" " />
+            <label for="fPlot">Участок: адрес или кадастровый номер</label>
+          </div>
+          <div class="ask__field">
+            <textarea id="fTask" name="task" placeholder=" " rows="2"></textarea>
+            <label for="fTask">Задача, сроки, ориентир по бюджету</label>
+          </div>
+
+          <label class="ask__consent">
+            <input type="checkbox" id="fOk" required />
+            <span>Согласен на обработку персональных данных в соответствии с
+              <a href="#" target="_blank" rel="noopener">политикой конфиденциальности</a>.</span>
+          </label>
+
+          <button class="ask__submit" type="submit" id="askBtn">
+            <span>Обсудить участок и задачу</span>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 4v16M4 12h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+            </svg>
+          </button>
+          <div class="ask__status" id="askStatus" role="status"></div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 10 · КОНТАКТ + ФУТЕР ============ -->
   <section class="contact" id="contact">
     <div class="container">
       <div class="sec-eyebrow" style="color:rgba(238,234,226,.5)">04 — Начнём</div>
@@ -2066,6 +3169,128 @@
     paintShot(); paintText();
 
   })();
+  /* ================================================================
+     04 · КАК ИМЕННО — горизонтальный проезд по вертикальному скроллу
+     Секция «прилипает», лента едет вбок. Активный принцип подсвечивает
+     контурный номер и прочерчивает подчёркивание.
+     ================================================================ */
+  (function () {
+    const sec = document.getElementById("how");
+    if (!sec) return;
+    const track = document.getElementById("howTrack");
+    const bar = document.getElementById("howBar");
+    const numEl = document.getElementById("howNum");
+    const items = [...track.querySelectorAll(".how__item")];
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const cl = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+    const pad = (n) => String(n).padStart(2, "0");
+
+    let last = -1, raf = null, idle = 0;
+
+    function progress() {
+      const r = sec.getBoundingClientRect();
+      const s = r.height - window.innerHeight;
+      if (s <= 0) return 0;
+      return cl(-r.top / s);
+    }
+
+    // длина проезда = ширина ленты минус экран
+    function span() {
+      return Math.max(0, track.scrollWidth - window.innerWidth);
+    }
+
+    function draw(p) {
+      // небольшая «полка» в начале и конце, чтобы первый и последний
+      // принцип успели прочитаться, а не проскочили
+      const e = cl((p - 0.06) / 0.88);
+      track.style.transform = `translate3d(${-e * span()}px, 0, 0)`;
+      if (bar) bar.style.width = (e * 100) + "%";
+
+      // активным считаем тот принцип, чей центр ближе к центру экрана
+      const mid = window.innerWidth / 2;
+      let best = 0, bd = 1e9;
+      items.forEach((el, i) => {
+        const r = el.getBoundingClientRect();
+        const d = Math.abs(r.left + r.width / 2 - mid);
+        if (d < bd) { bd = d; best = i; }
+        el.classList.toggle("is-near", r.left < window.innerWidth * 0.72);
+      });
+      if (numEl) numEl.textContent = pad(best + 1);
+    }
+
+    function loop() {
+      const p = progress();
+      let busy = false;
+      if (Math.abs(p - last) > 0.0004) { draw(p); last = p; busy = true; }
+      idle = busy ? 0 : idle + 1;
+      if (idle > 12) { raf = null; return; }
+      raf = requestAnimationFrame(loop);
+    }
+    const kick = () => { idle = 0; if (!raf) raf = requestAnimationFrame(loop); };
+
+    if (reduce) {
+      // без движения: показываем всё сразу, лента скроллится пальцем
+      items.forEach(el => el.classList.add("is-near"));
+      track.style.overflowX = "auto";
+    } else {
+      addEventListener("scroll", kick, { passive: true });
+      addEventListener("resize", () => { last = -1; kick(); }, { passive: true });
+      draw(progress());
+      kick();
+    }
+  })();
+
+  /* ================================================================
+     05 · ЧТО ВХОДИТ В ПРОЕКТ — чертёжный таймлайн
+     Линия-стержень прочерчивается по мере прохода секции, узлы-кресты
+     раскрываются, содержимое этапа поднимается.
+     ================================================================ */
+  (function () {
+    const list = document.getElementById("flowList");
+    if (!list) return;
+    const spine = document.getElementById("flowSpine");
+    const steps = [...list.querySelectorAll(".flow__step")];
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const cl = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+
+    // этапы включаются по одному, когда доходят до середины экрана
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) e.target.classList.add("is-on");
+      });
+    }, { rootMargin: "-18% 0px -28% 0px" });
+    steps.forEach(st => io.observe(st));
+
+    if (reduce || !spine) { steps.forEach(st => st.classList.add("is-on")); return; }
+
+    let last = -1, raf = null, idle = 0;
+
+    function draw() {
+      const r = list.getBoundingClientRect();
+      const vh = window.innerHeight;
+      // линия растёт от момента, когда список вошёл в кадр,
+      // до момента, когда его низ дошёл до низа экрана
+      const p = cl((vh * 0.82 - r.top) / (r.height * 0.86));
+      if (Math.abs(p - last) < 0.002) return false;
+      spine.style.transform = `scaleY(${p})`;
+      last = p;
+      return true;
+    }
+
+    function loop() {
+      const busy = draw();
+      idle = busy ? 0 : idle + 1;
+      if (idle > 12) { raf = null; return; }
+      raf = requestAnimationFrame(loop);
+    }
+    const kick = () => { idle = 0; if (!raf) raf = requestAnimationFrame(loop); };
+
+    addEventListener("scroll", kick, { passive: true });
+    addEventListener("resize", () => { last = -1; kick(); }, { passive: true });
+    draw(); kick();
+  })();
 
   /* ================================================================
      04 · УСЛУГИ — hover image reveal
@@ -2249,6 +3474,106 @@
     }, { passive: true });
 
     show(0);
+  })();
+
+  /* ---- 07 · Отчёт надзора: строки проявляются по одной ---- */
+  (function () {
+    const doc = document.getElementById("supDoc");
+    if (!doc) return;
+    const io = new IntersectionObserver((e) => {
+      e.forEach(x => { if (x.isIntersecting) { doc.classList.add("is-on"); io.disconnect(); } });
+    }, { threshold: 0.2 });
+    io.observe(doc);
+  })();
+
+  /* ================================================================
+     08 · FAQ — аккордеон: открыт только один пункт
+     ================================================================ */
+  (function () {
+    const list = document.getElementById("faqList");
+    if (!list) return;
+    const items = [...list.querySelectorAll(".faq__item")];
+    items.forEach((item) => {
+      const btn = item.querySelector(".faq__q");
+      const panel = item.querySelector(".faq__a");
+      btn.setAttribute("aria-expanded", "false");
+      btn.addEventListener("click", () => {
+        const open = item.classList.contains("is-open");
+        // закрываем остальные — читается по одному вопросу за раз
+        items.forEach((o) => {
+          o.classList.remove("is-open");
+          o.querySelector(".faq__q").setAttribute("aria-expanded", "false");
+        });
+        if (!open) {
+          item.classList.add("is-open");
+          btn.setAttribute("aria-expanded", "true");
+        }
+      });
+      panel.setAttribute("role", "region");
+    });
+  })();
+
+  /* ================================================================
+     09 · ЗАЯВКА — отправка в Telegram
+     Токен и chat_id подставить в TG. Пока они пустые, форма
+     показывает данные в статусе и не делает сетевых запросов.
+     ================================================================ */
+  (function () {
+    const form = document.getElementById("askForm");
+    if (!form) return;
+    const btn = document.getElementById("askBtn");
+    const status = document.getElementById("askStatus");
+
+    // >>> ЗАПОЛНИТЬ: токен бота и id чата, куда падают заявки
+    const TG = { token: "", chat: "" };
+
+    const esc = (v) => String(v || "—")
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const d = Object.fromEntries(new FormData(form).entries());
+      const ok = document.getElementById("fOk").checked;
+
+      if (!d.name || !d.phone) {
+        status.textContent = "Заполните имя и контакт.";
+        return;
+      }
+      if (!ok) {
+        status.textContent = "Нужно согласие на обработку данных.";
+        return;
+      }
+
+      const text =
+        "<b>Заявка с сайта LumenArch</b>\n\n" +
+        "Имя: " + esc(d.name) + "\n" +
+        "Контакт: " + esc(d.phone) + "\n" +
+        "Участок: " + esc(d.plot) + "\n" +
+        "Задача: " + esc(d.task);
+
+      if (!TG.token || !TG.chat) {
+        status.textContent = "Форма собрана. Подставьте токен бота — и заявки пойдут в Telegram.";
+        console.info("Заявка (демо-режим):", d);
+        return;
+      }
+
+      btn.disabled = true;
+      status.textContent = "Отправляем…";
+      try {
+        const r = await fetch("https://api.telegram.org/bot" + TG.token + "/sendMessage", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chat_id: TG.chat, text, parse_mode: "HTML" }),
+        });
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        form.reset();
+        status.textContent = "Заявка отправлена. Свяжемся в течение рабочего дня.";
+      } catch (err) {
+        status.textContent = "Не удалось отправить. Напишите на hello@lumenarch.studio";
+      } finally {
+        btn.disabled = false;
+      }
+    });
   })();
 
 </script>
