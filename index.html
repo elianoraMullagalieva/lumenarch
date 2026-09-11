@@ -662,8 +662,9 @@
     position: absolute; left: 50%; bottom: 0;
     transform: translateX(-50%);
     width: 100vw; height: 100vh;
-    /* кадрирование как в макете: здание целиком, с землёй в нижней части */
-    object-fit: cover; object-position: center center;
+    /* кадрирование под изгиб кровли: главное в этом здании — верхняя
+       волна, а не плитка площади внизу */
+    object-fit: cover; object-position: center 38%;
     will-change: transform;
   }
 
@@ -2115,7 +2116,7 @@
       <div class="reveal__frame" id="revealFrame">
         <!-- 3 объекта × 2 кадра: экстерьер + интерьер, слайдшоу каждые 4 сек -->
         <div class="reveal__shots" id="prShots">
-          <img class="reveal__shot is-on" src="assets/cases/a1-hq.jpg" alt="Бизнес-центр «Атриум»" id="revealImg" />
+          <img class="reveal__shot is-on" src="assets/cases/heydar-hq.jpg" alt="Культурный центр «Атриум»" id="revealImg" />
           <img class="reveal__shot" src="assets/cases/a2-hq.jpg" alt="Интерьер бизнес-центра «Атриум»" />
           <img class="reveal__shot" src="assets/cases/i1-hq.jpg" alt="Торговый центр «Импульс»" loading="lazy" />
           <img class="reveal__shot" src="assets/cases/i2-hq.jpg" alt="Интерьер ТЦ «Импульс»" loading="lazy" />
