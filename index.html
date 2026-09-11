@@ -1452,147 +1452,112 @@
        • зацикливание в обе стороны, cubic-in-out анимация
      ================================================================ */
   /* ================================================================
-     06 · НАША КОМАНДА — горизонтальная карточка
-     Фото слева, справа имя/должность и короткая цитата.
-     Блок рассчитан так, чтобы целиком помещаться в высоту экрана.
+     06 · КОМАНДА — фото-туннель в перспективе
+     Портреты уходят вглубь по translateZ + rotateY (механика Coverflow).
+     Имя набрано на весь экран и перекрывает фото — типографика как
+     часть композиции, а не подпись под карточкой.
      ================================================================ */
   .team {
-    background: var(--l-bg);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: clamp(40px, 7vh, 80px) 0;
+    position: relative;
+    background: var(--l-ink);
+    color: #fff;
+    height: 420vh;             /* длина проезда туннеля */
+  }
+  .team__vp {
+    position: sticky; top: 0; height: 100vh;
     overflow: hidden;
   }
-  .team__head {
-    display: flex; align-items: baseline; justify-content: space-between;
-    gap: 24px; flex-wrap: wrap;
-    margin-bottom: clamp(24px, 4vh, 52px);
-  }
-  .team__rule { display: none; }
-  .team__title {
+
+  /* имя во весь экран — живёт ПОД фото */
+  .team__ghost {
+    position: absolute; left: 0; right: 0; top: 46%;
+    transform: translateY(-50%);
+    text-align: center; pointer-events: none;
     font-family: "Onest", sans-serif; font-weight: 400;
-    font-size: clamp(28px, 3.4vw, 64px); line-height: 1;
-    letter-spacing: -0.04em; text-transform: uppercase; color: var(--l-ink);
+    font-size: clamp(54px, 13.5vw, 260px); line-height: .86;
+    letter-spacing: -0.05em; text-transform: uppercase;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(255,255,255,.42);
+    white-space: nowrap; z-index: 1;
   }
+  /* дублёр поверх фото — обрезан по центру, даёт эффект «сквозь» */
+  /* Дублёр поверх фото больше не блендим: любой blend на портрете
+     даёт цветную грязь. Вместо этого имя живёт ОДНИМ контурным слоем
+     под карточкой — портрет физически перекрывает часть букв,
+     и получается честный эффект «сквозь», без артефактов. */
+  .team__ghost--over { display: none; }
+
+  /* сцена туннеля */
+  .team__stage {
+    position: absolute; inset: 0; z-index: 3;
+    perspective: 1400px;
+    transform-style: preserve-3d;
+  }
+  .team__card {
+    position: absolute; left: 50%; top: 50%;
+    width: clamp(260px, 27vw, 440px);
+    aspect-ratio: 3 / 4;
+    margin: 0; border-radius: 3px; overflow: hidden;
+    transform-origin: center center;
+    will-change: transform, opacity;
+    background: #2a2924;
+    box-shadow: 0 40px 90px rgba(0,0,0,.55);
+  }
+  .team__card img {
+    width: 100%; height: 100%; object-fit: cover; object-position: center 18%;
+    display: block; filter: grayscale(1) contrast(1.05);
+    transition: filter .7s var(--ease-out);
+  }
+  .team__card.is-front img { filter: grayscale(0) contrast(1); }
+
+  /* мета активного человека — слева внизу, без рамок */
+  .team__meta {
+    position: absolute; left: var(--pad-x); bottom: clamp(46px, 8vh, 90px);
+    z-index: 6; max-width: min(420px, 34vw);
+  }
+  .team__role {
+    font-family: "Onest", sans-serif; font-size: clamp(11px, .84vw, 14px);
+    letter-spacing: .14em; text-transform: uppercase;
+    color: rgba(255,255,255,.5); margin-bottom: clamp(8px, 1vw, 14px);
+    overflow: hidden;
+  }
+  .team__quote {
+    font-family: "Onest", sans-serif; font-weight: 400;
+    font-size: clamp(15px, 1.25vw, 23px); line-height: 1.38;
+    letter-spacing: -0.02em; color: rgba(255,255,255,.9);
+  }
+  .team__quote span { display: inline-block; }
+
+  /* счётчик справа внизу */
   .team__counter {
+    position: absolute; right: var(--pad-x); bottom: clamp(46px, 8vh, 90px);
+    z-index: 6;
     font-family: "Onest", sans-serif; font-size: clamp(12px, .95vw, 16px);
-    letter-spacing: .04em; color: var(--l-ink-low);
+    letter-spacing: .04em; color: rgba(255,255,255,.4);
     font-variant-numeric: tabular-nums;
   }
-  .team__counter b { color: var(--l-ink); font-weight: 500; }
+  .team__counter b { color: #fff; font-weight: 400; }
 
-  /* ---- карточка: фото + текст ---- */
-  .team__card {
-    display: grid;
-    grid-template-columns: minmax(260px, 34%) 1fr;
-    gap: clamp(28px, 4.6vw, 90px);
-    align-items: center;
+  /* подпись блока сверху */
+  .team__label {
+    position: absolute; top: clamp(70px, 11vh, 120px); left: var(--pad-x);
+    z-index: 6;
+    font-family: "Onest", sans-serif; font-size: clamp(12px, 1.05vw, 17px);
+    letter-spacing: .06em; text-transform: uppercase;
+    color: rgba(255,255,255,.55);
+    display: flex; align-items: center; gap: 12px;
   }
-  .team__stage {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 425 / 540;
-    max-height: 58vh;
-    border-radius: 14px; overflow: hidden;
-    background: #d9d7d2;
-  }
-  .team__slide {
-    position: absolute; inset: 0;
-    opacity: 0; will-change: opacity;
-    transition: opacity .7s var(--ease-out);
-  }
-  .team__slide img {
-    width: 100%; height: 100%; object-fit: cover; object-position: center 18%;
-    display: block;
-  }
-  .team__slide.is-on { opacity: 1; }
-
-  /* правая колонка */
-  .team__body { display: flex; flex-direction: column; align-items: flex-start; }
-  .team__role {
-    font-family: "Onest", sans-serif; font-weight: 400;
-    font-size: clamp(11px, .85vw, 15px); line-height: 1.3;
-    letter-spacing: .12em; text-transform: uppercase; color: var(--l-ink-low);
-    margin-bottom: clamp(8px, 1.1vh, 14px);
-  }
-  .team__name {
-    font-family: "Onest", sans-serif; font-weight: 400;
-    font-size: clamp(30px, 3.6vw, 68px); line-height: 1.02;
-    letter-spacing: -0.035em; color: var(--l-ink);
-    text-transform: capitalize;
-  }
-  /* цитата — с крупной кавычкой-акцентом слева */
-  .team__quote {
-    position: relative;
-    margin-top: clamp(18px, 2.6vh, 34px);
-    padding-left: clamp(20px, 2vw, 38px);
-    max-width: 34ch;
-    font-family: "Onest", sans-serif; font-weight: 400;
-    font-size: clamp(16px, 1.45vw, 27px); line-height: 1.4;
-    letter-spacing: -0.015em; color: var(--l-ink-mid);
-  }
-  .team__quote::before {
-    content: "«";
-    position: absolute; left: 0; top: -0.18em;
-    font-size: clamp(38px, 3.6vw, 68px); line-height: 1;
-    color: var(--l-ink); opacity: .18;
-  }
-  /* тонкая линия-разделитель под цитатой */
-  .team__line {
-    width: clamp(60px, 6vw, 110px); height: 1px;
-    background: var(--l-ink); opacity: .22;
-    margin-top: clamp(18px, 2.6vh, 34px);
-  }
-
-  /* ---- миниатюры + стрелки в одну строку ---- */
-  .team__foot {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 24px; flex-wrap: wrap;
-    margin-top: clamp(22px, 3.4vh, 44px);
-  }
-  .team__thumbs { display: flex; gap: clamp(8px, .8vw, 14px); }
-  .team__btn {
-    width: clamp(46px, 3.9vw, 68px); height: clamp(46px, 3.9vw, 68px);
-    flex: none; padding: 0; border: none; cursor: pointer;
-    border-radius: 50%; overflow: hidden; position: relative;
-    background: #cfcbc4;
-    transition: transform .45s var(--ease-out), box-shadow .45s var(--ease-out);
-  }
-  .team__btn img {
-    width: 100%; height: 100%; object-fit: cover; object-position: center 18%;
-    display: block;
-    filter: grayscale(1) contrast(1.02); opacity: .68;
-    transition: filter .5s var(--ease-out), opacity .5s var(--ease-out);
-  }
-  .team__btn:hover img { opacity: .9; }
-  .team__btn.is-active { transform: scale(1.1); box-shadow: 0 10px 24px rgba(16,15,10,.22); }
-  .team__btn.is-active img { filter: grayscale(0); opacity: 1; }
-  .team__btn::after {
-    content: ""; position: absolute; inset: 0; border-radius: 50%;
-    border: 2px solid var(--l-ink); opacity: 0;
-    transition: opacity .45s var(--ease-out);
-  }
-  .team__btn.is-active::after { opacity: 1; }
-
-  .team__arrows { display: flex; gap: 10px; }
-  .team__arrow {
-    width: clamp(40px, 3vw, 52px); height: clamp(40px, 3vw, 52px);
-    border-radius: 50%; border: 1px solid var(--l-line);
-    background: transparent; color: var(--l-ink);
-    display: grid; place-items: center; cursor: pointer;
-    transition: background .35s var(--ease-out), color .35s var(--ease-out),
-                border-color .35s var(--ease-out), transform .35s var(--ease-out);
-  }
-  .team__arrow:hover { background: var(--l-ink); color: var(--l-bg); border-color: var(--l-ink); transform: translateY(-2px); }
-  .team__arrow svg { width: 42%; height: 42%; }
+  .team__label::before { content: ""; width: 40px; height: 1px; background: rgba(255,255,255,.4); }
 
   @media (max-width: 860px) {
-    .team { min-height: auto; padding: 60px 0; }
-    .team__card { grid-template-columns: 1fr; gap: 24px; }
-    .team__stage { max-height: none; aspect-ratio: 4/3; }
-    .team__foot { flex-direction: column; align-items: flex-start; }
+    .team { height: 360vh; }
+    .team__card { width: 54vw; }
+    .team__meta { max-width: 76vw; bottom: 110px; }
+    .team__ghost { font-size: clamp(40px, 17vw, 90px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .team { height: auto; }
+    .team__vp { position: relative; height: auto; padding: 90px 0; }
   }
 
   /* ---- табы объектов + микрострелки (низ кейса) ---- */
@@ -1878,6 +1843,61 @@
 
   @media (max-width: 900px) {
     .ask__grid { grid-template-columns: 1fr; gap: 40px; }
+  }
+
+
+  /* ================================================================
+     ПЕРЕИСПОЛЬЗУЕМАЯ ФИШКА · ФОТО-ЛЕНТА С ПАРАЛЛАКСОМ
+     Ставится между текстовыми блоками, чтобы разбить «контентность».
+     Три полосы едут с разной скоростью, по центру — короткий факт.
+     Современный параллакс: не сдвиг фона, а расслоение по скорости
+     плюс clip-path, который раскрывает кадр по мере входа в экран.
+     ================================================================ */
+  .band {
+    position: relative;
+    height: clamp(380px, 58vh, 680px);
+    overflow: hidden;
+    background: var(--l-ink);
+  }
+  .band__row {
+    position: absolute; left: 0; top: 50%;
+    display: flex; gap: clamp(12px, 1.4vw, 24px);
+    will-change: transform;
+  }
+  .band__row--a { transform: translateY(-50%); }
+  .band__shot {
+    flex: none;
+    width: clamp(240px, 25vw, 420px);
+    height: clamp(170px, 20vw, 300px);
+    overflow: hidden; border-radius: 2px;
+    /* кадр раскрывается шторкой при входе в экран */
+    clip-path: inset(0 0 100% 0);
+  }
+  .band__shot img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+    transform: scale(1.14); will-change: transform;
+  }
+  /* факт поверх ленты */
+  .band__fact {
+    position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 3; text-align: center; pointer-events: none;
+    padding: clamp(16px, 2vw, 28px) clamp(22px, 3vw, 46px);
+    background: rgba(22, 21, 15, .72);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+  }
+  .band__num {
+    font-family: "Onest", sans-serif; font-weight: 400;
+    font-size: clamp(38px, 5.4vw, 96px); line-height: .92;
+    letter-spacing: -0.045em; color: #fff;
+    font-variant-numeric: tabular-nums;
+  }
+  .band__cap {
+    margin-top: clamp(4px, .6vw, 10px);
+    font-family: "Onest", sans-serif; font-size: clamp(11px, .88vw, 15px);
+    letter-spacing: .12em; text-transform: uppercase;
+    color: rgba(255,255,255,.62);
   }
 
 </style>
@@ -2274,6 +2294,15 @@
     </div>
   </section>
 
+  <!-- лента фактов: разбивает текстовый блок перед надзором -->
+  <section class="band" data-band data-speed="1"
+           data-shots="assets/cases/a1-hq.jpg, assets/cases/i2-hq.jpg, assets/cases/g1-hq.jpg, assets/cases/a2-hq.jpg, assets/cases/i1-hq.jpg, assets/cases/g2-hq.jpg">
+    <div class="band__fact">
+      <div class="band__num">12</div>
+      <div class="band__cap">объектов с 2021 по 2026</div>
+    </div>
+  </section>
+
   <!-- ============ 07 · АВТОРСКИЙ НАДЗОР (фрагмент отчёта) ============ -->
   <section class="sup" id="supervision">
     <div class="container sup__inner">
@@ -2442,44 +2471,32 @@
     </div>
   </section>
 
-  <!-- ============ 06 · НАША КОМАНДА (карточка + цитата) ============ -->
+  <!-- ============ 06 · КОМАНДА (фото-туннель) ============ -->
   <section class="team" id="team">
-    <div class="container">
-      <div class="team__head">
-        <h2 class="team__title">Наша команда</h2>
-        <div class="team__counter"><b id="teamNum">01</b> / 05</div>
-      </div>
+    <div class="team__vp">
+      <div class="team__label">Наша команда</div>
 
-      <div class="team__card">
-        <!-- фото -->
-        <div class="team__stage" id="teamStage"></div>
+      <!-- имя во весь экран: контур под фото + белый поверх -->
+      <div class="team__ghost" id="teamGhost"></div>
 
-        <!-- имя, должность, цитата -->
-        <div class="team__body">
-          <div class="team__role" id="teamRole"></div>
-          <div class="team__name" id="teamName"></div>
-          <p class="team__quote" id="teamQuote"></p>
-          <span class="team__line"></span>
-        </div>
-      </div>
+      <div class="team__stage" id="teamStage"></div>
 
-      <div class="team__foot">
-        <div class="team__thumbs" id="teamTrack"></div>
-        <div class="team__arrows">
-          <button class="team__arrow" id="teamPrev" aria-label="Предыдущий сотрудник">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M20 12H5M11 6l-6 6 6 6" stroke="currentColor" stroke-width="1.6"
-                stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </button>
-          <button class="team__arrow" id="teamNext" aria-label="Следующий сотрудник">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M4 12h15M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.6"
-                stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </button>
-        </div>
+      <div class="team__ghost team__ghost--over" id="teamGhostOver"></div>
+
+      <div class="team__meta">
+        <div class="team__role" id="teamRole"></div>
+        <p class="team__quote" id="teamQuote"></p>
       </div>
+      <div class="team__counter"><b id="teamNum">01</b> / 05</div>
+    </div>
+  </section>
+
+  <!-- лента услуг: визуальная пауза перед FAQ -->
+  <section class="band" data-band data-speed="-1"
+           data-shots="assets/services/architecture.jpg, assets/services/interior.jpg, assets/services/landscape.jpg, assets/services/supervision.jpg, assets/services/visual.jpg">
+    <div class="band__fact">
+      <div class="band__num">4</div>
+      <div class="band__cap">этапа под одной ответственностью</div>
     </div>
   </section>
 
@@ -2669,6 +2686,9 @@
 </div>
 
 
+<script src="assets/js/gsap.min.js"></script>
+<script src="assets/js/ScrollTrigger.min.js"></script>
+<script src="assets/js/SplitText.min.js"></script>
 <script>
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   let bgZoom = 1; // текущий зум фона (пишется из applyOverlays, применяется в parallaxBg)
@@ -3381,20 +3401,16 @@
   })();
 
   /* ================================================================
-     06 · КОМАНДА — карточка с цитатой
-     Фото + имя/должность + короткая цитата. Переключение миниатюрами,
-     стрелками, клавишами и свайпом; блок держится в высоту экрана.
+     06 · КОМАНДА — фото-туннель на GSAP ScrollTrigger
+     Карточки идут вглубь по оси Z. Скролл двигает «камеру»: ближняя
+     карточка вылетает на зрителя и тает, следующая подходит из глубины.
+     Имя живёт двумя слоями — контур под фото и белый в difference
+     поверх, поэтому типографика читается сквозь портрет.
      ================================================================ */
   (function () {
     const stage = document.getElementById("teamStage");
-    const track = document.getElementById("teamTrack");
-    if (!stage || !track) return;
-
-    const nameEl = document.getElementById("teamName");
-    const roleEl = document.getElementById("teamRole");
-    const quoteEl = document.getElementById("teamQuote");
-    const numEl = document.getElementById("teamNum");
-    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!stage || !window.gsap) return;
+    gsap.registerPlugin(ScrollTrigger);
 
     const PEOPLE = [
       { src: "assets/team/p1.jpg", name: "Алексей Иванов", role: "Главный архитектор",
@@ -3402,78 +3418,90 @@
       { src: "assets/team/p2.jpg", name: "Мария Лебедева", role: "Дизайнер интерьера",
         quote: "Интерьер работает тогда, когда его не замечаешь — просто чувствуешь себя на своём месте." },
       { src: "assets/team/p3.jpg", name: "Дмитрий Соловьёв", role: "Руководитель проектов",
-        quote: "Сроки и бюджет — это не ограничения, а часть замысла. Мы держим их наравне с эстетикой." },
+        quote: "Сроки и бюджет — не ограничения, а часть замысла. Мы держим их наравне с эстетикой." },
       { src: "assets/team/p4.jpg", name: "Анна Ковалёва", role: "Ведущий архитектор",
         quote: "Свет — главный материал. Всё остальное лишь помогает ему проявиться." },
       { src: "assets/team/p5.jpg", name: "Ольга Северина", role: "Главный конструктор",
         quote: "Красивое решение почти всегда оказывается и самым прочным. Это не совпадение." },
     ];
-    const M = PEOPLE.length;
+    const N = PEOPLE.length;
+    const GAP = 900;            // расстояние между карточками по Z
     const pad = (n) => String(n).padStart(2, "0");
 
-    const slides = PEOPLE.map((p, i) => {
-      const el = document.createElement("div");
-      el.className = "team__slide" + (i === 0 ? " is-on" : "");
-      el.innerHTML = `<img src="${p.src}" alt="${p.name} — ${p.role}"
-        loading="${i < 2 ? "eager" : "lazy"}" decoding="async">`;
+    const cards = PEOPLE.map((p) => {
+      const el = document.createElement("figure");
+      el.className = "team__card";
+      el.innerHTML = `<img src="${p.src}" alt="${p.name} — ${p.role}" decoding="async">`;
       stage.appendChild(el);
       return el;
     });
 
-    const btns = PEOPLE.map((p, i) => {
-      const b = document.createElement("button");
-      b.className = "team__btn" + (i === 0 ? " is-active" : "");
-      b.type = "button";
-      b.setAttribute("aria-label", p.name);
-      b.innerHTML = `<img src="${p.src}" alt="" decoding="async">`;
-      b.addEventListener("click", () => show(i));
-      track.appendChild(b);
-      return b;
-    });
+    const ghost = document.getElementById("teamGhost");
+    const ghostOver = document.getElementById("teamGhostOver");
+    const roleEl = document.getElementById("teamRole");
+    const quoteEl = document.getElementById("teamQuote");
+    const numEl = document.getElementById("teamNum");
 
-    let cur = -1;
-    function show(i) {
-      const idx = ((i % M) + M) % M;
-      if (idx === cur) return;
-      cur = idx;
-      const p = PEOPLE[idx];
-      slides.forEach((el, k) => el.classList.toggle("is-on", k === idx));
-      btns.forEach((b, k) => b.classList.toggle("is-active", k === idx));
-      if (numEl) numEl.textContent = pad(idx + 1);
+    let shown = -1;
+    function setActive(i) {
+      if (i === shown) return;
+      shown = i;
+      const p = PEOPLE[i];
+      if (ghost) ghost.textContent = p.name;
+      if (ghostOver) ghostOver.textContent = p.name;
+      if (numEl) numEl.textContent = pad(i + 1);
+      cards.forEach((c, k) => c.classList.toggle("is-front", k === i));
 
-      // текстовые блоки поднимаются с лёгкой задержкой друг за другом
-      [[roleEl, p.role], [nameEl, p.name], [quoteEl, p.quote]].forEach(([el, txt], k) => {
+      // роль и цитата перебираются по словам — мягкая волна
+      [[roleEl, p.role], [quoteEl, p.quote]].forEach(([el, txt], idx) => {
         if (!el) return;
-        if (reduce) { el.textContent = txt; return; }
-        el.style.transition = "none";
-        el.style.opacity = "0";
-        el.style.transform = "translateY(12px)";
         el.textContent = txt;
-        requestAnimationFrame(() => {
-          el.style.transition = `opacity .5s var(--ease-out) ${k * 70}ms, transform .65s var(--ease-out) ${k * 70}ms`;
-          el.style.opacity = "1";
-          el.style.transform = "translateY(0)";
+        gsap.fromTo(el,
+          { yPercent: 60, opacity: 0 },
+          { yPercent: 0, opacity: 1, duration: .7, delay: idx * .06, ease: "power3.out", overwrite: true });
+      });
+    }
+
+    // раскладка: камера движется по Z, карточки стоят на месте
+    function layout(camZ) {
+      cards.forEach((c, i) => {
+        const z = i * GAP - camZ;                 // положение относительно камеры
+        const depth = z / GAP;                    // 0 = в фокусе, >0 — глубже
+        // ближняя карточка пролетает мимо зрителя
+        const scale = gsap.utils.clamp(.5, 1.25, 1 - depth * 0.12);
+        // видна только карточка в фокусе и слегка — соседняя сзади;
+        // иначе дальние просвечивают сквозь ближнюю прямоугольником
+        const ad = Math.abs(depth);
+        const opacity = z < -GAP * 0.45 ? 0
+          : ad < 0.5 ? 1
+          : gsap.utils.clamp(0, 1, 1 - (ad - 0.5) * 2.2);
+        const rotY = gsap.utils.clamp(-24, 24, depth * 9);
+        const x = depth * 46;                     // лёгкий разлёт вбок
+        const y = Math.sin(depth * 1.1) * 26;     // волна по вертикали
+        gsap.set(c, {
+          x: "-50%", y: "-50%",
+          xPercent: 0, yPercent: 0,
+          transform: `translate(-50%, -50%) translate3d(${x}px, ${y}px, ${-z * 0.42}px) rotateY(${rotY}deg) scale(${scale})`,
+          opacity,
+          zIndex: 100 - Math.round(Math.abs(depth) * 10),
         });
       });
     }
-    const step = (d) => show(cur + d);
 
-    document.getElementById("teamPrev")?.addEventListener("click", () => step(-1));
-    document.getElementById("teamNext")?.addEventListener("click", () => step(1));
-    track.closest(".team")?.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowLeft") { step(-1); e.preventDefault(); }
-      if (e.key === "ArrowRight") { step(1); e.preventDefault(); }
+    const st = ScrollTrigger.create({
+      trigger: ".team",
+      start: "top top",
+      end: "bottom bottom",
+      scrub: 0.6,
+      onUpdate(self) {
+        const camZ = self.progress * (N - 1) * GAP;
+        layout(camZ);
+        setActive(gsap.utils.clamp(0, N - 1, Math.round(camZ / GAP)));
+      },
     });
 
-    let sx = null;
-    stage.addEventListener("pointerdown", (e) => { sx = e.clientX; }, { passive: true });
-    stage.addEventListener("pointerup", (e) => {
-      if (sx === null) return;
-      const dx = e.clientX - sx; sx = null;
-      if (Math.abs(dx) > 40) step(dx < 0 ? 1 : -1);
-    }, { passive: true });
-
-    show(0);
+    layout(0); setActive(0);
+    addEventListener("resize", () => ScrollTrigger.refresh());
   })();
 
   /* ---- 07 · Отчёт надзора: строки проявляются по одной ---- */
@@ -3573,6 +3601,129 @@
       } finally {
         btn.disabled = false;
       }
+    });
+  })();
+
+  /* ================================================================
+     ПЕРЕИСПОЛЬЗУЕМАЯ ФИШКА · ФОТО-ЛЕНТА С ПАРАЛЛАКСОМ
+     Один вызов — одна лента. Разметка генерируется из массива фото,
+     скорость строки задаётся data-атрибутом. Современный параллакс:
+     строка едет вбок по прогрессу секции, кадр внутри — навстречу,
+     плюс clip-path раскрывает фото шторкой.
+     ================================================================ */
+  (function () {
+    if (!window.gsap) return;
+    gsap.registerPlugin(ScrollTrigger);
+
+    document.querySelectorAll("[data-band]").forEach((band) => {
+      const shots = (band.dataset.shots || "").split(",").map(s => s.trim()).filter(Boolean);
+      if (!shots.length) return;
+      const speed = Number(band.dataset.speed || 1);
+
+      const row = document.createElement("div");
+      row.className = "band__row band__row--a";
+      // дублируем набор, чтобы лента перекрывала экран на любой ширине
+      [...shots, ...shots, ...shots].forEach((src) => {
+        const fig = document.createElement("div");
+        fig.className = "band__shot";
+        fig.innerHTML = `<img src="${src}" alt="" loading="lazy" decoding="async">`;
+        row.appendChild(fig);
+      });
+      band.prepend(row);
+
+      // раскрытие кадров шторкой
+      gsap.to(row.querySelectorAll(".band__shot"), {
+        clipPath: "inset(0 0 0% 0)",
+        duration: 1.1, ease: "power3.out", stagger: 0.06,
+        scrollTrigger: { trigger: band, start: "top 85%", once: true },
+      });
+
+      // строка едет вбок, картинка внутри — навстречу (расслоение)
+      gsap.fromTo(row, { xPercent: -6 * speed }, {
+        xPercent: -34 * speed, ease: "none",
+        scrollTrigger: { trigger: band, start: "top bottom", end: "bottom top", scrub: 0.8 },
+      });
+      gsap.fromTo(row.querySelectorAll(".band__shot img"), { yPercent: -6 }, {
+        yPercent: 6, ease: "none",
+        scrollTrigger: { trigger: band, start: "top bottom", end: "bottom top", scrub: 0.8 },
+      });
+    });
+  })();
+
+  /* ================================================================
+     ПЕРЕИСПОЛЬЗУЕМАЯ ФИШКА · ЗАГОЛОВКИ ПО СТРОКАМ (SplitText)
+     Крупные заголовки выезжают построчно из-под маски. Одна функция
+     на весь сайт — вешается по селектору, поэтому новые блоки
+     получают анимацию автоматически.
+     ================================================================ */
+  (function () {
+    if (!window.gsap || !window.SplitText) return;
+    gsap.registerPlugin(ScrollTrigger, SplitText);
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const SEL = [
+      ".flow__title", ".sup__title", ".faq__title",
+      ".ask__title", ".svc__label", ".reveal__h",
+    ].join(",");
+
+    document.querySelectorAll(SEL).forEach((el) => {
+      // ждём загрузки шрифта, иначе строки режутся по старым метрикам
+      const split = new SplitText(el, { type: "lines", linesClass: "ln-i" });
+      split.lines.forEach((ln) => {
+        const w = document.createElement("span");
+        w.style.display = "block";
+        w.style.overflow = "hidden";
+        ln.parentNode.insertBefore(w, ln);
+        w.appendChild(ln);
+      });
+      gsap.from(split.lines, {
+        yPercent: 115, duration: 1, ease: "power4.out", stagger: 0.08,
+        scrollTrigger: { trigger: el, start: "top 88%", once: true },
+      });
+    });
+    ScrollTrigger.refresh();
+  })();
+
+  /* ================================================================
+     ПЕРЕИСПОЛЬЗУЕМАЯ ФИШКА · МАГНИТНЫЕ ЭЛЕМЕНТЫ
+     Кнопки и круглые стрелки притягиваются к курсору в своей зоне.
+     Механика GSAP Magnetic Button: смещение = вектор до курсора,
+     умноженный на силу, с quickTo-сглаживанием и возвратом на elastic.
+     Вешается по селектору — новые кнопки подхватываются сами.
+     ================================================================ */
+  (function () {
+    if (!window.gsap) return;
+    if (!matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const SEL = ".cta-nav, .ask__submit, .b2-cta__circle, .pr__arrow, .team__arrow, .glass__btn";
+
+    document.querySelectorAll(SEL).forEach((el) => {
+      const power = el.classList.contains("pr__arrow") || el.classList.contains("team__arrow") ? 0.5 : 0.32;
+      const zone = 1.9;                       // радиус притяжения от размера элемента
+      const xTo = gsap.quickTo(el, "x", { duration: 0.5, ease: "power3.out" });
+      const yTo = gsap.quickTo(el, "y", { duration: 0.5, ease: "power3.out" });
+
+      function onMove(e) {
+        const r = el.getBoundingClientRect();
+        const cx = r.left + r.width / 2;
+        const cy = r.top + r.height / 2;
+        const dx = e.clientX - cx;
+        const dy = e.clientY - cy;
+        const dist = Math.hypot(dx, dy);
+        const reach = Math.max(r.width, r.height) * zone;
+        if (dist > reach) { xTo(0); yTo(0); return; }
+        // ближе к центру — сильнее тянет
+        const k = (1 - dist / reach) * power;
+        xTo(dx * k);
+        yTo(dy * k);
+      }
+      function onLeave() {
+        gsap.to(el, { x: 0, y: 0, duration: 0.9, ease: "elastic.out(1, 0.4)" });
+      }
+
+      addEventListener("pointermove", onMove, { passive: true });
+      el.addEventListener("pointerleave", onLeave);
     });
   })();
 
