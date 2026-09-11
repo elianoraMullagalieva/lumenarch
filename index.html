@@ -979,107 +979,6 @@
   })();
 
   /* ================================================================
-     04 · УСЛУГИ — hover image reveal
-     Логика Originkit: наведение на строку выдвигает её картинку
-     снизу/сверху (в зависимости от направления), остальные строки
-     притухают, картинка пружинно следует за курсором.
-     ================================================================ */
-  .svc {
-    position: relative;
-    background: var(--l-ink);
-    color: #fff;
-    padding: clamp(80px, 13vh, 150px) 0 clamp(80px, 13vh, 150px);
-    overflow: hidden;
-  }
-  .svc__head {
-    display: flex; align-items: flex-end; justify-content: space-between;
-    flex-wrap: wrap; gap: 20px;
-    margin-bottom: clamp(2.5rem, 1.8932rem + 2.589vw, 5.0rem);
-  }
-  .svc__eyebrow {
-    font-family: "Onest", sans-serif; font-size: clamp(0.75rem, 0.6742rem + 0.324vw, 1.0625rem);
-    letter-spacing: .06em; text-transform: uppercase;
-    color: rgba(255,255,255,.55);
-    display: flex; align-items: center; gap: 12px;
-  }
-  .svc__eyebrow::before { content: ""; width: 40px; height: 1px; background: rgba(255,255,255,.4); }
-  .svc__note {
-    max-width: 34ch; font-family: "Onest", sans-serif;
-    font-size: clamp(0.8125rem, 0.767rem + 0.194vw, 1.0rem); line-height: 1.5;
-    color: rgba(255,255,255,.55);
-  }
-
-  /* список строк-услуг */
-  .svc__list { position: relative; z-index: 2; }
-  .svc__row {
-    position: relative; display: block; width: 100%;
-    padding: clamp(1.125rem, 0.9126rem + 0.906vw, 2.0rem) 0;
-    border-top: 1px solid rgba(255,255,255,.14);
-    text-decoration: none; cursor: pointer;
-  }
-  .svc__row:last-child { border-bottom: 1px solid rgba(255,255,255,.14); }
-  .svc__row-in {
-    display: flex; align-items: baseline; gap: clamp(0.875rem, 0.6626rem + 0.906vw, 1.75rem);
-  }
-  .svc__num {
-    font-family: "Onest", sans-serif; font-size: clamp(0.6875rem, 0.642rem + 0.194vw, 0.875rem);
-    letter-spacing: .1em; color: rgba(255,255,255,.42);
-    flex: none; width: 2.6em;
-    transition: color .35s var(--ease-out);
-  }
-  .svc__label {
-    font-family: "Onest", sans-serif; font-weight: 400;
-    font-size: clamp(1.625rem, 0.9272rem + 2.977vw, 4.5rem); line-height: .98;
-    letter-spacing: -0.045em; text-transform: uppercase;
-    color: #fff;
-    /* «притухание» неактивных строк — как dimColor в оригинале */
-    transition: color .3s ease, transform .5s var(--ease-out);
-  }
-  .svc__list.is-hovering .svc__label { color: #51565a; }
-  .svc__list.is-hovering .svc__row.is-on .svc__label { color: #fff; }
-  .svc__row.is-on .svc__label { transform: translateX(clamp(0.5rem, 0.3483rem + 0.647vw, 1.125rem)); }
-  .svc__row.is-on .svc__num { color: rgba(255,255,255,.8); }
-
-  /* стрелка справа — проявляется у активной строки */
-  .svc__go {
-    position: absolute; right: 0; top: 50%; translate: 0 -50%;
-    width: clamp(2.125rem, 1.943rem + 0.777vw, 2.875rem); height: clamp(2.125rem, 1.943rem + 0.777vw, 2.875rem);
-    border-radius: 50%; border: 1px solid rgba(255,255,255,.3);
-    display: grid; place-items: center; color: #fff;
-    opacity: 0; transform: translateX(-10px);
-    transition: opacity .4s var(--ease-out), transform .5s var(--ease-out);
-  }
-  .svc__row.is-on .svc__go { opacity: 1; transform: translateX(0); }
-  .svc__go svg { width: 42%; height: 42%; }
-
-  /* превью, следующее за курсором */
-  .svc__preview {
-    position: absolute; left: 0; top: 0; z-index: 3;
-    width: clamp(13.75rem, 12.233rem + 6.472vw, 20.0rem);
-    aspect-ratio: 300 / 400;
-    border-radius: 16px; overflow: hidden;
-    pointer-events: none;
-    opacity: 0;
-    will-change: transform;
-    box-shadow: 0 30px 70px rgba(0,0,0,.45);
-  }
-  .svc__preview.is-on { opacity: 1; }
-  .svc__pic {
-    position: absolute; inset: 0;
-    /* строки выше активной уходят вверх, ниже — вниз (как yPos в оригинале) */
-    transform: translateY(100%);
-    transition: transform .55s cubic-bezier(.22,1,.36,1);
-    will-change: transform;
-  }
-  .svc__pic img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-  @media (hover: none), (max-width: 860px) {
-    /* на тач-устройствах превью не имеет смысла — показываем миниатюру в строке */
-    .svc__preview { display: none; }
-    .svc__list.is-hovering .svc__label { color: #fff; }
-  }
-
-  /* ================================================================
      05 · НАША КОМАНДА — карусель-«дуга»
      Логика Klarna/Originkit, переписанная на ванильный JS:
        • большое фото активного сотрудника с кросс-фейдом
@@ -1444,10 +1343,10 @@
   /* кадр: абсолютный, центр — середина сцены, дальше двигает только JS */
   .band__shot {
     position: absolute; left: 50%; top: 50%;
-    width: clamp(8.5rem, 6.2rem + 9.6vw, 17rem);
-    height: clamp(6rem, 4.4rem + 6.8vw, 12rem);
-    margin-left: calc(clamp(6.5rem, 4.8rem + 7.2vw, 13rem) / -2);
-    margin-top: calc(clamp(4.6rem, 3.4rem + 5.1vw, 9.2rem) / -2);
+    width: clamp(7rem, 5.1rem + 8vw, 13rem);
+    height: clamp(8.4rem, 6.1rem + 9.6vw, 15.6rem);
+    margin-left: calc(clamp(7rem, 5.1rem + 8vw, 13rem) / -2);
+    margin-top: calc(clamp(8.4rem, 6.1rem + 9.6vw, 15.6rem) / -2);
     overflow: hidden; border-radius: 2px;
     backface-visibility: hidden;
     will-change: transform, opacity;
@@ -1896,6 +1795,124 @@
   @media (max-width: 720px) {
     .contact__grid { grid-template-columns: 1fr 1fr; }
   }
+
+  /* ================================================================
+     ТЁМНАЯ ШАПКА НА СВЕТЛОМ ФОНЕ
+     Правило: плашки и логотип всегда в ОДНОМ цвете, текст внутри —
+     в контрастном. На светлом фоне плашки чёрные с белым текстом,
+     логотип-звезда тоже чёрная. Раньше логотип оставался белым
+     и пропадал, а плашки теряли фон.
+     ================================================================ */
+  .topbar--dark .brand__name { color: #16150f; }
+  .topbar--dark .brand__mark { color: #16150f; }
+  .topbar--dark .burger { background: #16150f; }
+  .topbar--dark .burger span { background: #fff; }
+  .topbar--dark .cta-nav { background: #16150f; }
+  .topbar--dark .cta-nav span,
+  .topbar--dark .cta-nav svg { color: #fff; }
+
+  /* ================================================================
+     04 · УСЛУГИ — hover image reveal
+     Логика Originkit: наведение на строку выдвигает её картинку
+     снизу/сверху (в зависимости от направления), остальные строки
+     притухают, картинка пружинно следует за курсором.
+     ================================================================ */
+  .svc {
+    position: relative;
+    /* фон перебивался соседними правилами — фиксируем явно */
+    background-color: #16150f !important;
+    color: #fff;
+    padding: clamp(80px, 13vh, 150px) 0 clamp(80px, 13vh, 150px);
+    overflow: hidden;
+  }
+  .svc__head {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    flex-wrap: wrap; gap: 20px;
+    margin-bottom: clamp(2.5rem, 1.8932rem + 2.589vw, 5.0rem);
+  }
+  .svc__eyebrow {
+    font-family: "Onest", sans-serif; font-size: clamp(0.75rem, 0.6742rem + 0.324vw, 1.0625rem);
+    letter-spacing: .06em; text-transform: uppercase;
+    color: rgba(255,255,255,.55);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .svc__eyebrow::before { content: ""; width: 40px; height: 1px; background: rgba(255,255,255,.4); }
+  .svc__note {
+    max-width: 34ch; font-family: "Onest", sans-serif;
+    font-size: clamp(0.8125rem, 0.767rem + 0.194vw, 1.0rem); line-height: 1.5;
+    color: rgba(255,255,255,.55);
+  }
+
+  /* список строк-услуг */
+  .svc__list { position: relative; z-index: 2; }
+  .svc__row {
+    position: relative; display: block; width: 100%;
+    padding: clamp(1.125rem, 0.9126rem + 0.906vw, 2.0rem) 0;
+    border-top: 1px solid rgba(255,255,255,.14);
+    text-decoration: none; cursor: pointer;
+  }
+  .svc__row:last-child { border-bottom: 1px solid rgba(255,255,255,.14); }
+  .svc__row-in {
+    display: flex; align-items: baseline; gap: clamp(0.875rem, 0.6626rem + 0.906vw, 1.75rem);
+  }
+  .svc__num {
+    font-family: "Onest", sans-serif; font-size: clamp(0.6875rem, 0.642rem + 0.194vw, 0.875rem);
+    letter-spacing: .1em; color: rgba(255,255,255,.42);
+    flex: none; width: 2.6em;
+    transition: color .35s var(--ease-out);
+  }
+  .svc__label {
+    font-family: "Onest", sans-serif; font-weight: 400;
+    font-size: clamp(1.625rem, 0.9272rem + 2.977vw, 4.5rem); line-height: .98;
+    letter-spacing: -0.045em; text-transform: uppercase;
+    color: #fff;
+    /* «притухание» неактивных строк — как dimColor в оригинале */
+    transition: color .3s ease, transform .5s var(--ease-out);
+  }
+  .svc__list.is-hovering .svc__label { color: #51565a; }
+  .svc__list.is-hovering .svc__row.is-on .svc__label { color: #fff; }
+  .svc__row.is-on .svc__label { transform: translateX(clamp(0.5rem, 0.3483rem + 0.647vw, 1.125rem)); }
+  .svc__row.is-on .svc__num { color: rgba(255,255,255,.8); }
+
+  /* стрелка справа — проявляется у активной строки */
+  .svc__go {
+    position: absolute; right: 0; top: 50%; translate: 0 -50%;
+    width: clamp(2.125rem, 1.943rem + 0.777vw, 2.875rem); height: clamp(2.125rem, 1.943rem + 0.777vw, 2.875rem);
+    border-radius: 50%; border: 1px solid rgba(255,255,255,.3);
+    display: grid; place-items: center; color: #fff;
+    opacity: 0; transform: translateX(-10px);
+    transition: opacity .4s var(--ease-out), transform .5s var(--ease-out);
+  }
+  .svc__row.is-on .svc__go { opacity: 1; transform: translateX(0); }
+  .svc__go svg { width: 42%; height: 42%; }
+
+  /* превью, следующее за курсором */
+  .svc__preview {
+    position: absolute; left: 0; top: 0; z-index: 3;
+    width: clamp(13.75rem, 12.233rem + 6.472vw, 20.0rem);
+    aspect-ratio: 300 / 400;
+    border-radius: 16px; overflow: hidden;
+    pointer-events: none;
+    opacity: 0;
+    will-change: transform;
+    box-shadow: 0 30px 70px rgba(0,0,0,.45);
+  }
+  .svc__preview.is-on { opacity: 1; }
+  .svc__pic {
+    position: absolute; inset: 0;
+    /* строки выше активной уходят вверх, ниже — вниз (как yPos в оригинале) */
+    transform: translateY(100%);
+    transition: transform .55s cubic-bezier(.22,1,.36,1);
+    will-change: transform;
+  }
+  .svc__pic img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  @media (hover: none), (max-width: 860px) {
+    /* на тач-устройствах превью не имеет смысла — показываем миниатюру в строке */
+    .svc__preview { display: none; }
+    .svc__list.is-hovering .svc__label { color: #fff; }
+  }
+
 </style>
 
 <!-- Прелоадер: вращающаяся стопка пластин + счётчик -->
@@ -3793,19 +3810,39 @@
          барабан: ближние кадры крупнее и ярче, дальние мельчают
          и уходят в глубину. */
       const ROWS = 3;
-      const PER_ROW = 8;                     // кадров на ярусе
+      const PER_ROW = 9;                     // кадров на ярусе
       const row = document.createElement("div");
       row.className = "band__row";
 
+      /* детерминированный «шум»: одна и та же рассыпка при каждом
+         запуске, но кадры выглядят разбросанными вручную */
+      const noise = (n) => {
+        const s = Math.sin(n * 127.1 + 311.7) * 43758.5453;
+        return s - Math.floor(s);            // 0..1
+      };
+
       const items = [];
+      let seed = 0;
       for (let r = 0; r < ROWS; r++) {
         for (let k = 0; k < PER_ROW; k++) {
           const fig = document.createElement("div");
           fig.className = "band__shot";
-          fig.innerHTML = `<img src="${shots[(k + r * 3) % shots.length]}"
+          fig.innerHTML = `<img src="${shots[(k * 2 + r * 3) % shots.length]}"
             alt="" loading="lazy" decoding="async">`;
           row.appendChild(fig);
-          items.push({ el: fig, row: r, idx: k });
+          const n1 = noise(seed + 1), n2 = noise(seed + 17), n3 = noise(seed + 53);
+          items.push({
+            el: fig, row: r, idx: k,
+            // угловой джиттер: кадры не стоят ровными колоннами
+            jitDeg: (n1 - 0.5) * 16,
+            // персональный радиус: часть кадров ближе, часть глубже
+            radK: 0.78 + n2 * 0.5,
+            // вертикальный джиттер внутри яруса
+            jitY: (n3 - 0.5) * 0.42,
+            // собственный размер кадра (мелкие/крупные вперемешку)
+            sizeK: 0.42 + noise(seed + 91) * 0.62
+          });
+          seed++;
         }
       }
       band.prepend(row);
@@ -3816,37 +3853,41 @@
       }
 
       const cl = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
-      let last = -1, raf = null, idle = 0, live = false;
+      let raf = null, live = false;
+      const t0 = performance.now();
 
       function draw() {
         const r = band.getBoundingClientRect();
         const vh = window.innerHeight;
         const p = cl((vh - r.top) / (vh + r.height));
-        if (Math.abs(p - last) < 0.0004) return false;
-        last = p;
 
         const W = r.width, H = r.height;
-        const w = items[0].el.offsetWidth || 160;
-        const h = items[0].el.offsetHeight || 110;
+        const h = items[0].el.offsetHeight || 150;
         /* радиус считаем от ширины контейнера: передняя дуга должна
            умещаться в кадр, а не улетать за края */
-        const radius = cl(W * 0.52, 320, 860);
+        const radius = cl(W * 0.46, 300, 780);
         const stepDeg = 360 / PER_ROW;
-        const spin = p * 150 * dir;
+        // барабан крутится сам + подкручивается скроллом
+        const spin = (p * 130 + (performance.now() - t0) * 0.0042 * 6) * dir;
 
-        items.forEach(({ el, row: rw, idx }) => {
-          // ярусы смещены по фазе на треть шага
-          const deg = idx * stepDeg + spin;
+        items.forEach((it) => {
+          const { el, row: rw, idx } = it;
+          /* фаза яруса: сдвиг на ~1/3 шага, чтобы кадры соседних
+             ярусов не выстраивались в ровные колонны */
+          const deg = idx * stepDeg + rw * stepDeg * 0.37 + it.jitDeg + spin;
           const rad = deg * Math.PI / 180;
-          const x = Math.sin(rad) * radius;
-          const z = Math.cos(rad) * radius - radius;   // 0 у ближнего края
+          const rr = radius * it.radK;
+          const x = Math.sin(rad) * rr;
+          const z = Math.cos(rad) * rr - radius;       // ~0 у ближнего края
           const front = Math.cos(rad);                 // 1 — к зрителю
-          // вертикальный разлёт ярусов — от высоты блока, не от кадра
-          const spread = Math.min(h * 1.5, H * 0.30);
-          const y = (rw - (ROWS - 1) / 2) * spread;
-          // ближе к зрителю — крупнее
-          const sc = 0.55 + 0.65 * ((front + 1) / 2);
-          const op = front < -0.55 ? 0 : cl((front + 0.55) / 0.9, 0, 1) * 0.95 + 0.05;
+          // вертикальный разлёт ярусов + личный джиттер по высоте
+          const spread = Math.min(h * 1.08, H * 0.30);
+          const y = (rw - (ROWS - 1) / 2) * spread + it.jitY * spread;
+          /* глубина решает размер: ближние ~1.25, дальние ~0.4.
+             плюс собственный калибр кадра — размеры вперемешку */
+          const depth = (front + 1) / 2;               // 0 дальний .. 1 ближний
+          const sc = (0.40 + 0.85 * Math.pow(depth, 1.35)) * (0.72 + it.sizeK * 0.5);
+          const op = front < -0.45 ? 0 : cl((front + 0.45) / 0.75, 0, 1) * 0.9 + 0.1;
           el.style.transform =
             `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, ${z.toFixed(1)}px)` +
             ` rotateY(${(-deg).toFixed(2)}deg) scale(${sc.toFixed(3)})`;
@@ -3857,20 +3898,19 @@
       }
 
       function loop() {
-        const busy = draw();
-        idle = busy ? 0 : idle + 1;
-        if (idle > 12 || !live) { raf = null; return; }
+        draw();
+        if (!live) { raf = null; return; }
         raf = requestAnimationFrame(loop);
       }
-      const kick = () => { idle = 0; if (!raf) raf = requestAnimationFrame(loop); };
+      const kick = () => { if (!raf) raf = requestAnimationFrame(loop); };
 
       // считаем только когда лента рядом с экраном
       new IntersectionObserver((entries) => {
-        entries.forEach((en) => { live = en.isIntersecting; if (live) { last = -1; kick(); } });
+        entries.forEach((en) => { live = en.isIntersecting; if (live) kick(); });
       }, { rootMargin: "30% 0px" }).observe(band);
 
       addEventListener("scroll", () => { if (live) kick(); }, { passive: true });
-      addEventListener("resize", () => { last = -1; kick(); }, { passive: true });
+      addEventListener("resize", () => { if (live) kick(); }, { passive: true });
       draw();
     });
   })();
@@ -4277,16 +4317,32 @@
     const cl = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
     const N = cards.length;
 
-    /* Геометрия как в референсе: карточки стоят ВПЛОТНУЮ по дуге,
-       центральная — фронтально, боковые развёрнуты ВНУТРЬ к центру.
-       Считаем по плоскому ряду: сдвиг по X равен ширине карточки,
-       поворот растёт от центра, глубина — по параболе. */
+    /* Геометрия как в референсе: НАСТОЯЩИЙ барабан.
+       Карточки — это грани правильного многоугольника: каждая стоит
+       на окружности радиуса R и развёрнута по касательной. Благодаря
+       этому просветы между соседями равны ПО ПОСТРОЕНИЮ и остаются
+       равными на любом угле поворота — барабан просто крутится.
+
+       STEP_DEG = 38° — угловой шаг между гранями. Тогда:
+         off ±1  →  rotateY ±38°   (заметный разворот внутрь)
+         off ±2  →  rotateY ±76°   (почти строго в профиль, как в референсе)
+       В кадре при этом стоят шесть карточек: центральная, по две с
+       каждой стороны и та, что въезжает на полушаге.
+
+       GAP = 1.10 — грани раздвинуты на 10% ширины, чтобы между
+       карточками был ровный просвет, а не глухая стена барабана.
+       Радиус апофемы считается так, чтобы стороны многоугольника
+       ровно совпадали с шириной карточки: R = W·GAP / (2·tan(θ/2)). */
+    const STEP_DEG = 38;
+    const GAP = 1.10;
+    const VIS = 2.6;               // сколько шагов от центра ещё рисуем
+
     function geom() {
       const w = cards[0].offsetWidth || 320;
+      const t = STEP_DEG * Math.PI / 180;
       return {
-        step: w * 0.86,            // просвет между карточками, без наезда
-        tilt: 40,                  // разворот внутрь: крайние почти в профиль
-        depth: w * 0.30,           // вогнутая дуга: края ближе к зрителю
+        stepRad: t,
+        R: (w * GAP) / (2 * Math.tan(t / 2)),
       };
     }
 
@@ -4300,7 +4356,7 @@
     }
 
     function draw(p) {
-      const { step, tilt, depth } = geom();
+      const { stepRad, R } = geom();
       // Лента бесконечная: прогресс 0 → первая карточка в центре,
       // прогресс 1 → прошли все восемь и вернулись к началу.
       const e = cl((p - 0.04) / 0.92);
@@ -4315,18 +4371,22 @@
         if (off < -N / 2) off += N;
         const a = Math.abs(off);
 
-        const x = off * step;
-        /* Вогнутая дуга: центр уходит вглубь, края выступают вперёд —
-           именно так карточки в референсе «обнимают» зрителя. */
-        const z = Math.min(depth * 2.2, a * a * depth * 0.42) - depth * 0.2;
-        /* Разворот ВНУТРЬ и по нарастающей: первая соседняя карточка
-           уже заметно повёрнута, дальние стоят почти боком.
-           Центральная (off = 0) остаётся строго фронтальной. */
-        const rotY = -Math.sign(off) * Math.min(78, a * tilt);
-        const scale = 1 - Math.min(0.04, a * 0.012);
-        const opacity = cl(1 - Math.max(0, a - 2.6) * 1.3, 0, 1);
+        /* НАСТОЯЩАЯ ОКРУЖНОСТЬ. Угол грани = off · шаг; карточка
+           встаёт в точку (sin·R, cos·R − R) и разворачивается по
+           касательной на −angle. Именно поэтому расстояния между
+           соседями одинаковы при любом положении барабана. */
+        const ang = off * stepRad;
+        const x = Math.sin(ang) * R;
+        const z = Math.cos(ang) * R - R;      // центр — ближе всех к зрителю
+        const rotY = -ang * 180 / Math.PI;    // касательная: центр = 0°
+
+        /* Задние грани барабана не рисуем: карточки непрозрачные,
+           и вылезшая из-за спины «изнанка» ломает картинку. */
+        const hidden = a > VIS;
+        const scale = 1 - Math.min(0.05, a * 0.016);
+        const opacity = hidden ? 0 : cl(1 - Math.max(0, a - (VIS - 0.6)) / 0.6, 0, 1);
         // подблюриваем всё, кроме центральной — акцент на активной
-        const blur = a < 0.6 ? 0 : Math.min(4.5, (a - 0.6) * 2.4);
+        const blur = a < 0.5 ? 0 : Math.min(5, (a - 0.5) * 2.6);
 
         c.style.transform =
           `translate(-50%, -50%) translate3d(${x.toFixed(1)}px, 0, ${z.toFixed(1)}px) rotateY(${rotY.toFixed(2)}deg) scale(${scale.toFixed(3)})`;
@@ -4334,6 +4394,7 @@
         c.style.filter = blur > 0.1 ? `blur(${blur.toFixed(2)}px)` : "none";
         c.style.zIndex = String(200 - Math.round(a * 10));
         c.style.pointerEvents = a < 0.5 ? "auto" : "none";
+        c.style.visibility = hidden ? "hidden" : "visible";
       });
 
     }
