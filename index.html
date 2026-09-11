@@ -3350,9 +3350,23 @@
   applyOverlays(computeProgress());
   kickLoop();
 
-  // запуск intro-съезжания заголовка (или мгновенно при reduced-motion)
-  if (reducedMotion) { introT = 1; drawnP = -1; kickLoop(); }
-  else requestAnimationFrame(introTick);
+  /* Запуск intro-съезжания заголовка.
+     ВАЖНО: стартуем не сразу, а после закрытия прелоадера — иначе
+     анимация (1.8с) отыгрывает за белой шторкой, и зритель видит
+     только её хвост. Прелоадер зовёт window.__heroIntro(). */
+  if (reducedMotion) {
+    introT = 1; drawnP = -1; kickLoop();
+  } else {
+    let introStarted = false;
+    window.__heroIntro = () => {
+      if (introStarted) return;
+      introStarted = true;
+      introStart = null;                    // отсчёт с текущего кадра
+      requestAnimationFrame(introTick);
+    };
+    // страховка: если прелоадера нет или он не отработал
+    setTimeout(() => window.__heroIntro && window.__heroIntro(), 4000);
+  }
 
   /* ============================================================
      4. ТОНКИЙ ПАРАЛЛАКС ФОНА НА КУРСОР
@@ -3782,6 +3796,9 @@
 
       const tl = gsap.timeline({
         paused: true,
+        // весь вход карточки на 10% быстрее: пропорции ступеней
+        // сохраняются, ощущение затянутости уходит
+        timeScale: 1.1,
         onComplete() { all.forEach((el) => { el.style.filter = "none"; }); },
       });
 
@@ -4732,6 +4749,8 @@
       cancelAnimationFrame(raf);
       pre.classList.add("is-done");
       document.body.classList.remove("is-loading");
+      // заголовок первого экрана начинает съезжаться только сейчас
+      if (window.__heroIntro) window.__heroIntro();
       // ScrollTrigger пересчитывает позиции после разблокировки скролла
       if (window.ScrollTrigger) setTimeout(() => ScrollTrigger.refresh(), 950);
     }
