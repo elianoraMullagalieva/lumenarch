@@ -2027,7 +2027,48 @@
 
   /* содержимое sticky-сцен держит отступ от краёв вьюпорта */
   .how__vp, .team__vp { padding: clamp(48px, 7vh, 90px) 0; }
+
+  /* ================================================================
+     ПРЕЛОАДЕР · стопка пластин на WebGL + счётчик загрузки
+     Держится, пока не загрузятся видео первого экрана и ключевые
+     изображения. Пластины вращаются по очереди (stagger), счётчик
+     идёт от 1 до 100 — тем же шрифтом, что мелкий текст сайта.
+     ================================================================ */
+  .pre {
+    position: fixed; inset: 0; z-index: 9999;
+    background: var(--l-bg);
+    display: grid; place-items: center;
+    transition: opacity .9s var(--ease-out), visibility .9s;
+  }
+  .pre.is-done { opacity: 0; visibility: hidden; pointer-events: none; }
+  .pre__canvas {
+    width: min(46vw, 520px); height: min(46vw, 520px);
+    display: block;
+  }
+  /* счётчик внизу — кегль как у мелкого текста сайта */
+  .pre__num {
+    position: absolute; left: 0; right: 0;
+    bottom: clamp(38px, 6vh, 70px);
+    text-align: center;
+    font-family: "Onest", sans-serif; font-weight: 400;
+    font-size: clamp(0.8125rem, 0.75rem + 0.26vw, 1.0625rem);
+    letter-spacing: .14em;
+    color: var(--l-ink);
+    font-variant-numeric: tabular-nums;
+  }
+  /* страница не скроллится, пока идёт загрузка */
+  body.is-loading { overflow: hidden; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pre__canvas { display: none; }
+  }
 </style>
+
+<!-- Прелоадер: вращающаяся стопка пластин + счётчик -->
+<div class="pre" id="pre">
+  <canvas class="pre__canvas" id="preCanvas"></canvas>
+  <div class="pre__num" id="preNum">001</div>
+</div>
 
 <!-- Фильтр преломления для стеклянных плашек.
      backdrop-filter умеет только размывать, но НЕ смещает пиксели —
@@ -4136,6 +4177,281 @@
       clearTimeout(t);
       t = setTimeout(refresh, 120);
     }).observe(document.body);
+  })();
+
+  /* ================================================================
+     ПРЕЛОАДЕР · WebGL-стопка пластин (порт Plate Stack на ваниль)
+     Пять скруглённых пластин стоят стопкой и по очереди
+     разворачиваются на 90°. Каждая стартует со своей задержкой —
+     получается «волна», а не одновременный поворот.
+     Счётчик внизу идёт 001 → 100 по реальному прогрессу загрузки.
+     ================================================================ */
+  (function () {
+    const pre = document.getElementById("pre");
+    if (!pre) return;
+    const canvas = document.getElementById("preCanvas");
+    const numEl = document.getElementById("preNum");
+    document.body.classList.add("is-loading");
+
+    /* ---------- 3D-часть ---------- */
+    const gl = canvas && canvas.getContext("webgl", {
+      antialias: true, alpha: true, premultipliedAlpha: true, depth: true,
+    });
+
+    const VERT = `precision highp float;
+      attribute vec3 aPos; attribute vec3 aNrm;
+      uniform mat4 uMVP; uniform mat3 uNM; varying vec3 vN;
+      void main(){ vN = uNM * aNrm; gl_Position = uMVP * vec4(aPos,1.0); }`;
+
+    const FRAG = `precision highp float;
+      varying vec3 vN; uniform vec3 uBase; uniform vec3 uAcc;
+      const vec3 KEY = vec3(-0.4364, 0.4601, 0.7733);
+      const vec3 FILL = vec3(0.7831, 0.1309, 0.6080);
+      void main(){
+        vec3 n = normalize(vN);
+        if(!gl_FrontFacing) n = -n;
+        float k = max(dot(n, KEY), 0.0);
+        float f = max(dot(n, FILL), 0.0);
+        float graze = 1.0 - clamp(abs(n.z), 0.0, 1.0);
+        vec3 c = uBase * (0.08 + 0.62 * pow(k, 2.0));
+        c += uAcc * 0.80 * pow(k, 9.0);
+        c += uAcc * 0.35 * pow(f, 6.0);
+        c += uAcc * 0.32 * pow(graze, 3.0) * (0.40 + 0.60 * max(n.y, 0.0));
+        gl_FragColor = vec4(clamp(c, 0.0, 1.0), 1.0);
+      }`;
+
+    // ── матрицы 4×4 ──
+    const m4 = () => { const o = new Float32Array(16); o[0]=o[5]=o[10]=o[15]=1; return o; };
+    const ident = (o) => { o.fill(0); o[0]=o[5]=o[10]=o[15]=1; return o; };
+    function mul(a, b, out) {
+      for (let c = 0; c < 4; c++) {
+        const b0=b[c*4], b1=b[c*4+1], b2=b[c*4+2], b3=b[c*4+3];
+        out[c*4]   = a[0]*b0 + a[4]*b1 + a[8]*b2  + a[12]*b3;
+        out[c*4+1] = a[1]*b0 + a[5]*b1 + a[9]*b2  + a[13]*b3;
+        out[c*4+2] = a[2]*b0 + a[6]*b1 + a[10]*b2 + a[14]*b3;
+        out[c*4+3] = a[3]*b0 + a[7]*b1 + a[11]*b2 + a[15]*b3;
+      }
+      return out;
+    }
+    const SA = m4(), SB = m4();
+    function rotX(m, a) { if (!a) return; const c=Math.cos(a), s=Math.sin(a);
+      ident(SA); SA[5]=c; SA[6]=s; SA[9]=-s; SA[10]=c; m.set(mul(m, SA, SB)); }
+    function rotY(m, a) { if (!a) return; const c=Math.cos(a), s=Math.sin(a);
+      ident(SA); SA[0]=c; SA[2]=-s; SA[8]=s; SA[10]=c; m.set(mul(m, SA, SB)); }
+    function trans(m, x, y, z) {
+      m[12] = m[0]*x + m[4]*y + m[8]*z  + m[12];
+      m[13] = m[1]*x + m[5]*y + m[9]*z  + m[13];
+      m[14] = m[2]*x + m[6]*y + m[10]*z + m[14];
+      m[15] = m[3]*x + m[7]*y + m[11]*z + m[15];
+    }
+    const scaleU = (m, s) => { for (let i = 0; i < 12; i++) m[i] *= s; };
+    function persp(out, fovy, aspect, near, far) {
+      const f = 1 / Math.tan(fovy / 2);
+      out.fill(0); out[0] = f / aspect; out[5] = f;
+      out[10] = (far + near) / (near - far); out[11] = -1;
+      out[14] = (2 * far * near) / (near - far); return out;
+    }
+    function nm3(m, out) {
+      const a=m[0],b=m[1],c=m[2], d=m[4],e=m[5],f=m[6], g=m[8],h=m[9],i=m[10];
+      const C11 = e*i - h*f, C12 = -(b*i - h*c), C13 = b*f - e*c;
+      const det = a*C11 + d*C12 + g*C13;
+      if (!det) { out.set([a,b,c,d,e,f,g,h,i]); return; }
+      const s = 1 / det;
+      out[0]=C11*s; out[1]=-(d*i-g*f)*s; out[2]=(d*h-g*e)*s;
+      out[3]=C12*s; out[4]=(a*i-g*c)*s;  out[5]=-(a*h-g*b)*s;
+      out[6]=C13*s; out[7]=-(a*f-d*c)*s; out[8]=(a*e-d*b)*s;
+    }
+
+    // ── геометрия скруглённой пластины ──
+    function roundedBox(w, h, d, radius, seg) {
+      const pos = [], nrm = [], idx = [];
+      const hx=w/2, hy=h/2, hz=d/2;
+      const r = Math.max(0, Math.min(radius, hx, hy, hz));
+      const ex=hx-r, ey=hy-r, ez=hz-r, HALF = Math.PI/2;
+      const push = (px,py,pz,nx,ny,nz) => { pos.push(px,py,pz); nrm.push(nx,ny,nz); return pos.length/3-1; };
+      const quad = (a,b,c,dd) => { idx.push(a,b,c, a,c,dd); };
+      const face = (n,u,v) => {
+        if (!(u[0]||u[1]||u[2]) || !(v[0]||v[1]||v[2])) return;
+        const cx=n[0]*hx, cy=n[1]*hy, cz=n[2]*hz;
+        const a=push(cx-u[0]-v[0],cy-u[1]-v[1],cz-u[2]-v[2],n[0],n[1],n[2]);
+        const b=push(cx+u[0]-v[0],cy+u[1]-v[1],cz+u[2]-v[2],n[0],n[1],n[2]);
+        const c=push(cx+u[0]+v[0],cy+u[1]+v[1],cz+u[2]+v[2],n[0],n[1],n[2]);
+        const dd=push(cx-u[0]+v[0],cy-u[1]+v[1],cz-u[2]+v[2],n[0],n[1],n[2]);
+        quad(a,b,c,dd);
+      };
+      face([1,0,0],[0,0,-ez],[0,ey,0]);  face([-1,0,0],[0,0,ez],[0,ey,0]);
+      face([0,1,0],[ex,0,0],[0,0,-ez]);  face([0,-1,0],[ex,0,0],[0,0,ez]);
+      face([0,0,1],[ex,0,0],[0,ey,0]);   face([0,0,-1],[-ex,0,0],[0,ey,0]);
+      if (r > 0) {
+        const edge = (axis, s1, s2) => {
+          const half = axis===0?ex : axis===1?ey : ez;
+          if (!half) return;
+          const e1 = axis===0?ey : axis===1?ez : ex;
+          const e2 = axis===0?ez : axis===1?ex : ey;
+          const put = (t, ang) => {
+            const c=Math.cos(ang), sn=Math.sin(ang);
+            const a1=s1*(e1+r*c), a2=s2*(e2+r*sn), n1=s1*c, n2=s2*sn;
+            if (axis===0) return push(t*half,a1,a2, 0,n1,n2);
+            if (axis===1) return push(a2,t*half,a1, n2,0,n1);
+            return push(a1,a2,t*half, n1,n2,0);
+          };
+          for (let k = 0; k < seg; k++) {
+            const a0=(k/seg)*HALF, a1=((k+1)/seg)*HALF;
+            const p0=put(-1,a0), p1=put(1,a0), p2=put(1,a1), p3=put(-1,a1);
+            if (s1*s2 < 0) quad(p0,p1,p2,p3); else quad(p3,p2,p1,p0);
+          }
+        };
+        for (const s1 of [1,-1]) for (const s2 of [1,-1]) { edge(0,s1,s2); edge(1,s1,s2); edge(2,s1,s2); }
+        for (const sx of [1,-1]) for (const sy of [1,-1]) for (const sz of [1,-1]) {
+          const base = pos.length/3;
+          for (let i = 0; i <= seg; i++) {
+            const th=(i/seg)*HALF;
+            for (let j = 0; j <= seg; j++) {
+              const ph=(j/seg)*HALF;
+              const nx=sx*Math.sin(th)*Math.cos(ph), ny=sy*Math.cos(th), nz=sz*Math.sin(th)*Math.sin(ph);
+              push(sx*ex+r*nx, sy*ey+r*ny, sz*ez+r*nz, nx,ny,nz);
+            }
+          }
+          const flip = sx*sy*sz < 0;
+          for (let i = 0; i < seg; i++) for (let j = 0; j < seg; j++) {
+            const a=base+i*(seg+1)+j, b=a+1, c=a+(seg+1)+1, dd=a+(seg+1);
+            if (flip) { idx.push(dd,c,b); if (i) idx.push(dd,b,a); }
+            else { if (i) idx.push(a,b,c); idx.push(a,c,dd); }
+          }
+        }
+      }
+      return { pos: new Float32Array(pos), nrm: new Float32Array(nrm), idx: new Uint16Array(idx) };
+    }
+
+    let raf = 0;
+    if (gl) {
+      const compile = (type, src) => {
+        const sh = gl.createShader(type);
+        gl.shaderSource(sh, src); gl.compileShader(sh);
+        return gl.getShaderParameter(sh, gl.COMPILE_STATUS) ? sh : null;
+      };
+      const vs = compile(gl.VERTEX_SHADER, VERT), fs = compile(gl.FRAGMENT_SHADER, FRAG);
+      if (vs && fs) {
+        const prog = gl.createProgram();
+        gl.attachShader(prog, vs); gl.attachShader(prog, fs); gl.linkProgram(prog);
+        if (gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+          gl.useProgram(prog);
+          const aPos = gl.getAttribLocation(prog, "aPos");
+          const aNrm = gl.getAttribLocation(prog, "aNrm");
+          gl.enableVertexAttribArray(aPos); gl.enableVertexAttribArray(aNrm);
+          const uMVP = gl.getUniformLocation(prog, "uMVP");
+          const uNM  = gl.getUniformLocation(prog, "uNM");
+          const uBase = gl.getUniformLocation(prog, "uBase");
+          const uAcc  = gl.getUniformLocation(prog, "uAcc");
+          gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL);
+          gl.clearColor(0, 0, 0, 0);
+
+          // пластины в цветах сайта: тёплый графит на off-white
+          const BASE = [0.086, 0.082, 0.059];   // #16150f
+          const ACC  = [1, 1, 1];
+          const COUNT = 5, SPACING = 0.1, SCALE = 3;
+          const TILT_X = Math.PI/10, TILT_Y = Math.PI/4;
+          const SWEEP = Math.PI/2, DUR = 1, STAG = 0.25;
+          const g = roundedBox(1, 0.1, 1, 0.05 * 0.26 * 2, 4);
+          const bufP = gl.createBuffer(), bufN = gl.createBuffer(), bufI = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, bufP); gl.bufferData(gl.ARRAY_BUFFER, g.pos, gl.STATIC_DRAW);
+          gl.bindBuffer(gl.ARRAY_BUFFER, bufN); gl.bufferData(gl.ARRAY_BUFFER, g.nrm, gl.STATIC_DRAW);
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, bufI); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, g.idx, gl.STATIC_DRAW);
+
+          const proj = m4(), view = m4(), pv = m4(), model = m4(), mvp = m4();
+          const nrmMat = new Float32Array(9);
+          let last = performance.now(), clock = 0;
+          const easeBackOut = (t) => { const c = 1.70158, u = t - 1; return u*u*((c+1)*u + c) + 1; };
+
+          const resize = () => {
+            const dpr = Math.min(devicePixelRatio || 1, 2);
+            const w = Math.max(1, Math.round(canvas.clientWidth * dpr));
+            const h = Math.max(1, Math.round(canvas.clientHeight * dpr));
+            if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+            gl.viewport(0, 0, w, h);
+          };
+          resize(); addEventListener("resize", resize);
+
+          (function frame(now) {
+            raf = requestAnimationFrame(frame);
+            const dt = Math.min(0.05, Math.max(0, (now - last) / 1000));
+            last = now;
+            const cycle = DUR + STAG * (COUNT - 1);
+            clock = (clock + dt * (57 / 50)) % cycle;
+            const aspect = canvas.width / canvas.height;
+            persp(proj, (45 * Math.PI) / 180, aspect, 0.1, 200);
+            ident(view); trans(view, 0, 0, -(9.5 / Math.min(1, aspect)));
+            mul(proj, view, pv);
+            gl.uniform3fv(uBase, BASE); gl.uniform3fv(uAcc, ACC);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            const centerY = ((COUNT - 3) / 2) * SPACING;
+            for (let i = 0; i < COUNT; i++) {
+              const u = Math.min(1, Math.max(0, (clock - i * STAG) / DUR));
+              ident(model);
+              rotX(model, TILT_X); rotY(model, TILT_Y); scaleU(model, SCALE);
+              trans(model, 0, -centerY, 0); trans(model, 0, (i - 1) * SPACING, 0);
+              rotY(model, SWEEP * easeBackOut(u));
+              mul(pv, model, mvp); nm3(model, nrmMat);
+              gl.uniformMatrix4fv(uMVP, false, mvp);
+              gl.uniformMatrix3fv(uNM, false, nrmMat);
+              gl.bindBuffer(gl.ARRAY_BUFFER, bufP); gl.vertexAttribPointer(aPos, 3, gl.FLOAT, false, 0, 0);
+              gl.bindBuffer(gl.ARRAY_BUFFER, bufN); gl.vertexAttribPointer(aNrm, 3, gl.FLOAT, false, 0, 0);
+              gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, bufI);
+              gl.drawElements(gl.TRIANGLES, g.idx.length, gl.UNSIGNED_SHORT, 0);
+            }
+          })(performance.now());
+        }
+      }
+    }
+
+    /* ---------- счётчик по реальному прогрессу ---------- */
+    const assets = [
+      "assets/hero-poster.jpg",
+      "assets/cases/heydar-hq.jpg",
+      "assets/cases/a2-hq.jpg",
+    ];
+    let done = 0;
+    const total = assets.length + 1;              // +1 — видео первого экрана
+    let shown = 0, target = 0;
+
+    const tick = () => {
+      // цифра догоняет реальный прогресс, но не прыгает
+      shown += Math.max(0.4, (target - shown) * 0.08);
+      if (shown > target) shown = target;
+      if (numEl) numEl.textContent = String(Math.min(100, Math.floor(shown))).padStart(3, "0");
+      if (shown < 100) requestAnimationFrame(tick);
+      else finish();
+    };
+
+    const bump = () => { done++; target = Math.round((done / total) * 100); };
+
+    assets.forEach((src) => {
+      const im = new Image();
+      im.onload = im.onerror = bump;
+      im.src = src;
+    });
+    const vid = document.getElementById("clip");
+    if (vid) {
+      let fired = false;
+      const ok = () => { if (!fired) { fired = true; bump(); } };
+      vid.addEventListener("loadeddata", ok);
+      vid.addEventListener("error", ok);
+      setTimeout(ok, 6000);                        // страховка на медленной сети
+    } else bump();
+
+    let closed = false;
+    function finish() {
+      if (closed) return;
+      closed = true;
+      cancelAnimationFrame(raf);
+      pre.classList.add("is-done");
+      document.body.classList.remove("is-loading");
+      // ScrollTrigger пересчитывает позиции после разблокировки скролла
+      if (window.ScrollTrigger) setTimeout(() => ScrollTrigger.refresh(), 950);
+    }
+
+    requestAnimationFrame(tick);
+    setTimeout(finish, 9000);                      // жёсткий предел ожидания
   })();
 
 </script>
