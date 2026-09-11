@@ -632,8 +632,8 @@
     /* по макету — ровно три строки на ширину контентной колонки 1247px */
     max-width: min(1247px, 90vw);
   }
-  .reveal__h .ln { display: block; overflow: hidden; }
-  .reveal__h .ln > span { display: block; will-change: transform; }
+  .reveal__h .ln { display: block; }
+  .reveal__h .ln > span { display: block; }
 
   /* кадр здания — стартует узкой полосой снизу, растёт до fullscreen */
   .reveal__frame {
@@ -734,9 +734,9 @@
   .pr__stat { display: flex; flex-direction: column; align-items: flex-start; }
   .pr__stat--mid { align-items: center; text-align: center; }
   .pr__stat--end { align-items: flex-end; text-align: right; }
-  /* подпись центрируется под своей цифрой, как в макете */
-  .pr__stat .pr__cap { align-self: center; }
-  .pr__stat--end .pr__cap { align-self: flex-end; }
+  /* Подпись выравнивается по центру своей цифры — во всех трёх
+     метриках одинаково, как в макете. */
+  .pr__stat .pr__cap { align-self: center; text-align: center; }
   .pr__num {
     font-family: "Onest", sans-serif; font-weight: 400;
     font-size: clamp(3.875rem, 2.6917rem + 5.049vw, 8.75rem); line-height: .92;
@@ -1069,11 +1069,19 @@
         /* Кадр раскрывается по мере подхода принципа к центру и
            схлопывается на выходе. focus: 0 — принцип далеко,
            1 — стоит ровно по центру экрана. */
-        const shot = el.querySelector(".how__shot");
-        if (!shot) return;
         const reach = window.innerWidth * 0.62;
         const focus = cl(1 - d / reach);
         const e = eo(focus);
+
+        /* Шаг в фокусе — резкий, соседние размыты. Блюр нарастает
+           по мере ухода принципа от центра: когда переходим ко второму
+           шагу, первый уходит в расфокус, а третий из него выходит. */
+        const soft = 1 - e;
+        el.style.filter = soft > 0.02 ? `blur(${(soft * 7).toFixed(2)}px)` : "none";
+        el.style.opacity = (0.28 + e * 0.72).toFixed(3);
+
+        const shot = el.querySelector(".how__shot");
+        if (!shot) return;
         // окно кадра открывается снизу вверх
         shot.style.clipPath = `inset(${(1 - e) * 100}% 0 0 0)`;
         // и слегка подаётся навстречу зрителю
@@ -1170,7 +1178,8 @@
   .sup {
     background: var(--l-bg2);
     color: var(--l-ink);
-    padding: clamp(90px, 15vh, 180px) 0 clamp(80px, 13vh, 160px);
+    /* блок должен дышать внутри экрана, а не упираться в края */
+    padding: clamp(56px, 8vh, 104px) 0 clamp(52px, 7vh, 96px);
     position: relative;
     overflow: hidden;
   }
@@ -1187,7 +1196,7 @@
 
   .sup__head {
     display: flex; align-items: flex-end; justify-content: space-between;
-    gap: 24px; flex-wrap: wrap; margin-bottom: clamp(40px, 6vh, 76px);
+    gap: 24px; flex-wrap: wrap; margin-bottom: clamp(24px, 3.4vh, 44px);
   }
   .sup__title {
     font-family: "Onest", sans-serif; font-weight: 400;
@@ -1507,12 +1516,16 @@
   }
 
   /* ---- табы объектов + микрострелки (низ кейса) ---- */
+  /* Названия объектов стоят ровно по центру блока, стрелки прижаты
+     к правому краю — они управление, а не часть композиции. */
   .pr__tabs {
     position: absolute; left: var(--pad-x); right: var(--pad-x);
     bottom: clamp(32px, 4.6vh, 54px);
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 20px; flex-wrap: wrap;
+    display: grid; grid-template-columns: 1fr auto 1fr;
+    align-items: center; gap: 20px;
   }
+  .pr__tabs-list { grid-column: 2; justify-self: center; }
+  .pr__tabs-nav { grid-column: 3; justify-self: end; }
   .pr__tabs-list { display: flex; align-items: center; gap: clamp(0.5rem, 0.409rem + 0.388vw, 0.875rem); }
   .pr__tab {
     position: relative;
@@ -1921,7 +1934,12 @@
      когда принцип подходит к центру экрана. На выходе — схлопывается
      обратно. Переход «оживает в фокусе», а не просто едет вбок.
      ================================================================ */
-  .how__item { position: relative; }
+  .how__item {
+    position: relative;
+    /* фильтр и прозрачность ведёт JS по прогрессу — без transition,
+       иначе блюр «догоняет» скролл и смазывается */
+    will-change: filter, opacity;
+  }
   /* оставляем место под кадр, чтобы он не наезжал на соседние принципы */
   .how__body { padding-bottom: clamp(9rem, 16vh, 14rem); }
 
@@ -1964,6 +1982,26 @@
     .how__shot { clip-path: none; }
     .how__shot img { transform: none; }
   }
+
+  /* ================================================================
+     ВОЗДУХ: ни один блок не прижимается к краям экрана
+     Единая гарантия минимальных полей сверху и снизу для всех
+     контентных секций — раньше каждая задавала их сама и часть
+     упиралась в край.
+     ================================================================ */
+  .flow, .sup, .faq, .ask, .team, .how {
+    padding-top: max(var(--sec-pad), env(safe-area-inset-top));
+    padding-bottom: max(var(--sec-pad-b), env(safe-area-inset-bottom));
+  }
+  :root {
+    --sec-pad: clamp(56px, 8vh, 104px);
+    --sec-pad-b: clamp(52px, 7vh, 96px);
+  }
+  /* sticky-сцены живут по своим правилам — им поля не нужны */
+  .how, .team { padding-top: 0; padding-bottom: 0; }
+
+  /* содержимое sticky-сцен держит отступ от краёв вьюпорта */
+  .how__vp, .team__vp { padding: clamp(48px, 7vh, 90px) 0; }
 </style>
 
 <section class="story" id="story">
@@ -2827,7 +2865,14 @@
     // между сценами нет ни пустого кадра, ни недоигранной анимации.
     const scrollable = rect.height - window.innerHeight;
     if (scrollable <= 0) return 0;
-    return clamp(-rect.top / scrollable);
+    const raw = clamp(-rect.top / scrollable);
+    /* Концовка сцены тормозится: последняя четверть скролла проходит
+       примерно вдвое медленнее, поэтому перед подъёмом шторки кадр
+       доезжает плавно, а не выдёргивается рывком. */
+    const K = 0.74;
+    if (raw <= K) return raw;
+    const t = (raw - K) / (1 - K);
+    return K + (1 - K) * (1 - Math.pow(1 - t, 2));
   }
 
   function applyOverlays(p) {
@@ -2974,10 +3019,11 @@
     my = (e.clientY / window.innerHeight - 0.5) * 2;
   }, { passive: true });
 
+  /* Фон НЕ реагирует на курсор: шатание видео за мышкой выглядит
+     дёшево и мешает читать заголовок. Оставляем только медленное
+     «дыхание» — зум по прогрессу скролла. */
   function parallaxBg() {
-    cmx += (mx - cmx) * 0.06;
-    cmy += (my - cmy) * 0.06;
-    const t = `scale(${bgZoom}) translate(${-cmx * 12}px, ${-cmy * 10}px)`;
+    const t = `scale(${bgZoom})`;
     clip.style.transform = t;
     fallback.style.transform = t;
     requestAnimationFrame(parallaxBg);
@@ -3040,10 +3086,12 @@
         eb.style.transform = `translate3d(0, ${(1 - e) * 130}%, 0)`;
         eb.style.opacity = e;
       }
-      lines.forEach((ln, i) => {
-        const d = 0.16 + i * 0.2;
-        const e = eo(cl((inn - d * 0.5) / (1 - d * 0.5)));
-        ln.style.transform = `translate3d(0, ${(1 - e) * 118}%, 0)`;
+      /* Строки манифеста не выезжают: текст просто проявляется вместе
+         с блоком. Построчный выезд на этом заголовке читался дёргано. */
+      const tEase = eo(cl(inn / 0.6));
+      lines.forEach((ln) => {
+        ln.style.transform = "none";
+        ln.style.opacity = tEase;
       });
 
       const out = eo(cl((p - 0.26) / 0.14));
@@ -3345,11 +3393,19 @@
         /* Кадр раскрывается по мере подхода принципа к центру и
            схлопывается на выходе. focus: 0 — принцип далеко,
            1 — стоит ровно по центру экрана. */
-        const shot = el.querySelector(".how__shot");
-        if (!shot) return;
         const reach = window.innerWidth * 0.62;
         const focus = cl(1 - d / reach);
         const e = eo(focus);
+
+        /* Шаг в фокусе — резкий, соседние размыты. Блюр нарастает
+           по мере ухода принципа от центра: когда переходим ко второму
+           шагу, первый уходит в расфокус, а третий из него выходит. */
+        const soft = 1 - e;
+        el.style.filter = soft > 0.02 ? `blur(${(soft * 7).toFixed(2)}px)` : "none";
+        el.style.opacity = (0.28 + e * 0.72).toFixed(3);
+
+        const shot = el.querySelector(".how__shot");
+        if (!shot) return;
         // окно кадра открывается снизу вверх
         shot.style.clipPath = `inset(${(1 - e) * 100}% 0 0 0)`;
         // и слегка подаётся навстречу зрителю
@@ -3790,9 +3846,11 @@
     gsap.registerPlugin(ScrollTrigger, SplitText);
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
+    /* .reveal__h исключён: построчный выезд на манифесте смотрелся
+       дёргано и резал буквы. Там текст просто стоит. */
     const SEL = [
       ".flow__title", ".sup__title", ".faq__title",
-      ".ask__title", ".svc__label", ".reveal__h",
+      ".ask__title", ".svc__label",
     ].join(",");
 
     document.querySelectorAll(SEL).forEach((el) => {
