@@ -4337,8 +4337,8 @@
        Грани дальше 82° не рисуем — там карточка вырождается в полоску.
        Радиус апофемы считается так, чтобы стороны многоугольника
        ровно совпадали с шириной карточки: R = W·GAP / (2·tan(θ/2)). */
-    const STEP_DEG = 29;
-    const GAP = 1.26;
+    const STEP_DEG = 26;
+    const GAP = 1.0;
     const VIS = 3.0;               // сколько шагов от центра ещё рисуем
 
     function geom() {
@@ -4389,15 +4389,18 @@
            Режем ровно по силуэту барабана — на |rotateY| = 90°:
            дальше грань смотрит от зрителя и вырождается в полоску. */
         const deg = Math.abs(ang) * 180 / Math.PI;
-        const hidden = deg >= 82 || a > VIS;
-        const scale = 1 - Math.min(0.05, a * 0.016);
-        // гасим грань плавно на подходе к профилю, чтобы не мигала
-        const opacity = hidden ? 0 : cl((82 - deg) / 10, 0, 1);
+        const hidden = deg >= 88 || a > VIS;
+        const scale = 1 - Math.min(0.04, a * 0.013);
+        /* В референсе крайние карточки видны узкими полосками почти
+           в профиль — гасим только у самой границы силуэта. */
+        const opacity = hidden ? 0 : cl((88 - deg) / 6, 0, 1);
         // подблюриваем всё, кроме центральной — акцент на активной
         const blur = a < 0.5 ? 0 : Math.min(5, (a - 0.5) * 2.6);
 
+        // дуга по вертикали: центр опущен, края приподняты — как в референсе
+        const lift = -Math.cos(ang) * (R * 0.055) + R * 0.055;
         c.style.transform =
-          `translate(-50%, -50%) translate3d(${x.toFixed(1)}px, 0, ${z.toFixed(1)}px) rotateY(${rotY.toFixed(2)}deg) scale(${scale.toFixed(3)})`;
+          `translate(-50%, -50%) translate3d(${x.toFixed(1)}px, ${lift.toFixed(1)}px, ${z.toFixed(1)}px) rotateY(${rotY.toFixed(2)}deg) scale(${scale.toFixed(3)})`;
         c.style.opacity = opacity.toFixed(3);
         c.style.filter = blur > 0.1 ? `blur(${blur.toFixed(2)}px)` : "none";
         c.style.zIndex = String(200 - Math.round(a * 10));
