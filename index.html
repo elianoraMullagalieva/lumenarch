@@ -3027,10 +3027,16 @@
       // На белом блоке выше кадр стоит на Атриуме — как в макете.
       if (window.__prSetRunning) window.__prSetRunning(pr > 0.5);
       // первый показ карточки — запускаем отсчёт цифр от нуля
-      if (window.__prReveal) window.__prReveal(pr > 0.55);
+      if (window.__prReveal) window.__prReveal(pr > 0.06);
       if (scrim) scrim.style.opacity = prE;
-      prUi.style.opacity = prE;
-      prUi.style.pointerEvents = prE > 0.6 ? "auto" : "none";
+      /* Контейнер карточки НЕ привязан к прогрессу скролла: раньше
+         его opacity тянулась за prE, и чтобы текст стал полностью
+         видимым, приходилось докручивать сцену. Теперь контейнер
+         просто включается порогом, а сама лесенка слоёв доигрывает
+         во времени — одного касания скролла достаточно. */
+      const shown = pr > 0.06;
+      prUi.style.opacity = shown ? 1 : 0;
+      prUi.style.pointerEvents = shown ? "auto" : "none";
 
       /* Слои карточки кейса больше не выводятся по прогрессу сцены:
          их ведёт одноразовый GSAP-таймлайн «КЕЙС · СПУТНИКИ», который
@@ -3824,7 +3830,7 @@
         const h = items[0].el.offsetHeight || 110;
         /* радиус считаем от ширины контейнера: передняя дуга должна
            умещаться в кадр, а не улетать за края */
-        const radius = cl(W * 0.30, 190, 420);
+        const radius = cl(W * 0.34, 210, 520);
         const stepDeg = 360 / PER_ROW;
         const spin = p * 150 * dir;
 
