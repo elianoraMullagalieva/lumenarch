@@ -1300,7 +1300,7 @@
     background: var(--l-ink);
     display: flex; flex-direction: column;
     /* объёмная сцена: кадры расставлены по цилиндру вокруг зрителя */
-    perspective: 1250px;
+    perspective: 760px;
     transform-style: preserve-3d;
   }
   /* сцена барабана: центр перспективы — середина блока */
@@ -1312,10 +1312,10 @@
   /* кадр: абсолютный, центр — середина сцены, дальше двигает только JS */
   .band__shot {
     position: absolute; left: 50%; top: 50%;
-    width: clamp(4.6rem, 3.4rem + 5.2vw, 8.4rem);
-    height: clamp(5.5rem, 4.1rem + 6.2vw, 10.1rem);
-    margin-left: calc(clamp(4.6rem, 3.4rem + 5.2vw, 8.4rem) / -2);
-    margin-top: calc(clamp(5.5rem, 4.1rem + 6.2vw, 10.1rem) / -2);
+    width: clamp(5.4rem, 4.0rem + 6.1vw, 9.9rem);
+    height: clamp(6.5rem, 4.8rem + 7.3vw, 11.9rem);
+    margin-left: calc(clamp(5.4rem, 4.0rem + 6.1vw, 9.9rem) / -2);
+    margin-top: calc(clamp(6.5rem, 4.8rem + 7.3vw, 11.9rem) / -2);
     overflow: hidden; border-radius: 2px;
     backface-visibility: hidden;
     will-change: transform, opacity;
@@ -1339,27 +1339,6 @@
     }
   }
   /* факт поверх ленты */
-  .band__fact {
-    position: absolute; left: 50%; top: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 3; text-align: center; pointer-events: none;
-    padding: clamp(1.0rem, 0.818rem + 0.777vw, 1.75rem) clamp(1.375rem, 1.0109rem + 1.553vw, 2.875rem);
-    background: rgba(22, 21, 15, .72);
-    backdrop-filter: blur(18px) saturate(140%);
-    -webkit-backdrop-filter: blur(18px) saturate(140%);
-  }
-  .band__num {
-    font-family: "Onest", sans-serif; font-weight: 400;
-    font-size: clamp(2.375rem, 1.4951rem + 3.754vw, 6.0rem); line-height: .92;
-    letter-spacing: -0.045em; color: #fff;
-    font-variant-numeric: tabular-nums;
-  }
-  .band__cap {
-    margin-top: clamp(0.25rem, 0.159rem + 0.388vw, 0.625rem);
-    font-family: "Onest", sans-serif; font-size: clamp(0.6875rem, 0.6268rem + 0.259vw, 0.9375rem);
-    letter-spacing: .12em; text-transform: uppercase;
-    color: rgba(255,255,255,.62);
-  }
 
 
   /* ================================================================
@@ -1518,12 +1497,12 @@
     position: sticky; top: 0; height: 100vh;
     overflow: hidden;
     display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
+    padding-bottom: clamp(24px, 4vh, 56px);
   }
   /* шапка стоит НАД каруселью и не пересекается с ней */
   .steps__head {
-    position: absolute; top: clamp(40px, 6vh, 76px);
-    left: var(--pad-x); right: var(--pad-x); z-index: 5;
+    position: relative; z-index: 5;
+    padding: clamp(34px, 5.2vh, 70px) var(--pad-x) 0;
     display: flex; flex-direction: column; align-items: center;
     gap: clamp(10px, 1.6vh, 20px);
     pointer-events: none;
@@ -1548,16 +1527,17 @@
   /* сцена карусели */
   .steps__stage {
     position: relative;
-    width: 100%; height: clamp(380px, 66vh, 700px);
-    margin-top: clamp(68px, 10vh, 118px);
+    /* сцена забирает всю высоту, оставшуюся после шапки */
+    width: 100%; flex: 1 1 auto; min-height: 0;
+    margin-top: clamp(20px, 3vh, 44px);
     perspective: 1750px;
     transform-style: preserve-3d;
   }
 
   .step {
     position: absolute; left: 50%; top: 50%;
-    width: clamp(17rem, 13.5rem + 15vw, 27rem);
-    height: clamp(23rem, 18.6rem + 19vw, 36rem);
+    width: clamp(16rem, 12rem + 16vw, 27rem);
+    height: min(clamp(22rem, 17.4rem + 20vw, 35rem), 76%);
     margin: 0;
     display: flex; flex-direction: column;
     padding: clamp(0.9rem, 0.78rem + 0.5vw, 1.3rem);
@@ -1863,7 +1843,7 @@
   /* превью, следующее за курсором */
   .svc__preview {
     position: absolute; left: 0; top: 0; z-index: 3;
-    width: clamp(13.75rem, 12.233rem + 6.472vw, 20.0rem);
+    width: clamp(12.5rem, 11.2rem + 5.6vw, 17.5rem);
     aspect-ratio: 300 / 400;
     border-radius: 16px; overflow: hidden;
     pointer-events: none;
@@ -1894,15 +1874,6 @@
     padding: clamp(52px, 8vh, 96px) var(--pad-x) 0;
     text-align: center; pointer-events: none;
   }
-  .band__label {
-    font-family: "Onest", sans-serif;
-    font-size: clamp(0.75rem, 0.69rem + 0.26vw, 1.0625rem);
-    letter-spacing: .06em; text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.5);
-    display: inline-flex; align-items: center; gap: 12px;
-    margin-bottom: clamp(10px, 1.6vh, 20px);
-  }
-  .band__label::before { content: ""; width: 40px; height: 1px; background: rgba(255,255,255,.4); }
   .band__title {
     font-family: "Onest", sans-serif; font-weight: 400;
     font-size: clamp(1.5rem, 1.16rem + 1.45vw, 2.75rem);
@@ -2679,14 +2650,9 @@
   <section class="band" data-band data-speed="1"
            data-shots="assets/cases/a1-hq.webp, assets/cases/i2-hq.webp, assets/cases/g1-hq.webp, assets/cases/a2-hq.webp, assets/cases/i1-hq.webp, assets/cases/g2-hq.webp">
     <header class="band__head">
-      <div class="band__label">Наши работы</div>
       <h2 class="band__title">12 реализованных объектов<br />с 2021 по 2026 год</h2>
     </header>
     <div class="band__stage" data-band-stage></div>
-    <div class="band__fact">
-      <div class="band__num">12</div>
-      <div class="band__cap">объектов с 2021 по 2026</div>
-    </div>
   </section>
 
   <!-- ============ 06 · КОМАНДА (портрет + дуга аватарок) ============ -->
@@ -2717,7 +2683,6 @@
   <section class="band" data-band data-speed="-1"
            data-shots="assets/services/architecture.webp, assets/services/interior.webp, assets/services/landscape.webp, assets/services/supervision.webp, assets/services/visual.webp">
     <header class="band__head">
-      <div class="band__label">Что мы делаем</div>
       <h2 class="band__title">Полный цикл работ<br />под одной ответственностью</h2>
     </header>
     <div class="band__stage" data-band-stage></div>
@@ -3793,9 +3758,17 @@
     sec.addEventListener("pointermove", (e) => {
       const r = sec.getBoundingClientRect();
       const w = preview.offsetWidth || 300;
-      // держим превью внутри секции: не даём вылезти за правый край
-      tx = Math.min(e.clientX - r.left + OFFSET_X, r.width - w / 2 - 24);
-      ty = e.clientY - r.top + OFFSET_Y;
+      // превью живёт строго в колонке текста: считаем границы по самой
+      // строке услуги, а не по секции, и зажимаем с ОБЕИХ сторон —
+      // иначе у левого края кадр уезжал за экран
+      const lr = list.getBoundingClientRect();
+      const minX = lr.left - r.left + w / 2;
+      const maxX = lr.right - r.left - w / 2;
+      const want = e.clientX - r.left + OFFSET_X;
+      tx = maxX > minX ? Math.min(Math.max(want, minX), maxX) : (minX + maxX) / 2;
+      // по вертикали не даём вылезти за верх и низ секции
+      const h = preview.offsetHeight || 400;
+      ty = Math.min(Math.max(e.clientY - r.top + OFFSET_Y, h / 2 + 12), r.height - h / 2 - 12);
       kick();
     }, { passive: true });
 
@@ -4066,7 +4039,7 @@
          оси, разнесены на три яруса и смещены по фазе. Скролл вращает
          барабан: ближние кадры крупнее и ярче, дальние мельчают
          и уходят в глубину. */
-      const ROWS = 3;
+      const ROWS = 2;
       const PER_ROW = 11;                    // кадров на ярусе
       const row = document.createElement("div");
       row.className = "band__row";
@@ -4091,13 +4064,16 @@
           items.push({
             el: fig, row: r, idx: k,
             // угловой джиттер: кадры не стоят ровными колоннами
-            jitDeg: (n1 - 0.5) * 9,
+            jitDeg: (n1 - 0.5) * 16,
             // персональный радиус: часть кадров ближе, часть глубже
-            radK: 0.72 + n2 * 0.62,
+            radK: 0.62 + n2 * 0.86,
             // вертикальный джиттер внутри яруса
             jitY: (n3 - 0.5) * 0.42,
             // собственный размер кадра (мелкие/крупные вперемешку)
-            sizeK: 0.28 + noise(seed + 91) * 0.8
+            sizeK: 0.46 + noise(seed + 91) * 0.92,
+            // личный доворот: в референсе кадры наклонены каждый по-своему
+            tiltY: (noise(seed + 131) - 0.5) * 34,
+            tiltX: (noise(seed + 197) - 0.5) * 18
           });
           seed++;
         }
@@ -4122,7 +4098,7 @@
         const h = items[0].el.offsetHeight || 150;
         /* радиус считаем от ширины контейнера: передняя дуга должна
            умещаться в кадр, а не улетать за края */
-        const radius = cl(W * 0.50, 320, 820);
+        const radius = cl(W * 0.40, 300, 620);
         const stepDeg = 360 / PER_ROW;
         // барабан крутится сам + подкручивается скроллом
         const spin = (p * 130 + (performance.now() - t0) * 0.0042 * 6) * dir;
@@ -4144,11 +4120,18 @@
              плюс собственный калибр кадра — размеры вперемешку */
           const depth = (front + 1) / 2;               // 0 дальний .. 1 ближний
           const sc = (0.40 + 0.85 * Math.pow(depth, 1.5)) * (0.70 + it.sizeK * 0.58);
-          const op = front < -0.45 ? 0 : cl((front + 0.45) / 0.75, 0, 1) * 0.9 + 0.1;
+          const op = front < -0.12 ? 0 : cl((front + 0.12) / 0.50, 0, 1) * 0.92 + 0.08;
           el.style.transform =
             `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, ${z.toFixed(1)}px)` +
-            ` rotateY(${(-deg).toFixed(2)}deg) scale(${sc.toFixed(3)})`;
+            ` rotateY(${(-deg + it.tiltY).toFixed(2)}deg)` +
+            ` rotateX(${it.tiltX.toFixed(2)}deg) scale(${sc.toFixed(3)})`;
           el.style.opacity = op.toFixed(3);
+          // дальние кадры — мягче и темнее: именно это читается как объём
+          const bl = (1 - depth) * 3.4;
+          const br = 0.42 + 0.58 * depth;
+          el.style.filter = bl > 0.25
+            ? `blur(${bl.toFixed(2)}px) brightness(${br.toFixed(2)})`
+            : `brightness(${br.toFixed(2)})`;
           el.style.zIndex = String(Math.round(front * 100) + 100);
         });
         return true;
@@ -4558,17 +4541,20 @@
        Грани дальше 82° не рисуем — там карточка вырождается в полоску.
        Радиус апофемы считается так, чтобы стороны многоугольника
        ровно совпадали с шириной карточки: R = W·GAP / (2·tan(θ/2)). */
-    const STEP_DEG = 26;
-    const GAP = 1.0;
+    const STEP_DEG = 36;
+    const GAP = 1.09;
     const VIS = 3.0;               // сколько шагов от центра ещё рисуем
 
     function geom() {
       const w = cards[0].offsetWidth || 320;
       const t = STEP_DEG * Math.PI / 180;
-      return {
-        stepRad: t,
-        R: (w * GAP) / (2 * Math.tan(t / 2)),
-      };
+      // Радиус считаем из ЭКРАННОГО шага, а не из хорды многоугольника.
+      // Апофема R = W/(2·tan(t/2)) ставит грани встык в 3D, но на экране
+      // наклонённая карта занимает W·cos(t), а шаг проецируется в R·sin(t) —
+      // из-за чего соседние карточки налезали на центральную.
+      // Условие стыка на экране: R·sin(t) = GAP · (W + W·cos(t)) / 2
+      const R = GAP * w * (1 + Math.cos(t)) / (2 * Math.sin(t));
+      return { stepRad: t, R: R };
     }
 
     let last = -1, raf = null, idle = 0;
@@ -4610,16 +4596,16 @@
            Режем ровно по силуэту барабана — на |rotateY| = 90°:
            дальше грань смотрит от зрителя и вырождается в полоску. */
         const deg = Math.abs(ang) * 180 / Math.PI;
-        const hidden = deg >= 88 || a > VIS;
+        const hidden = deg >= 96 || a > VIS;
         const scale = 1 - Math.min(0.04, a * 0.013);
         /* В референсе крайние карточки видны узкими полосками почти
            в профиль — гасим только у самой границы силуэта. */
-        const opacity = hidden ? 0 : cl((88 - deg) / 6, 0, 1);
+        const opacity = hidden ? 0 : cl((96 - deg) / 14, 0, 1);
         // подблюриваем всё, кроме центральной — акцент на активной
-        const blur = a < 0.5 ? 0 : Math.min(5, (a - 0.5) * 2.6);
+        const blur = a < 1.9 ? 0 : Math.min(3, (a - 1.9) * 2.2);
 
         // дуга по вертикали: центр опущен, края приподняты — как в референсе
-        const lift = -Math.cos(ang) * (R * 0.055) + R * 0.055;
+        const lift = -Math.cos(ang) * (R * 0.085) + R * 0.085;
         c.style.transform =
           `translate(-50%, -50%) translate3d(${x.toFixed(1)}px, ${lift.toFixed(1)}px, ${z.toFixed(1)}px) rotateY(${rotY.toFixed(2)}deg) scale(${scale.toFixed(3)})`;
         c.style.opacity = opacity.toFixed(3);
