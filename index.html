@@ -1147,10 +1147,21 @@
       items.forEach(el => el.classList.add("is-near"));
       track.style.overflowX = "auto";
     } else {
-      addEventListener("scroll", kick, { passive: true });
-      addEventListener("resize", () => { last = -1; kick(); }, { passive: true });
+      /* Считаем и держим blur только пока секция рядом с экраном:
+         постоянные фильтры на трёх крупных блоках заметно роняли
+         плавность видео-скраба на первом экране. */
+      let live = false;
+      new IntersectionObserver((entries) => {
+        entries.forEach((en) => {
+          live = en.isIntersecting;
+          if (live) { last = -1; kick(); }
+          else items.forEach((el) => { el.style.filter = "none"; });
+        });
+      }, { rootMargin: "40% 0px" }).observe(sec);
+
+      addEventListener("scroll", () => { if (live) kick(); }, { passive: true });
+      addEventListener("resize", () => { last = -1; if (live) kick(); }, { passive: true });
       draw(progress());
-      kick();
     }
   })();
 
@@ -1218,15 +1229,6 @@
     padding: clamp(56px, 8vh, 104px) 0 clamp(52px, 7vh, 96px);
     position: relative;
     overflow: hidden;
-  }
-  /* миллиметровка на фоне — намёк на чертёж, очень слабая */
-  .sup::before {
-    content: ""; position: absolute; inset: 0; pointer-events: none;
-    background-image:
-      linear-gradient(to right, rgba(22,21,15,.045) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(22,21,15,.045) 1px, transparent 1px);
-    background-size: clamp(2.5rem, 2.1359rem + 1.553vw, 4.0rem) clamp(2.5rem, 2.1359rem + 1.553vw, 4.0rem);
-    mask-image: radial-gradient(120% 90% at 70% 40%, #000 20%, transparent 78%);
   }
   .sup__inner { position: relative; z-index: 1; }
 
@@ -2081,6 +2083,139 @@
      накладываются друг на друга. */
   .topbar.is-hidden { opacity: 0; pointer-events: none; }
   .topbar { transition: opacity .5s var(--ease-out); }
+
+  /* ================================================================
+     ЭТАПЫ РАБОТЫ · 3D-карусель карточек
+     Карточки стоят по дуге: центральная в фокусе, соседние
+     отклонены по Y и уходят в глубину. Скролл вращает карусель.
+     Каждая карточка: чип с номером, заголовок-глагол, подзаголовок,
+     фото снизу — как в референсе.
+     ================================================================ */
+  .steps {
+    position: relative;
+    background: var(--l-bg);
+    color: var(--l-ink);
+    height: 620vh;                 /* длина проезда восьми этапов */
+  }
+  .steps__vp {
+    position: sticky; top: 0; height: 100vh;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+  }
+  .steps__label {
+    position: absolute; top: clamp(56px, 8vh, 96px); left: var(--pad-x);
+    font-family: "Onest", sans-serif;
+    font-size: clamp(0.75rem, 0.69rem + 0.26vw, 1.0625rem);
+    letter-spacing: .06em; text-transform: uppercase;
+    color: var(--l-ink-low);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .steps__label::before { content: ""; width: 40px; height: 1px; background: var(--l-ink); }
+
+  /* сцена карусели */
+  .steps__stage {
+    position: relative;
+    width: 100%; height: clamp(340px, 58vh, 620px);
+    perspective: 1600px;
+    transform-style: preserve-3d;
+  }
+
+  .step {
+    position: absolute; left: 50%; top: 50%;
+    width: clamp(15rem, 12rem + 13vw, 23rem);
+    height: clamp(21rem, 17rem + 19vw, 33rem);
+    margin: 0;
+    display: flex; flex-direction: column;
+    padding: clamp(0.9rem, 0.78rem + 0.5vw, 1.3rem);
+    border-radius: 20px;
+    background: var(--l-card);
+    box-shadow:
+      0 2px 6px rgba(22, 21, 15, .05),
+      0 18px 44px rgba(22, 21, 15, .12);
+    transform-origin: center center;
+    will-change: transform, opacity;
+    overflow: hidden;
+  }
+
+  /* чип с номером этапа */
+  .step__chip {
+    align-self: flex-start;
+    display: inline-flex; align-items: center;
+    height: clamp(1.5rem, 1.38rem + 0.5vw, 1.9rem);
+    padding: 0 clamp(0.7rem, 0.62rem + 0.34vw, 0.95rem);
+    border-radius: 100px;
+    background: var(--l-ink); color: var(--l-bg);
+    font-family: "Onest", sans-serif;
+    font-size: clamp(0.6875rem, 0.65rem + 0.16vw, 0.8125rem);
+    letter-spacing: .06em; text-transform: uppercase;
+    font-variant-numeric: tabular-nums;
+    margin-bottom: clamp(0.7rem, 0.6rem + 0.4vw, 1.05rem);
+  }
+
+  /* заголовок-глагол — главный акцент карточки */
+  .step__title {
+    font-family: "Onest", sans-serif; font-weight: 400;
+    font-size: clamp(1.35rem, 1.16rem + 0.82vw, 2.0rem);
+    line-height: 1.1; letter-spacing: -0.025em;
+    color: var(--l-ink);
+    margin-bottom: clamp(0.5rem, 0.44rem + 0.26vw, 0.75rem);
+  }
+  .step__text {
+    font-family: "Onest", sans-serif;
+    font-size: clamp(0.875rem, 0.83rem + 0.2vw, 1.0rem);
+    line-height: 1.42; color: var(--l-ink-mid);
+    margin-bottom: clamp(0.9rem, 0.78rem + 0.5vw, 1.3rem);
+  }
+
+  /* фото снизу занимает остаток карточки */
+  .step__shot {
+    margin-top: auto;
+    position: relative;
+    width: 100%; flex: 1 1 auto;
+    min-height: clamp(8rem, 6rem + 9vw, 14rem);
+    border-radius: 14px; overflow: hidden;
+    background: var(--l-bg2);
+  }
+  .step__shot img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+
+  /* подпись поверх фото */
+  .step__cap {
+    position: absolute; left: clamp(0.7rem, 0.6rem + 0.4vw, 1rem);
+    bottom: clamp(0.7rem, 0.6rem + 0.4vw, 1rem);
+    z-index: 2;
+    font-family: "Onest", sans-serif;
+    font-size: clamp(0.6875rem, 0.65rem + 0.16vw, 0.8125rem);
+    line-height: 1.3; color: #fff;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, .5);
+  }
+
+  /* прогресс-полоса снизу */
+  .steps__bar {
+    position: absolute; left: var(--pad-x); right: var(--pad-x);
+    bottom: clamp(40px, 6vh, 70px); height: 1px;
+    background: var(--l-line);
+  }
+  .steps__bar i {
+    display: block; height: 100%; width: 0;
+    background: var(--l-ink);
+  }
+
+  @media (max-width: 860px) {
+    .steps { height: 560vh; }
+    .step { width: 72vw; height: 60vh; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .steps { height: auto; }
+    .steps__vp { position: relative; height: auto; padding: 80px 0; }
+    .steps__stage { height: auto; perspective: none; display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px; padding: 0 var(--pad-x); }
+    .step { position: static; transform: none !important; opacity: 1 !important; }
+  }
 </style>
 
 <!-- Прелоадер: вращающаяся стопка пластин + счётчик -->
@@ -2323,6 +2458,88 @@
         </div>
       </div>
   </section>
+  <!-- ============ ЭТАПЫ РАБОТЫ (3D-карусель) ============ -->
+  <section class="steps" id="steps">
+    <div class="steps__vp">
+      <div class="steps__label">Как мы работаем</div>
+      <div class="steps__stage" id="stepsStage">
+        <article class="step">
+          <span class="step__chip">01 / 08</span>
+          <h3 class="step__title">Разбираем задачу</h3>
+          <p class="step__text">Обсуждаем участок, сценарии жизни семьи и бюджетный ориентир. Подсказываем, с какого этапа начинать именно вам.</p>
+          <figure class="step__shot">
+            <img src="assets/services/architecture.jpg" alt="Первая встреча" loading="lazy" decoding="async">
+            <figcaption class="step__cap">Первая встреча</figcaption>
+          </figure>
+        </article>
+        <article class="step">
+          <span class="step__chip">02 / 08</span>
+          <h3 class="step__title">Изучаем участок</h3>
+          <p class="step__text">Проверяем геологию, рельеф, инсоляцию и границы застройки — до того как вы влюбитесь в планировку.</p>
+          <figure class="step__shot">
+            <img src="assets/steps/s02.jpg" alt="Выезд на участок" loading="lazy" decoding="async">
+            <figcaption class="step__cap">Выезд на участок</figcaption>
+          </figure>
+        </article>
+        <article class="step">
+          <span class="step__chip">03 / 08</span>
+          <h3 class="step__title">Фиксируем требования</h3>
+          <p class="step__text">Записываем состав помещений и приоритеты в техническое задание. Оно защищает от «а мы думали, вы это тоже делаете».</p>
+          <figure class="step__shot">
+            <img src="assets/services/interior.jpg" alt="Техническое задание" loading="lazy" decoding="async">
+            <figcaption class="step__cap">Техническое задание</figcaption>
+          </figure>
+        </article>
+        <article class="step">
+          <span class="step__chip">04 / 08</span>
+          <h3 class="step__title">Разрабатываем концепцию</h3>
+          <p class="step__text">Собираем планировки, объём и логику света. Сразу проверяем решения на реализуемость в целевом бюджете.</p>
+          <figure class="step__shot">
+            <img src="assets/cases/i1-hq.jpg" alt="Концепция объёма" loading="lazy" decoding="async">
+            <figcaption class="step__cap">Концепция объёма</figcaption>
+          </figure>
+        </article>
+        <article class="step">
+          <span class="step__chip">05 / 08</span>
+          <h3 class="step__title">Согласовываем разделы</h3>
+          <p class="step__text">Сводим архитектуру, конструктив и инженерию в одной модели — до стройки, а не на объекте.</p>
+          <figure class="step__shot">
+            <img src="assets/cases/heydar-hq.jpg" alt="Единая модель" loading="lazy" decoding="async">
+            <figcaption class="step__cap">Единая модель</figcaption>
+          </figure>
+        </article>
+        <article class="step">
+          <span class="step__chip">06 / 08</span>
+          <h3 class="step__title">Выпускаем документацию</h3>
+          <p class="step__text">Готовим отметки, узлы и спецификации, по которым подрядчик строит, а не додумывает.</p>
+          <figure class="step__shot">
+            <img src="assets/services/visual.jpg" alt="Рабочие чертежи" loading="lazy" decoding="async">
+            <figcaption class="step__cap">Рабочие чертежи</figcaption>
+          </figure>
+        </article>
+        <article class="step">
+          <span class="step__chip">07 / 08</span>
+          <h3 class="step__title">Контролируем стройку</h3>
+          <p class="step__text">Проверяем критические узлы до того, как их закроет отделка. После выезда отдаём отчёт с замечаниями и сроками.</p>
+          <figure class="step__shot">
+            <img src="assets/services/supervision.jpg" alt="Авторский надзор" loading="lazy" decoding="async">
+            <figcaption class="step__cap">Авторский надзор</figcaption>
+          </figure>
+        </article>
+        <article class="step">
+          <span class="step__chip">08 / 08</span>
+          <h3 class="step__title">Передаём объект</h3>
+          <p class="step__text">Отдаём актуальный комплект чертежей и паспорт дома: что где проложено и как это обслуживать.</p>
+          <figure class="step__shot">
+            <img src="assets/cases/a2-hq.jpg" alt="Сдача объекта" loading="lazy" decoding="async">
+            <figcaption class="step__cap">Сдача объекта</figcaption>
+          </figure>
+        </article>
+      </div>
+      <div class="steps__bar"><i id="stepsBar"></i></div>
+    </div>
+  </section>
+
   <!-- ============ 04 · КАК ИМЕННО (горизонтальный проезд) ============ -->
   <section class="how" id="how">
     <div class="how__vp">
@@ -3712,10 +3929,21 @@
       items.forEach(el => el.classList.add("is-near"));
       track.style.overflowX = "auto";
     } else {
-      addEventListener("scroll", kick, { passive: true });
-      addEventListener("resize", () => { last = -1; kick(); }, { passive: true });
+      /* Считаем и держим blur только пока секция рядом с экраном:
+         постоянные фильтры на трёх крупных блоках заметно роняли
+         плавность видео-скраба на первом экране. */
+      let live = false;
+      new IntersectionObserver((entries) => {
+        entries.forEach((en) => {
+          live = en.isIntersecting;
+          if (live) { last = -1; kick(); }
+          else items.forEach((el) => { el.style.filter = "none"; });
+        });
+      }, { rootMargin: "40% 0px" }).observe(sec);
+
+      addEventListener("scroll", () => { if (live) kick(); }, { passive: true });
+      addEventListener("resize", () => { last = -1; if (live) kick(); }, { passive: true });
       draw(progress());
-      kick();
     }
   })();
 
@@ -4491,6 +4719,102 @@
 
     requestAnimationFrame(tick);
     setTimeout(finish, 9000);                      // жёсткий предел ожидания
+  })();
+
+  /* ================================================================
+     ЭТАПЫ РАБОТЫ · 3D-карусель
+     Карточки расставлены по дуге вокруг зрителя: центральная стоит
+     фронтально и в фокусе, соседние отклонены по Y и уходят в
+     глубину. Скролл вращает карусель — один этап примерно за 0.8
+     экрана, чтобы читалось, но не тянуло.
+     ================================================================ */
+  (function () {
+    const stage = document.getElementById("stepsStage");
+    if (!stage) return;
+    const sec = stage.closest(".steps");
+    const bar = document.getElementById("stepsBar");
+    const cards = [...stage.querySelectorAll(".step")];
+    if (!cards.length) return;
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) return;                       // раскладка сеткой из CSS
+
+    const cl = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+    const N = cards.length;
+
+    // геометрия дуги: шаг между карточками и радиус «барабана»
+    function geom() {
+      const w = cards[0].offsetWidth || 320;
+      return {
+        step: w * 1.06,                       // просвет между карточками
+        radius: Math.max(900, w * 3.4),       // чем больше, тем мягче дуга
+      };
+    }
+
+    let last = -1, raf = null, idle = 0;
+
+    function progress() {
+      const r = sec.getBoundingClientRect();
+      const s = r.height - window.innerHeight;
+      if (s <= 0) return 0;
+      return cl(-r.top / s);
+    }
+
+    function draw(p) {
+      const { step, radius } = geom();
+      // полка в начале и конце, чтобы первая и последняя карточка
+      // успевали постоять в фокусе
+      const e = cl((p - 0.05) / 0.90);
+      const head = e * (N - 1);               // дробный индекс в фокусе
+
+      cards.forEach((c, i) => {
+        const off = i - head;                 // смещение от центра
+        const a = Math.abs(off);
+
+        // положение по дуге: сдвиг вбок + уход в глубину
+        const x = off * step;
+        const z = -Math.min(radius, (off * off) * step * 0.55);
+        const rotY = cl(-34, 34, -off * 13);  // поворот к зрителю
+        const scale = 1 - Math.min(0.26, a * 0.09);
+        // видны примерно пять карточек: остальные гасим
+        const opacity = a > 2.6 ? 0 : cl(1 - (a - 0.6) * 0.42, 0, 1);
+        const blur = a < 0.55 ? 0 : Math.min(5, (a - 0.55) * 3.2);
+
+        c.style.transform =
+          `translate(-50%, -50%) translate3d(${x}px, 0, ${z}px) rotateY(${rotY}deg) scale(${scale})`;
+        c.style.opacity = opacity;
+        c.style.filter = blur > 0.1 ? `blur(${blur.toFixed(2)}px)` : "none";
+        c.style.zIndex = String(100 - Math.round(a * 10));
+        c.style.pointerEvents = a < 0.5 ? "auto" : "none";
+      });
+
+      if (bar) bar.style.width = (e * 100) + "%";
+    }
+
+    function loop() {
+      const p = progress();
+      let busy = false;
+      if (Math.abs(p - last) > 0.0004) { draw(p); last = p; busy = true; }
+      idle = busy ? 0 : idle + 1;
+      if (idle > 12) { raf = null; return; }
+      raf = requestAnimationFrame(loop);
+    }
+    const kick = () => { idle = 0; if (!raf) raf = requestAnimationFrame(loop); };
+
+    /* Пока секция вне экрана, карусель не считается и не держит
+       blur-слои: иначе восемь размытых карточек грузят видеокарту
+       даже на первом экране, где идёт видео-скраб. */
+    let live = false;
+    new IntersectionObserver((entries) => {
+      entries.forEach((en) => {
+        live = en.isIntersecting;
+        if (live) { last = -1; kick(); }
+        else cards.forEach((c) => { c.style.filter = "none"; });
+      });
+    }, { rootMargin: "40% 0px" }).observe(sec);
+
+    addEventListener("scroll", () => { if (live) kick(); }, { passive: true });
+    addEventListener("resize", () => { last = -1; if (live) kick(); }, { passive: true });
+    draw(progress());
   })();
 
 </script>
