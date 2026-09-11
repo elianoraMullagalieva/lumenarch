@@ -1212,10 +1212,9 @@
        • зацикливание в обе стороны, cubic-in-out анимация
      ================================================================ */
   /* ================================================================
-     06 · КОМАНДА — портрет + дуга кликабельных аватарок
-     Крупное фото сотрудника, справа имя, должность и цитата.
-     Внизу — круглые аватарки, разложенные ПО ДУГЕ: активная крупнее
-     и в цвете, соседние мельче и ниже по дуге. Кликабельны.
+     06 · КОМАНДА — широкая горизонтальная карточка
+     Фото на весь кадр, снизу градиент, поверх — крупное имя,
+     короткая цитата и зона ответственности. Внизу аватарки дугой.
      ================================================================ */
   .team {
     background: var(--l-ink);
@@ -1225,10 +1224,13 @@
     padding: clamp(52px, 8vh, 96px) 0;
     overflow: hidden;
   }
+  /* контейнер обязан занимать всю ширину: в flex-колонке дочерние
+     элементы иначе сжимаются по содержимому и карточка схлопывается */
+  .team > .container { width: 100%; }
   .team__head {
     display: flex; align-items: baseline; justify-content: space-between;
     gap: 24px; flex-wrap: wrap;
-    margin-bottom: clamp(22px, 3.4vh, 46px);
+    margin-bottom: clamp(20px, 3vh, 40px);
   }
   .team__label {
     font-family: "Onest", sans-serif;
@@ -1246,19 +1248,15 @@
   }
   .team__counter b { color: #fff; font-weight: 400; }
 
-  /* ---- карточка: фото слева, текст справа ---- */
-  .team__card {
-    display: grid;
-    grid-template-columns: minmax(240px, 33%) 1fr;
-    gap: clamp(26px, 4.4vw, 80px);
-    align-items: center;
-  }
+  /* ---- широкая карточка ---- */
   .team__stage {
-    position: relative; width: 100%;
-    aspect-ratio: 425 / 530;
-    max-height: 50vh;
-    border-radius: 6px; overflow: hidden;
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 8.2;
+    max-height: 58vh;
+    border-radius: 22px; overflow: hidden;
     background: #2a2924;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, .45);
   }
   .team__slide {
     position: absolute; inset: 0;
@@ -1266,47 +1264,59 @@
     transition: opacity .8s var(--ease-out);
   }
   .team__slide img {
-    width: 100%; height: 100%; object-fit: cover; object-position: center 18%;
+    width: 100%; height: 100%; object-fit: cover; object-position: center 26%;
     display: block;
   }
   .team__slide.is-on { opacity: 1; }
+  /* градиент снизу, чтобы текст читался поверх фото */
+  .team__stage::after {
+    content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+    background: linear-gradient(to top,
+      rgba(10, 10, 8, .92) 0%, rgba(10, 10, 8, .55) 26%, transparent 52%);
+  }
 
-  .team__body { display: flex; flex-direction: column; align-items: flex-start; }
-  .team__role {
-    font-family: "Onest", sans-serif;
-    font-size: clamp(0.6875rem, 0.64rem + 0.2vw, 0.9375rem);
-    letter-spacing: .14em; text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.5);
-    margin-bottom: clamp(8px, 1.1vh, 14px);
+  /* текст поверх фото */
+  .team__body {
+    position: absolute; z-index: 3;
+    left: clamp(20px, 3vw, 52px); right: clamp(20px, 3vw, 52px);
+    bottom: clamp(20px, 3.4vh, 46px);
+    display: grid; grid-template-columns: 1fr auto;
+    align-items: end; gap: clamp(16px, 3vw, 56px);
   }
   .team__name {
     font-family: "Onest", sans-serif; font-weight: 400;
-    font-size: clamp(1.9rem, 1.4rem + 2.2vw, 4rem);
+    font-size: clamp(1.6rem, 1.14rem + 2vw, 3.4rem);
     line-height: 1; letter-spacing: -0.04em;
     color: #fff; text-transform: capitalize;
+    margin-bottom: clamp(6px, 1vh, 14px);
   }
   .team__quote {
-    position: relative;
-    margin-top: clamp(18px, 2.6vh, 34px);
-    padding-left: clamp(20px, 2vw, 38px);
-    max-width: 34ch;
+    max-width: 46ch;
     font-family: "Onest", sans-serif;
-    font-size: clamp(0.95rem, 0.83rem + 0.5vw, 1.45rem);
-    line-height: 1.4; letter-spacing: -0.015em;
-    color: rgba(255, 255, 255, 0.72);
+    font-size: clamp(0.82rem, 0.74rem + 0.34vw, 1.1rem);
+    line-height: 1.42; letter-spacing: -0.01em;
+    color: rgba(255, 255, 255, 0.78);
   }
-  .team__quote::before {
-    content: "«";
-    position: absolute; left: 0; top: -0.16em;
-    font-size: clamp(2.4rem, 1.9rem + 2.2vw, 4.2rem); line-height: 1;
-    color: #fff; opacity: .22;
+  /* зона ответственности справа — стеклянная плашка */
+  .team__role {
+    justify-self: end; align-self: end;
+    padding: clamp(8px, 1vw, 13px) clamp(14px, 1.5vw, 22px);
+    border-radius: 100px;
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px) saturate(150%);
+    -webkit-backdrop-filter: blur(10px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-family: "Onest", sans-serif;
+    font-size: clamp(0.68rem, 0.63rem + 0.2vw, 0.88rem);
+    letter-spacing: .1em; text-transform: uppercase;
+    color: #fff; white-space: nowrap;
   }
 
   /* ---- ДУГА АВАТАРОК ---- */
   .team__nav {
     position: relative;
-    height: clamp(96px, 12vh, 150px);
-    margin-top: clamp(24px, 3.6vh, 50px);
+    height: clamp(86px, 10vh, 124px);
+    margin-top: clamp(18px, 2.6vh, 36px);
   }
   .team__track { position: relative; width: 100%; height: 100%; }
   .team__btn {
@@ -1316,7 +1326,6 @@
     border: none; padding: 0; cursor: pointer;
     border-radius: 50%; overflow: hidden;
     background: #2a2924;
-    /* положение по дуге задаётся из JS одним transform */
     will-change: transform, opacity;
     transition: box-shadow .45s var(--ease-out);
   }
@@ -1329,24 +1338,24 @@
   .team__btn:hover img { opacity: .82; }
   .team__btn.is-active img { filter: grayscale(0); opacity: 1; }
   .team__btn.is-active { box-shadow: 0 10px 26px rgba(0, 0, 0, .45); }
-  /* кольцо активной аватарки */
   .team__btn::after {
     content: ""; position: absolute; inset: 0; border-radius: 50%;
     border: 2px solid #fff; opacity: 0;
     transition: opacity .45s var(--ease-out);
   }
   .team__btn.is-active::after { opacity: 1; }
-
   .team__arrows { display: none; }
 
   @media (max-width: 860px) {
-    .team__card { grid-template-columns: 1fr; gap: 22px; }
-    .team__stage { max-height: none; aspect-ratio: 4/3; }
-    .team__nav { height: 86px; }
+    .team__stage { aspect-ratio: 4 / 5; max-height: none; }
+    .team__body { grid-template-columns: 1fr; gap: 12px; }
+    .team__role { justify-self: start; }
+    .team__nav { height: 76px; }
   }
   @media (prefers-reduced-motion: reduce) {
     .team__slide { transition: none; }
   }
+
   /* ================================================================
      08 · FAQ — вопросы как чертёжные строки
      Не «карточки-аккордеоны», а список: вопрос набран крупно, при
@@ -2508,12 +2517,13 @@
         <div class="team__counter"><b id="teamNum">01</b> / 05</div>
       </div>
 
-      <div class="team__card">
-        <div class="team__stage" id="teamStage"></div>
+      <div class="team__stage" id="teamStage">
         <div class="team__body">
+          <div>
+            <div class="team__name" id="teamName"></div>
+            <p class="team__quote" id="teamQuote"></p>
+          </div>
           <div class="team__role" id="teamRole"></div>
-          <div class="team__name" id="teamName"></div>
-          <p class="team__quote" id="teamQuote"></p>
         </div>
       </div>
 
@@ -3080,7 +3090,10 @@
          пустой белый кадр. */
       const topY = sec.getBoundingClientRect().top;
       top.classList.toggle("is-hidden", topY > 2);
-      if (topY <= window.innerHeight * 0.55 && window.__revealStart) {
+      // Текст пускаем, как только секция ВОШЛА в кадр — шторка ещё
+      // едет, но зритель уже видит белое поле, и оно не должно быть
+      // пустым. К моменту смыкания текст уже на месте.
+      if (topY <= window.innerHeight * 0.98 && window.__revealStart) {
         window.__revealStart();
       }
 
@@ -3186,6 +3199,17 @@
          шапкой, и текст поверх него смотрелся бы наложением.
          Флаг выставляет draw() сцены. */
       window.__revealStart = () => { if (!tl.isActive() && tl.progress() === 0) tl.play(); };
+
+      /* Пока секция ещё не дошла до верха экрана, progress() возвращает
+         0 и draw() не вызывается — значит проверка внутри него не
+         срабатывает. Поэтому вход в кадр слушаем отдельно. */
+      new IntersectionObserver((entries, obs) => {
+        entries.forEach((en) => {
+          if (!en.isIntersecting) return;
+          window.__revealStart();
+          obs.disconnect();
+        });
+      }, { rootMargin: "0px 0px -10% 0px" }).observe(sec);
     })();
 
     /* ================================================================
@@ -3640,7 +3664,8 @@
       el.className = "team__slide" + (i === 0 ? " is-on" : "");
       el.innerHTML = `<img src="${p.src}" alt="${p.name} — ${p.role}"
         loading="${i < 2 ? "eager" : "lazy"}" decoding="async">`;
-      stage.appendChild(el);
+      // портреты кладём ПЕРЕД текстовым слоем, иначе перекроют подписи
+      stage.insertBefore(el, stage.firstChild);
       return el;
     });
 
@@ -4209,7 +4234,7 @@
     let done = 0;
     const total = assets.length + 1;              // +1 — видео первого экрана
     let shown = 0, target = 0;
-    const MIN_MS = 1600;                        // держим экран хотя бы столько
+    const MIN_MS = 1270;                        // держим экран хотя бы столько
     const t0 = performance.now();
 
     const tick = () => {
