@@ -1212,209 +1212,141 @@
        • зацикливание в обе стороны, cubic-in-out анимация
      ================================================================ */
   /* ================================================================
-     06 · КОМАНДА — фото-туннель в перспективе
-     Портреты уходят вглубь по translateZ + rotateY (механика Coverflow).
-     Имя набрано на весь экран и перекрывает фото — типографика как
-     часть композиции, а не подпись под карточкой.
+     06 · КОМАНДА — портрет + дуга кликабельных аватарок
+     Крупное фото сотрудника, справа имя, должность и цитата.
+     Внизу — круглые аватарки, разложенные ПО ДУГЕ: активная крупнее
+     и в цвете, соседние мельче и ниже по дуге. Кликабельны.
      ================================================================ */
   .team {
-    position: relative;
     background: var(--l-ink);
     color: #fff;
-    height: 420vh;             /* длина проезда туннеля */
-  }
-  .team__vp {
-    position: sticky; top: 0; height: 100vh;
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: clamp(52px, 8vh, 96px) 0;
     overflow: hidden;
   }
-
-  /* имя во весь экран — живёт ПОД фото */
-  .team__ghost {
-    position: absolute; left: 0; right: 0; top: 46%;
-    transform: translateY(-50%);
-    text-align: center; pointer-events: none;
-    font-family: "Onest", sans-serif; font-weight: 400;
-    font-size: clamp(3.375rem, 0.25rem + 13.333vw, 16.25rem); line-height: .86;
-    letter-spacing: -0.05em; text-transform: uppercase;
-    color: transparent;
-    -webkit-text-stroke: 1px rgba(255,255,255,.42);
-    white-space: nowrap; z-index: 1;
+  .team__head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 24px; flex-wrap: wrap;
+    margin-bottom: clamp(22px, 3.4vh, 46px);
   }
-  /* дублёр поверх фото — обрезан по центру, даёт эффект «сквозь» */
-
-  /* сцена туннеля */
-  .team__stage {
-    position: absolute; inset: 0; z-index: 3;
-    perspective: 1400px;
-    transform-style: preserve-3d;
+  .team__label {
+    font-family: "Onest", sans-serif;
+    font-size: clamp(0.75rem, 0.69rem + 0.26vw, 1.0625rem);
+    letter-spacing: .06em; text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
+    display: flex; align-items: center; gap: 12px;
   }
-  .team__card {
-    position: absolute; left: 50%; top: 50%;
-    width: clamp(16.25rem, 13.5194rem + 11.65vw, 27.5rem);
-    aspect-ratio: 3 / 4;
-    margin: 0; border-radius: 3px; overflow: hidden;
-    transform-origin: center center;
-    will-change: transform, opacity;
-    background: #2a2924;
-    box-shadow: 0 40px 90px rgba(0,0,0,.55);
-  }
-  .team__card img {
-    width: 100%; height: 100%; object-fit: cover; object-position: center 18%;
-    display: block; filter: grayscale(1) contrast(1.05);
-    transition: filter .7s var(--ease-out);
-  }
-  .team__card.is-front img { filter: grayscale(0) contrast(1); }
-
-  /* мета активного человека — слева внизу, без рамок */
-  .team__meta {
-    position: absolute; left: var(--pad-x); bottom: clamp(46px, 8vh, 90px);
-    z-index: 6; max-width: min(420px, 34vw);
-  }
-  .team__role {
-    font-family: "Onest", sans-serif; font-size: clamp(0.6875rem, 0.642rem + 0.194vw, 0.875rem);
-    letter-spacing: .14em; text-transform: uppercase;
-    color: rgba(255,255,255,.5); margin-bottom: clamp(0.5rem, 0.409rem + 0.388vw, 0.875rem);
-    overflow: hidden;
-  }
-  .team__quote {
-    font-family: "Onest", sans-serif; font-weight: 400;
-    font-size: clamp(0.9375rem, 0.8161rem + 0.518vw, 1.4375rem); line-height: 1.38;
-    letter-spacing: -0.02em; color: rgba(255,255,255,.9);
-  }
-  .team__quote span { display: inline-block; }
-
-  /* счётчик справа внизу */
+  .team__label::before { content: ""; width: 40px; height: 1px; background: rgba(255,255,255,.4); }
   .team__counter {
-    position: absolute; right: var(--pad-x); bottom: clamp(46px, 8vh, 90px);
-    z-index: 6;
-    font-family: "Onest", sans-serif; font-size: clamp(0.75rem, 0.6893rem + 0.259vw, 1.0rem);
-    letter-spacing: .04em; color: rgba(255,255,255,.4);
+    font-family: "Onest", sans-serif;
+    font-size: clamp(0.75rem, 0.7rem + 0.22vw, 1rem);
+    letter-spacing: .04em; color: rgba(255, 255, 255, 0.42);
     font-variant-numeric: tabular-nums;
   }
   .team__counter b { color: #fff; font-weight: 400; }
 
-  /* подпись блока сверху */
-  .team__label {
-    position: absolute; top: clamp(70px, 11vh, 120px); left: var(--pad-x);
-    z-index: 6;
-    font-family: "Onest", sans-serif; font-size: clamp(0.75rem, 0.6742rem + 0.324vw, 1.0625rem);
-    letter-spacing: .06em; text-transform: uppercase;
-    color: rgba(255,255,255,.55);
-    display: flex; align-items: center; gap: 12px;
+  /* ---- карточка: фото слева, текст справа ---- */
+  .team__card {
+    display: grid;
+    grid-template-columns: minmax(240px, 33%) 1fr;
+    gap: clamp(26px, 4.4vw, 80px);
+    align-items: center;
   }
-  .team__label::before { content: ""; width: 40px; height: 1px; background: rgba(255,255,255,.4); }
+  .team__stage {
+    position: relative; width: 100%;
+    aspect-ratio: 425 / 530;
+    max-height: 50vh;
+    border-radius: 6px; overflow: hidden;
+    background: #2a2924;
+  }
+  .team__slide {
+    position: absolute; inset: 0;
+    opacity: 0; will-change: opacity;
+    transition: opacity .8s var(--ease-out);
+  }
+  .team__slide img {
+    width: 100%; height: 100%; object-fit: cover; object-position: center 18%;
+    display: block;
+  }
+  .team__slide.is-on { opacity: 1; }
+
+  .team__body { display: flex; flex-direction: column; align-items: flex-start; }
+  .team__role {
+    font-family: "Onest", sans-serif;
+    font-size: clamp(0.6875rem, 0.64rem + 0.2vw, 0.9375rem);
+    letter-spacing: .14em; text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: clamp(8px, 1.1vh, 14px);
+  }
+  .team__name {
+    font-family: "Onest", sans-serif; font-weight: 400;
+    font-size: clamp(1.9rem, 1.4rem + 2.2vw, 4rem);
+    line-height: 1; letter-spacing: -0.04em;
+    color: #fff; text-transform: capitalize;
+  }
+  .team__quote {
+    position: relative;
+    margin-top: clamp(18px, 2.6vh, 34px);
+    padding-left: clamp(20px, 2vw, 38px);
+    max-width: 34ch;
+    font-family: "Onest", sans-serif;
+    font-size: clamp(0.95rem, 0.83rem + 0.5vw, 1.45rem);
+    line-height: 1.4; letter-spacing: -0.015em;
+    color: rgba(255, 255, 255, 0.72);
+  }
+  .team__quote::before {
+    content: "«";
+    position: absolute; left: 0; top: -0.16em;
+    font-size: clamp(2.4rem, 1.9rem + 2.2vw, 4.2rem); line-height: 1;
+    color: #fff; opacity: .22;
+  }
+
+  /* ---- ДУГА АВАТАРОК ---- */
+  .team__nav {
+    position: relative;
+    height: clamp(96px, 12vh, 150px);
+    margin-top: clamp(24px, 3.6vh, 50px);
+  }
+  .team__track { position: relative; width: 100%; height: 100%; }
+  .team__btn {
+    position: absolute; left: 50%; top: 50%;
+    width: var(--btn, 62px); height: var(--btn, 62px);
+    margin: calc(var(--btn, 62px) / -2) 0 0 calc(var(--btn, 62px) / -2);
+    border: none; padding: 0; cursor: pointer;
+    border-radius: 50%; overflow: hidden;
+    background: #2a2924;
+    /* положение по дуге задаётся из JS одним transform */
+    will-change: transform, opacity;
+    transition: box-shadow .45s var(--ease-out);
+  }
+  .team__btn img {
+    width: 100%; height: 100%; object-fit: cover; object-position: center 18%;
+    display: block;
+    filter: grayscale(1) contrast(1.02); opacity: .55;
+    transition: filter .5s var(--ease-out), opacity .5s var(--ease-out);
+  }
+  .team__btn:hover img { opacity: .82; }
+  .team__btn.is-active img { filter: grayscale(0); opacity: 1; }
+  .team__btn.is-active { box-shadow: 0 10px 26px rgba(0, 0, 0, .45); }
+  /* кольцо активной аватарки */
+  .team__btn::after {
+    content: ""; position: absolute; inset: 0; border-radius: 50%;
+    border: 2px solid #fff; opacity: 0;
+    transition: opacity .45s var(--ease-out);
+  }
+  .team__btn.is-active::after { opacity: 1; }
+
+  .team__arrows { display: none; }
 
   @media (max-width: 860px) {
-    .team { height: 360vh; }
-    .team__card { width: 54vw; }
-    .team__meta { max-width: 76vw; bottom: 110px; }
-    .team__ghost { font-size: clamp(2.5rem, 1.7415rem + 3.236vw, 5.625rem); }
+    .team__card { grid-template-columns: 1fr; gap: 22px; }
+    .team__stage { max-height: none; aspect-ratio: 4/3; }
+    .team__nav { height: 86px; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .team { height: auto; }
-    .team__vp { position: relative; height: auto; padding: 90px 0; }
+    .team__slide { transition: none; }
   }
-
-  /* ---- табы объектов + микрострелки (низ кейса) ---- */
-  /* Названия объектов стоят ровно по центру блока, стрелки прижаты
-     к правому краю — они управление, а не часть композиции. */
-  .pr__tabs {
-    position: absolute; left: var(--pad-x); right: var(--pad-x);
-    bottom: clamp(32px, 4.6vh, 54px);
-    display: grid; grid-template-columns: 1fr auto 1fr;
-    align-items: center; gap: 20px;
-  }
-  .pr__tabs-list { grid-column: 2; justify-self: center; }
-  .pr__tabs-nav { grid-column: 3; justify-self: end; }
-  .pr__tabs-list { display: flex; align-items: center; gap: clamp(0.5rem, 0.409rem + 0.388vw, 0.875rem); }
-  .pr__tab {
-    position: relative;
-    padding: clamp(0.4375rem, 0.3768rem + 0.259vw, 0.6875rem) clamp(0.875rem, 0.7536rem + 0.518vw, 1.375rem);
-    border-radius: 100px;
-    border: 1px solid rgba(255, 255, 255, 0.24);
-    /* тёмное полупрозрачное стекло: на светлом кадре белый текст
-       на белой плашке полностью терялся */
-    background: rgba(16, 18, 24, 0.34);
-    backdrop-filter: blur(14px) saturate(150%);
-    -webkit-backdrop-filter: blur(14px) saturate(150%);
-    font-family: "Onest", sans-serif; font-weight: 400;
-    font-size: clamp(0.6875rem, 0.6268rem + 0.259vw, 0.9375rem); letter-spacing: .01em;
-    text-transform: uppercase; color: rgba(255, 255, 255, 0.92);
-    cursor: pointer; white-space: nowrap;
-    transition: color .4s var(--ease-out), background .4s var(--ease-out),
-                border-color .4s var(--ease-out);
-  }
-  .pr__tab:hover { color: #fff; background: rgba(16, 18, 24, 0.48); border-color: rgba(255, 255, 255, 0.42); }
-  .pr__tab.is-on {
-    color: #16150f; background: #fff; border-color: #fff;
-  }
-  /* полоска прогресса убрана — выглядела шумно */
-
-  .pr__tabs-nav { display: flex; gap: 8px; }
-  .pr__arrow {
-    width: clamp(2.0rem, 1.8786rem + 0.518vw, 2.5rem); height: clamp(2.0rem, 1.8786rem + 0.518vw, 2.5rem);
-    border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.26);
-    background: rgba(16, 18, 24, 0.34);
-    backdrop-filter: blur(14px) saturate(150%);
-    -webkit-backdrop-filter: blur(14px) saturate(150%);
-    color: #fff; display: grid; place-items: center; cursor: pointer;
-    transition: background .35s var(--ease-out), color .35s var(--ease-out),
-                border-color .35s var(--ease-out), transform .35s var(--ease-out);
-  }
-  .pr__arrow:hover {
-    background: #fff; color: #16150f; border-color: #fff; transform: translateY(-2px);
-  }
-  .pr__arrow svg { width: 44%; height: 44%; }
-
-  /* общая для 3–4 экранов «плавающая» шапка */
-  .topbar {
-    position: absolute; z-index: 20;
-    top: var(--pad-y); left: var(--pad-x); right: var(--pad-x);
-    display: flex; align-items: center; justify-content: space-between;
-    pointer-events: none;
-  }
-  .topbar > * { pointer-events: auto; }
-  .topbar--dark .brand__name { color: #111; }
-  .topbar--dark .brand__mark { color: #111; }
-  .topbar--dark .burger { background: #111; }
-  .topbar--dark .burger span { background: #fff; }
-  .topbar--dark .cta-nav { background: #111; }
-  .topbar--dark .cta-nav span,
-  .topbar--dark .cta-nav svg { color: #fff; }
-
-  @media (max-width: 900px) {
-    .reveal { height: 320vh; }
-    .reveal__type { padding-top: 16vh; }
-
-    .pr__head { max-width: 80vw; top: clamp(110px, 15vh, 160px); }
-    .pr__stats { grid-template-columns: 1fr; gap: 18px; bottom: 28px; }
-    .pr__stat--mid, .pr__stat--end { align-items: flex-start; text-align: left; }
-    .pr__num { font-size: clamp(2.625rem, 2.0789rem + 2.33vw, 4.875rem); }
-    .pr__stats { bottom: 104px; }
-    .pr__tabs { bottom: 24px; gap: 12px; }
-    .pr__tab { padding: 6px 12px; font-size: 10px; }
-  }
-  /* ================= 05 · КОНТАКТ + ФУТЕР ================= */
-  .contact { padding: clamp(90px, 15vh, 200px) 0 clamp(50px,8vh,90px); border-top: 1px solid var(--l-line); background: var(--l-ink); color: var(--l-bg); }
-  .contact__big {
-    font-family: var(--grotesk); font-weight: 600; font-size: clamp(2.375rem, 0.9794rem + 5.955vw, 8.125rem);
-    line-height: .98; letter-spacing: -0.04em; text-transform: uppercase; margin-bottom: clamp(1.875rem, 1.4199rem + 1.942vw, 3.75rem);
-  }
-  .contact__big a { color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3em; transition: opacity .3s; }
-  .contact__big a:hover { opacity: .6; }
-  .contact__big svg { width: .7em; height: .7em; }
-  .contact__grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px; padding-top: clamp(2.5rem, 2.0449rem + 1.942vw, 4.375rem); border-top: 1px solid rgba(255,255,255,.14); }
-  @media (max-width: 720px) { .contact__grid { grid-template-columns: 1fr 1fr; } }
-  .contact__col h4 { font-family: var(--grotesk); font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(238,234,226,.5); margin-bottom: 14px; }
-  .contact__col a, .contact__col p { display: block; color: var(--l-bg); text-decoration: none; font-size: 15px; margin-bottom: 8px; transition: opacity .3s; }
-  .contact__col a:hover { opacity: .6; }
-  .contact__foot { margin-top: clamp(3.125rem, 2.5182rem + 2.589vw, 5.625rem); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; font-family: var(--grotesk); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: rgba(238,234,226,.5); }
-
-  @media (prefers-reduced-motion: reduce) {
-    .site *, .site *::before, .site *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
-  }
-
-
   /* ================================================================
      08 · FAQ — вопросы как чертёжные строки
      Не «карточки-аккордеоны», а список: вопрос набран крупно, при
@@ -2553,21 +2485,26 @@
     </div>
   </section>
 
-  <!-- ============ 06 · КОМАНДА (фото-туннель) ============ -->
+  <!-- ============ 06 · КОМАНДА (портрет + дуга аватарок) ============ -->
   <section class="team" id="team">
-    <div class="team__vp">
-      <div class="team__label">Наша команда</div>
-
-      <!-- имя во весь экран: контур под фото + белый поверх -->
-      <div class="team__ghost" id="teamGhost"></div>
-
-      <div class="team__stage" id="teamStage"></div>
-
-      <div class="team__meta">
-        <div class="team__role" id="teamRole"></div>
-        <p class="team__quote" id="teamQuote"></p>
+    <div class="container">
+      <div class="team__head">
+        <div class="team__label">Наша команда</div>
+        <div class="team__counter"><b id="teamNum">01</b> / 05</div>
       </div>
-      <div class="team__counter"><b id="teamNum">01</b> / 05</div>
+
+      <div class="team__card">
+        <div class="team__stage" id="teamStage"></div>
+        <div class="team__body">
+          <div class="team__role" id="teamRole"></div>
+          <div class="team__name" id="teamName"></div>
+          <p class="team__quote" id="teamQuote"></p>
+        </div>
+      </div>
+
+      <div class="team__nav">
+        <div class="team__track" id="teamTrack"></div>
+      </div>
     </div>
   </section>
 
@@ -3641,111 +3578,129 @@
   })();
 
   /* ================================================================
-     06 · КОМАНДА — фото-туннель на GSAP ScrollTrigger
-     Карточки идут вглубь по оси Z. Скролл двигает «камеру»: ближняя
-     карточка вылетает на зрителя и тает, следующая подходит из глубины.
-     Имя живёт двумя слоями — контур под фото и белый в difference
-     поверх, поэтому типографика читается сквозь портрет.
+     06 · КОМАНДА — портрет + дуга кликабельных аватарок
+     Аватарки разложены по дуге: активная в центре крупная и в цвете,
+     соседние мельче и ниже по дуге. Клик переключает сотрудника,
+     портрет и текст меняются кросс-фейдом.
      ================================================================ */
   (function () {
     const stage = document.getElementById("teamStage");
-    if (!stage || !window.gsap) return;
-    gsap.registerPlugin(ScrollTrigger);
+    const track = document.getElementById("teamTrack");
+    if (!stage || !track) return;
+
+    const nameEl = document.getElementById("teamName");
+    const roleEl = document.getElementById("teamRole");
+    const quoteEl = document.getElementById("teamQuote");
+    const numEl = document.getElementById("teamNum");
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const PEOPLE = [
       { src: "assets/team/p1.jpg", name: "Алексей Иванов", role: "Главный архитектор",
-        quote: "Хорошая архитектура начинается не с формы, а с вопроса: как здесь будут жить через двадцать лет." },
+        quote: "Хорошая архитектура начинается не с формы, а с вопроса: как здесь будут жить через двадцать лет." },
       { src: "assets/team/p2.jpg", name: "Мария Лебедева", role: "Дизайнер интерьера",
-        quote: "Интерьер работает тогда, когда его не замечаешь — просто чувствуешь себя на своём месте." },
+        quote: "Интерьер работает тогда, когда его не замечаешь — просто чувствуешь себя на своём месте." },
       { src: "assets/team/p3.jpg", name: "Дмитрий Соловьёв", role: "Руководитель проектов",
-        quote: "Сроки и бюджет — не ограничения, а часть замысла. Мы держим их наравне с эстетикой." },
+        quote: "Сроки и бюджет — не ограничения, а часть замысла. Мы держим их наравне с эстетикой." },
       { src: "assets/team/p4.jpg", name: "Анна Ковалёва", role: "Ведущий архитектор",
-        quote: "Свет — главный материал. Всё остальное лишь помогает ему проявиться." },
+        quote: "Свет — главный материал. Всё остальное лишь помогает ему проявиться." },
       { src: "assets/team/p5.jpg", name: "Ольга Северина", role: "Главный конструктор",
-        quote: "Красивое решение почти всегда оказывается и самым прочным. Это не совпадение." },
+        quote: "Красивое решение почти всегда оказывается и самым прочным. Это не совпадение." },
     ];
-    const N = PEOPLE.length;
-    const GAP = 900;            // расстояние между карточками по Z
+    const M = PEOPLE.length;
     const pad = (n) => String(n).padStart(2, "0");
+    const cl = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 
-    const cards = PEOPLE.map((p) => {
-      const el = document.createElement("figure");
-      el.className = "team__card";
-      el.innerHTML = `<img src="${p.src}" alt="${p.name} — ${p.role}" decoding="async">`;
+    // портреты
+    const slides = PEOPLE.map((p, i) => {
+      const el = document.createElement("div");
+      el.className = "team__slide" + (i === 0 ? " is-on" : "");
+      el.innerHTML = `<img src="${p.src}" alt="${p.name} — ${p.role}"
+        loading="${i < 2 ? "eager" : "lazy"}" decoding="async">`;
       stage.appendChild(el);
       return el;
     });
 
-    const ghost = document.getElementById("teamGhost");
-    const roleEl = document.getElementById("teamRole");
-    const quoteEl = document.getElementById("teamQuote");
-    const numEl = document.getElementById("teamNum");
+    // аватарки
+    const btns = PEOPLE.map((p, i) => {
+      const b = document.createElement("button");
+      b.className = "team__btn";
+      b.type = "button";
+      b.setAttribute("aria-label", p.name);
+      b.innerHTML = `<img src="${p.src}" alt="" decoding="async">`;
+      b.addEventListener("click", () => show(i));
+      track.appendChild(b);
+      return b;
+    });
 
-    let shown = -1;
-    function setActive(i) {
-      if (i === shown) return;
-      shown = i;
-      const p = PEOPLE[i];
-      if (ghost) ghost.textContent = p.name;
-      if (numEl) numEl.textContent = pad(i + 1);
-      cards.forEach((c, k) => c.classList.toggle("is-front", k === i));
+    /* Раскладка по дуге: активная аватарка в центре и крупнее,
+       соседние опускаются по параболе и уменьшаются. */
+    let cur = 0;
+    function layout() {
+      const w = track.clientWidth || 900;
+      const size = Math.max(44, Math.min(78, w * 0.062));
+      const step = size * 1.5;                  // просвет между аватарками
+      const curve = size * 0.14;                // глубина дуги — пологая
 
-      // роль и цитата перебираются по словам — мягкая волна
-      [[roleEl, p.role], [quoteEl, p.quote]].forEach(([el, txt], idx) => {
-        if (!el) return;
-        el.textContent = txt;
-        gsap.fromTo(el,
-          { yPercent: 60, opacity: 0 },
-          { yPercent: 0, opacity: 1, duration: .7, delay: idx * .06, ease: "power3.out", overwrite: true });
+      /* Ряд аватарок всегда стоит по центру, а дуга строится
+         относительно СЕРЕДИНЫ ряда — иначе при выборе крайнего
+         сотрудника всё крыло уезжает вбок и вниз. */
+      const mid = (M - 1) / 2;
+      btns.forEach((b, i) => {
+        const pos = i - mid;                    // место в ряду
+        const off = i - cur;                    // расстояние до активной
+        const a = Math.abs(off);
+        const x = pos * step;
+        const y = curve * pos * pos - curve * mid * mid * 0.5;
+        const scale = 1 - Math.min(0.34, a * 0.13);
+        const op = Math.max(0.25, 1 - a * 0.22);
+
+        b.style.setProperty("--btn", size + "px");
+        b.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${scale.toFixed(3)})`;
+        b.style.opacity = op.toFixed(2);
+        b.style.zIndex = String(50 - Math.round(a));
+        b.classList.toggle("is-active", i === cur);
       });
     }
 
-    // раскладка: камера движется по Z, карточки стоят на месте
-    function layout(camZ) {
-      cards.forEach((c, i) => {
-        const z = i * GAP - camZ;                 // положение относительно камеры
-        const depth = z / GAP;                    // 0 = в фокусе, >0 — глубже
-        const ad = Math.abs(depth);
+    function show(i) {
+      const idx = ((i % M) + M) % M;
+      if (idx === cur && nameEl.textContent) return;
+      cur = idx;
+      const p = PEOPLE[idx];
+      slides.forEach((el, k) => el.classList.toggle("is-on", k === idx));
+      if (numEl) numEl.textContent = pad(idx + 1);
+      layout();
 
-        // Видны ПЯТЬ карточек: только так работает перспектива. Дальние
-        // не «просвечивают прямоугольником», а честно уходят в глубину —
-        // за счёт размытия и затемнения, а не обнуления прозрачности.
-        const scale = gsap.utils.clamp(.42, 1.18, 1 - depth * 0.17);
-        const opacity = z < -GAP * 0.5 ? 0 : gsap.utils.clamp(0, 1, 1 - ad / 2.6);
-        const blur = gsap.utils.clamp(0, 7, (ad - 0.25) * 3);
-        const rotY = gsap.utils.clamp(-26, 26, depth * 15);
-        // карточки стоят по дуге, а не стопкой — читается коридор
-        const x = Math.sin(depth * 0.62) * 300;
-        const y = Math.cos(depth * 0.5) * 22 - 22;
-        gsap.set(c, {
-          transform: `translate(-50%, -50%) translate3d(${x}px, ${y}px, ${-z * 0.5}px) rotateY(${rotY}deg) scale(${scale})`,
-          opacity,
-          filter: blur > 0.1 ? `blur(${blur}px)` : "none",
-          zIndex: 100 - Math.round(ad * 10),
+      [[roleEl, p.role], [nameEl, p.name], [quoteEl, p.quote]].forEach(([el, txt], k) => {
+        if (!el) return;
+        if (reduce) { el.textContent = txt; return; }
+        el.style.transition = "none";
+        el.style.opacity = "0";
+        el.style.transform = "translateY(12px)";
+        el.textContent = txt;
+        requestAnimationFrame(() => {
+          el.style.transition = `opacity .5s var(--ease-out) ${k * 70}ms, transform .65s var(--ease-out) ${k * 70}ms`;
+          el.style.opacity = "1";
+          el.style.transform = "translateY(0)";
         });
       });
     }
 
-    const st = ScrollTrigger.create({
-      trigger: ".team",
-      start: "top top",
-      end: "bottom bottom",
-      scrub: 0.6,
-      onUpdate(self) {
-        const camZ = self.progress * (N - 1) * GAP;
-        layout(camZ);
-        setActive(gsap.utils.clamp(0, N - 1, Math.round(camZ / GAP)));
-      },
+    // клавиатура и свайп
+    track.closest(".team")?.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft") { show(cur - 1); e.preventDefault(); }
+      if (e.key === "ArrowRight") { show(cur + 1); e.preventDefault(); }
     });
+    let sx = null;
+    stage.addEventListener("pointerdown", (e) => { sx = e.clientX; }, { passive: true });
+    stage.addEventListener("pointerup", (e) => {
+      if (sx === null) return;
+      const dx = e.clientX - sx; sx = null;
+      if (Math.abs(dx) > 40) show(cur + (dx < 0 ? 1 : -1));
+    }, { passive: true });
 
-    layout(0); setActive(0);
-    addEventListener("resize", () => ScrollTrigger.refresh());
-    // страницу достраивают ленты и SplitText — без пересчёта позиции
-    // всех триггеров уезжают на высоту добавленного контента
-    addEventListener("load", () => ScrollTrigger.refresh());
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(() => ScrollTrigger.refresh());
-    }
+    addEventListener("resize", layout, { passive: true });
+    show(0);
   })();
 
   /* ---- 07 · Отчёт надзора: строки проявляются по одной ---- */
