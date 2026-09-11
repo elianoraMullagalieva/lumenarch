@@ -324,11 +324,6 @@
     text-transform: uppercase;
     color: #fff;
   }
-    50% {
-      opacity: 1;
-      transform: scale(1.12) rotate(45deg);
-    }
-  }
 
   /* -------- eyebrow слева внизу (блок 1) -------- */
   .eyebrow--bl {
@@ -434,8 +429,8 @@
     text-transform: uppercase;
     color: #fff;
     white-space: nowrap;
-    padding-bottom: 3px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.7);
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.32);
     transition: border-color 0.4s var(--ease-out);
   }
   .glass__btn svg {
@@ -445,7 +440,7 @@
     color: #fff;
     transition: transform 0.45s var(--ease-out);
   }
-  .glass__btn:hover span { border-color: #fff; }
+  .glass__btn:hover span { border-color: rgba(255, 255, 255, 0.75); }
   .glass__btn:hover svg { transform: translate(3px, -3px); }
 
   .glass__thumb {
@@ -3676,7 +3671,7 @@
     if (!matchMedia("(hover: hover) and (pointer: fine)").matches) return;
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    const SEL = ".cta-nav, .ask__submit, .b2-cta__circle, .pr__arrow, .team__arrow, .glass__btn";
+    const SEL = ".cta-nav, .ask__submit, .b2-cta__circle, .pr__arrow, .team__arrow";
 
     document.querySelectorAll(SEL).forEach((el) => {
       const power = el.classList.contains("pr__arrow") || el.classList.contains("team__arrow") ? 0.5 : 0.32;
