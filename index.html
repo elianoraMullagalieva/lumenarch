@@ -196,7 +196,9 @@
     top: var(--pad-y);
     left: var(--pad-x);
     right: var(--pad-x);
-    z-index: 40;
+    /* выше .site (z-index 2) и любых sticky-сцен: шапка лежит
+       на верхнем уровне документа, вне stacking-context секций */
+    z-index: 9000;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -1521,7 +1523,7 @@
   /* шапка стоит НАД каруселью и не пересекается с ней */
   .steps__head {
     position: relative; z-index: 5;
-    padding: clamp(34px, 5.2vh, 70px) var(--pad-x) 0;
+    padding: clamp(96px, 12vh, 132px) var(--pad-x) 0;
     display: flex; flex-direction: column; align-items: center;
     gap: clamp(10px, 1.6vh, 20px);
     pointer-events: none;
@@ -2092,7 +2094,27 @@
   </defs>
 </svg>
 
-<section class="story" id="story">
+<nav class="nav">
+    <div class="nav__left">
+      <button class="burger" aria-label="Открыть меню"><span></span><span></span></button>
+      <div class="brand">
+        <svg class="brand__mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 3v18M3 12h18M6.5 6.5l11 11M17.5 6.5l-11 11"
+            stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+        </svg>
+        <span class="brand__name">LUMENARCH</span>
+      </div>
+    </div>
+    <a class="cta-nav" href="#">
+      <span>Консультация</span>
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 4v16M4 12h16M7 7l10 10M17 7L7 17"
+          stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+      </svg>
+    </a>
+  </nav>
+
+  <section class="story" id="story">
   <div class="story__viewport">
     <!-- ФОН: видео-скраб + заглушка -->
     <div class="bg" id="bg">
@@ -2111,25 +2133,6 @@
     <!-- UI: nav + угловые оверлеи (responsive, не режутся) -->
     <div class="ui">
       <!-- NAV (общий) -->
-      <nav class="nav">
-        <div class="nav__left">
-          <button class="burger" aria-label="Открыть меню"><span></span><span></span></button>
-          <div class="brand">
-            <svg class="brand__mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M12 3v18M3 12h18M6.5 6.5l11 11M17.5 6.5l-11 11"
-                stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
-            </svg>
-            <span class="brand__name">LUMENARCH</span>
-          </div>
-        </div>
-        <a class="cta-nav" href="#">
-          <span>Консультация</span>
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M12 4v16M4 12h16M7 7l10 10M17 7L7 17"
-              stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
-          </svg>
-        </a>
-      </nav>
 
       <!-- ===== БЛОК 1 ===== -->
       <div class="layer" id="layer1">
@@ -2190,6 +2193,7 @@
      СВЕТЛЫЙ ПРЕМИУМ-САЙТ ПОСЛЕ HERO
      ================================================================ -->
 <div class="site">
+
 
   <!-- ============ 03 · МАНИФЕСТ → КАДР → ПРОЕКТ «АТРИУМ» ============
        ОДНА сцена, а не две: белый манифест → снизу выезжает кадр башни →
@@ -4139,7 +4143,7 @@
           /* кадр, вырожденный в полоску, читается как мусор, а не как
              кадр в профиль — считаем его ширину на экране и гасим */
           const projW = (items[0].el.offsetWidth || 90) * sc * Math.abs(Math.cos(rad));
-          if (projW < 26) op *= cl((projW - 12) / 14, 0, 1);
+          if (projW < 42) op *= cl((projW - 26) / 16, 0, 1);
           /* у края контейнера кадры растворяются, а не обрываются рамкой */
           const edge = cl((W / 2 - Math.abs(x)) / (W * 0.10), 0, 1);
           op *= edge;
@@ -4564,7 +4568,7 @@
        Радиус апофемы считается так, чтобы стороны многоугольника
        ровно совпадали с шириной карточки: R = W·GAP / (2·tan(θ/2)). */
     const STEP_DEG = 36;
-    const GAP = 1.09;
+    const GAP = 1.28;
     const VIS = 3.0;               // сколько шагов от центра ещё рисуем
 
     function geom() {
