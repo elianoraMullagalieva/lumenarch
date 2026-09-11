@@ -192,14 +192,33 @@
 
   /* -------------------- NAV -------------------- */
   .nav {
-    position: absolute;
+    position: fixed;
     top: var(--pad-y);
     left: var(--pad-x);
     right: var(--pad-x);
+    z-index: 40;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    pointer-events: none;
+    /* цвет плашек меняется плавно при переходе между секциями */
+    transition: opacity .45s var(--ease-out);
   }
+  .nav > * { pointer-events: auto; }
+  .nav .brand__name, .nav .brand__mark,
+  .nav .cta-nav, .nav .cta-nav span, .nav .cta-nav svg, .nav .burger {
+    transition: background-color .45s var(--ease-out), color .45s var(--ease-out);
+  }
+  /* НА СВЕТЛОМ ФОНЕ: плашки и звезда тёмные */
+  .nav--onLight .brand__name,
+  .nav--onLight .brand__mark { color: #16150f; }
+  .nav--onLight .burger { background: #16150f; }
+  .nav--onLight .burger span { background: #fff; }
+  .nav--onLight .cta-nav { background: #16150f; }
+  .nav--onLight .cta-nav span,
+  .nav--onLight .cta-nav svg { color: #fff; }
+  /* пока идёт прелоадер шапки не видно */
+  .nav.is-hidden { opacity: 0; pointer-events: none; }
   .nav__left {
     display: flex;
     align-items: center;
@@ -2686,10 +2705,6 @@
       <h2 class="band__title">Полный цикл работ<br />под одной ответственностью</h2>
     </header>
     <div class="band__stage" data-band-stage></div>
-    <div class="band__fact">
-      <div class="band__num">4</div>
-      <div class="band__cap">этапа под одной ответственностью</div>
-    </div>
   </section>
 
   <!-- ============ 08 · FAQ ============ -->
@@ -4120,7 +4135,14 @@
              плюс собственный калибр кадра — размеры вперемешку */
           const depth = (front + 1) / 2;               // 0 дальний .. 1 ближний
           const sc = (0.40 + 0.85 * Math.pow(depth, 1.5)) * (0.70 + it.sizeK * 0.58);
-          const op = front < -0.12 ? 0 : cl((front + 0.12) / 0.50, 0, 1) * 0.92 + 0.08;
+          let op = front < -0.12 ? 0 : cl((front + 0.12) / 0.50, 0, 1) * 0.92 + 0.08;
+          /* кадр, вырожденный в полоску, читается как мусор, а не как
+             кадр в профиль — считаем его ширину на экране и гасим */
+          const projW = (items[0].el.offsetWidth || 90) * sc * Math.abs(Math.cos(rad));
+          if (projW < 26) op *= cl((projW - 12) / 14, 0, 1);
+          /* у края контейнера кадры растворяются, а не обрываются рамкой */
+          const edge = cl((W / 2 - Math.abs(x)) / (W * 0.10), 0, 1);
+          op *= edge;
           el.style.transform =
             `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, ${z.toFixed(1)}px)` +
             ` rotateY(${(-deg + it.tiltY).toFixed(2)}deg)` +
@@ -4643,6 +4665,54 @@
     addEventListener("resize", () => { last = -1; if (live) kick(); }, { passive: true });
     draw(progress());
     }
+  })();
+
+
+  /* ================================================================
+     ЦВЕТ ШАПКИ ПО ФОНУ СЕКЦИИ
+     Шапка липкая и идёт через весь сайт, а фоны секций чередуются:
+     светлый off-white → тёмный #16150f. Определяем, что сейчас под
+     шапкой, и красим плашки в противоход — иначе на светлом блоке
+     белая кнопка и звезда пропадали.
+     ================================================================ */
+  (function () {
+    const nav = document.querySelector(".nav");
+    if (!nav) return;
+
+    // секции, у которых фон тёмный — на них шапка остаётся светлой
+    const isDark = (el) => {
+      const bg = getComputedStyle(el).backgroundColor;
+      const m = bg.match(/[\d.]+/g);
+      if (!m || (m[3] !== undefined && +m[3] < 0.3)) return null;   // прозрачная
+      return (0.299 * +m[0] + 0.587 * +m[1] + 0.114 * +m[2]) < 128;
+    };
+
+    const probeY = () => nav.getBoundingClientRect().bottom - 4;
+
+    // фон берём у САМОЙ СЕКЦИИ, а не у верхнего элемента под курсором:
+    // тёмная карточка формы на светлой секции сбивала определение
+    const SECTIONS = [...document.querySelectorAll("section, .story, .reveal, .contact")];
+
+    function update() {
+      const y = probeY();
+      let dark = null;
+      // секция, которая сейчас пересекает линию шапки (последняя выигрывает)
+      for (const sec of SECTIONS) {
+        const r = sec.getBoundingClientRect();
+        if (r.top <= y && r.bottom > y) {
+          const d = isDark(sec);
+          if (d !== null) dark = d;
+        }
+      }
+      if (dark === null) dark = true;              // над видео считаем тёмным
+      nav.classList.toggle("nav--onLight", !dark);
+    }
+
+    let tick = null;
+    const kick = () => { if (!tick) tick = requestAnimationFrame(() => { tick = null; update(); }); };
+    addEventListener("scroll", kick, { passive: true });
+    addEventListener("resize", kick, { passive: true });
+    update();
   })();
 
 </script>
