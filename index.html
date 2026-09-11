@@ -1444,8 +1444,8 @@
   /* кадр: абсолютный, центр — середина сцены, дальше двигает только JS */
   .band__shot {
     position: absolute; left: 50%; top: 50%;
-    width: clamp(6.5rem, 4.8rem + 7.2vw, 13rem);
-    height: clamp(4.6rem, 3.4rem + 5.1vw, 9.2rem);
+    width: clamp(8.5rem, 6.2rem + 9.6vw, 17rem);
+    height: clamp(6rem, 4.4rem + 6.8vw, 12rem);
     margin-left: calc(clamp(6.5rem, 4.8rem + 7.2vw, 13rem) / -2);
     margin-top: calc(clamp(4.6rem, 3.4rem + 5.1vw, 9.2rem) / -2);
     overflow: hidden; border-radius: 2px;
@@ -3830,13 +3830,13 @@
         const h = items[0].el.offsetHeight || 110;
         /* радиус считаем от ширины контейнера: передняя дуга должна
            умещаться в кадр, а не улетать за края */
-        const radius = cl(W * 0.34, 210, 520);
+        const radius = cl(W * 0.52, 320, 860);
         const stepDeg = 360 / PER_ROW;
         const spin = p * 150 * dir;
 
         items.forEach(({ el, row: rw, idx }) => {
           // ярусы смещены по фазе на треть шага
-          const deg = idx * stepDeg + spin + rw * stepDeg / ROWS;
+          const deg = idx * stepDeg + spin;
           const rad = deg * Math.PI / 180;
           const x = Math.sin(rad) * radius;
           const z = Math.cos(rad) * radius - radius;   // 0 у ближнего края
