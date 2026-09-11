@@ -1560,18 +1560,20 @@
     position: relative;
     padding: clamp(0.4375rem, 0.3768rem + 0.259vw, 0.6875rem) clamp(0.875rem, 0.7536rem + 0.518vw, 1.375rem);
     border-radius: 100px;
-    border: 1px solid rgba(255, 255, 255, 0.28);
-    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    /* тёмное полупрозрачное стекло: на светлом кадре белый текст
+       на белой плашке полностью терялся */
+    background: rgba(16, 18, 24, 0.34);
     backdrop-filter: blur(14px) saturate(150%);
     -webkit-backdrop-filter: blur(14px) saturate(150%);
     font-family: "Onest", sans-serif; font-weight: 400;
     font-size: clamp(0.6875rem, 0.6268rem + 0.259vw, 0.9375rem); letter-spacing: .01em;
-    text-transform: uppercase; color: rgba(255, 255, 255, 0.72);
+    text-transform: uppercase; color: rgba(255, 255, 255, 0.92);
     cursor: pointer; white-space: nowrap;
     transition: color .4s var(--ease-out), background .4s var(--ease-out),
                 border-color .4s var(--ease-out);
   }
-  .pr__tab:hover { color: #fff; border-color: rgba(255, 255, 255, 0.5); }
+  .pr__tab:hover { color: #fff; background: rgba(16, 18, 24, 0.48); border-color: rgba(255, 255, 255, 0.42); }
   .pr__tab.is-on {
     color: #16150f; background: #fff; border-color: #fff;
   }
@@ -1587,8 +1589,8 @@
   .pr__tabs-nav { display: flex; gap: 8px; }
   .pr__arrow {
     width: clamp(2.0rem, 1.8786rem + 0.518vw, 2.5rem); height: clamp(2.0rem, 1.8786rem + 0.518vw, 2.5rem);
-    border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.3);
-    background: rgba(255, 255, 255, 0.06);
+    border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.26);
+    background: rgba(16, 18, 24, 0.34);
     backdrop-filter: blur(14px) saturate(150%);
     -webkit-backdrop-filter: blur(14px) saturate(150%);
     color: #fff; display: grid; place-items: center; cursor: pointer;
@@ -2066,6 +2068,12 @@
   @media (prefers-reduced-motion: reduce) {
     .pre__canvas { display: none; }
   }
+
+  /* Шапка манифеста появляется только когда белая шторка сомкнулась:
+     до этого на экране ещё видна шапка сторителлинга, и два меню
+     накладываются друг на друга. */
+  .topbar.is-hidden { opacity: 0; pointer-events: none; }
+  .topbar { transition: opacity .5s var(--ease-out); }
 </style>
 
 <!-- Прелоадер: вращающаяся стопка пластин + счётчик -->
@@ -2226,7 +2234,7 @@
       </div>
 
       <!-- шапка: тёмная на белом, светлая на фото -->
-      <div class="topbar topbar--dark" id="revealTop">
+      <div class="topbar topbar--dark is-hidden" id="revealTop">
         <div class="nav__left">
           <button class="burger" aria-label="Открыть меню"><span></span><span></span></button>
           <div class="brand">
@@ -3209,6 +3217,14 @@
       // шапка светлеет только когда кадр реально дошёл до неё
       top.classList.toggle("topbar--dark", g * 100 < 90);
 
+      /* Белая шторка считается сомкнутой, когда секция дошла до верха
+         экрана: сторителлинг уже ушёл, его шапка не видна. Только
+         теперь показываем шапку манифеста и пускаем текст —
+         иначе на стыке было бы два меню одновременно. */
+      const closed = sec.getBoundingClientRect().top <= 2;
+      top.classList.toggle("is-hidden", !closed);
+      if (closed && window.__revealStart) window.__revealStart();
+
       // ---- фаза 3: карточка проекта поверх раскрытого кадра ----
       const pr = cl((p - 0.62) / 0.16);
       const prE = eo(pr);
@@ -3289,27 +3305,28 @@
         }, 0);
       }
 
-      // три строки заголовка: шаг 0.13с — лесенка видна, но не вяло
-      const LN_AT = [0.15, 0.28, 0.41];
+      /* Больше ступеней: сперва отдельно «С нами надёжно и безопасно»,
+         и только через заметную паузу пойдёт заголовок — по строке,
+         с шагом 0.32с. Так вход читается поэтапно, а не разом. */
+      const LN_AT = [0.75, 1.07, 1.39];
       lines.forEach((ln, i) => {
         tl.to(ln, {
           opacity: 1, filter: "blur(0px)", y: 0,
-          duration: 1.0, ease: "power3.out",
-        }, LN_AT[i] ?? (0.15 + i * 0.13));
+          duration: 1.15, ease: "power3.out",
+        }, LN_AT[i] ?? (0.75 + i * 0.32));
       });
 
       // кадр: clip-path растёт от сцены, здесь только контр-зум картинки
       tl.to({ z: 1.12 }, {
-        z: 1, duration: 1.1, ease: "power3.out",
+        z: 1, duration: 1.3, ease: "power3.out",
         onUpdate() { revealZoom = this.targets()[0].z; last = -1; kick(); },
-      }, 0.55);
+      }, 1.5);
 
-      ScrollTrigger.create({
-        trigger: sec,
-        start: "top 70%",
-        once: true,
-        onEnter: () => tl.play(),
-      });
+      /* Запуск НЕ по входу секции, а по факту смыкания белой шторки:
+         пока она едет, на экране ещё живёт сторителлинг со своей
+         шапкой, и текст поверх него смотрелся бы наложением.
+         Флаг выставляет draw() сцены. */
+      window.__revealStart = () => { if (!tl.isActive() && tl.progress() === 0) tl.play(); };
     })();
 
     /* ================================================================
