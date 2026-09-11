@@ -693,17 +693,19 @@
   }
   /* Имя + кикер в одну строку: кикер прижат к верху по базовой линии
      имени и стоит справа от него — точно как в макете. */
+  /* Кикер стоит НАД именем со сдвигом вправо — как в макете,
+     а не сбоку по базовой линии. */
   .pr__titleline {
-    display: flex; align-items: flex-start;
-    gap: clamp(0.5rem, 0.3786rem + 0.518vw, 1.0rem);
+    display: flex; flex-direction: column; align-items: flex-start;
   }
   .pr__kicker {
     font-family: "Onest", sans-serif; font-weight: 400;
     font-size: clamp(0.8125rem, 0.7063rem + 0.453vw, 1.25rem); line-height: 1.18;
     text-transform: uppercase; letter-spacing: .01em; color: #fff;
     white-space: nowrap;
-    /* подпираем к верхней линии имени */
-    margin-top: clamp(0.625rem, 0.443rem + 0.777vw, 1.375rem);
+    /* сдвиг вправо по макету: кикер начинается примерно на трети имени */
+    margin-left: clamp(1.25rem, 0.0107rem + 5.291vw, 6.375rem);
+    margin-bottom: clamp(0.125rem, 0.0341rem + 0.388vw, 0.5rem);
     text-shadow: 0 2px 24px rgba(0, 0, 0, .4);
   }
   /* имя объекта — крупное, 140px по макету */
@@ -798,6 +800,8 @@
   /* лента, которая едет вбок */
   .how__track {
     display: flex; align-items: center;
+    /* компенсируем место под кадрами — композиция держит центр */
+    margin-top: clamp(-6rem, -9vh, -3.5rem);
     gap: clamp(3.75rem, 2.0813rem + 7.12vw, 10.625rem);
     padding: 0 var(--pad-x);
     will-change: transform;
@@ -1028,6 +1032,7 @@
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const cl = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+    const eo = (t) => 1 - Math.pow(1 - t, 3);
     const pad = (n) => String(n).padStart(2, "0");
 
     let last = -1, raf = null, idle = 0;
@@ -1056,9 +1061,29 @@
       let best = 0, bd = 1e9;
       items.forEach((el, i) => {
         const r = el.getBoundingClientRect();
-        const d = Math.abs(r.left + r.width / 2 - mid);
+        const c = r.left + r.width / 2;
+        const d = Math.abs(c - mid);
         if (d < bd) { bd = d; best = i; }
         el.classList.toggle("is-near", r.left < window.innerWidth * 0.72);
+
+        /* Кадр раскрывается по мере подхода принципа к центру и
+           схлопывается на выходе. focus: 0 — принцип далеко,
+           1 — стоит ровно по центру экрана. */
+        const shot = el.querySelector(".how__shot");
+        if (!shot) return;
+        const reach = window.innerWidth * 0.62;
+        const focus = cl(1 - d / reach);
+        const e = eo(focus);
+        // окно кадра открывается снизу вверх
+        shot.style.clipPath = `inset(${(1 - e) * 100}% 0 0 0)`;
+        // и слегка подаётся навстречу зрителю
+        shot.style.transform = `translate3d(0, ${(1 - e) * 34}px, 0)`;
+        const img = shot.firstElementChild;
+        if (img) {
+          // контр-зум: картинка успокаивается, когда принцип в фокусе
+          img.style.transform = `scale(${1.16 - e * 0.16})`;
+          img.style.filter = `grayscale(${1 - e * 0.85}) contrast(1.06) brightness(${0.82 + e * 0.18})`;
+        }
       });
       if (numEl) numEl.textContent = pad(best + 1);
     }
@@ -1889,6 +1914,56 @@
        заголовок с подписью должны помещаться целиком */
     .story__viewport { min-height: 100svh; height: 100svh; }
   }
+
+  /* ================================================================
+     «КАК ИМЕННО» · ФОТО К КАЖДОМУ ПРИНЦИПУ
+     Кадр выезжает из-под контурной цифры и раскрывается по clip-path,
+     когда принцип подходит к центру экрана. На выходе — схлопывается
+     обратно. Переход «оживает в фокусе», а не просто едет вбок.
+     ================================================================ */
+  .how__item { position: relative; }
+  /* оставляем место под кадр, чтобы он не наезжал на соседние принципы */
+  .how__body { padding-bottom: clamp(9rem, 16vh, 14rem); }
+
+  .how__shot {
+    position: absolute;
+    /* кадр стоит ПОД текстом принципа, не перекрывая его */
+    left: 0;
+    top: calc(100% + clamp(0.75rem, 1.4vh, 1.5rem));
+    width: clamp(14rem, 11rem + 10vw, 23rem);
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border-radius: 2px;
+    z-index: -1;
+    /* стартовое состояние: кадр свёрнут снизу */
+    clip-path: inset(100% 0 0 0);
+    will-change: clip-path, transform;
+  }
+  .how__shot img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+    filter: grayscale(1) contrast(1.06) brightness(.82);
+    transform: scale(1.16);
+    will-change: transform, filter;
+  }
+  /* тонкая линия-связка от цифры к кадру */
+  .how__shot::after {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 1px; background: rgba(255,255,255,.35);
+    transform: scaleY(0); transform-origin: bottom;
+    transition: transform .8s var(--ease-out) .15s;
+  }
+  .how__item.is-near .how__shot::after { transform: scaleY(1); }
+
+  @media (max-width: 860px) {
+    .how__shot {
+      right: auto; left: 0; bottom: -7rem;
+      width: 9.5rem;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .how__shot { clip-path: none; }
+    .how__shot img { transform: none; }
+  }
 </style>
 
 <section class="story" id="story">
@@ -1942,7 +2017,7 @@
         <div class="glass" id="glass">
           <div class="glass__body">
             <span class="glass__chip">Наши проекты</span>
-            <p class="glass__title">Проект торгового<br />центра в Москве</p>
+            <p class="glass__title">Проект торгового<br />центра в Москве</p>
             <a class="glass__btn" href="#">
               <span>Подробнее</span>
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -1965,9 +2040,9 @@
             <path d="M12 4v16M4 12h16" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
           </svg>
           <h2 class="b2-title" id="b2title">
-            <span class="line"><span>Берём на себя все этапы:</span></span>
-            <span class="line"><span>от концепции до реализации —</span></span>
-            <span class="line"><span>полный контроль на каждом этапе</span></span>
+            <span class="line"><span>Берём на себя все этапы:</span></span>
+            <span class="line"><span>от концепции до реализации —</span></span>
+            <span class="line"><span>полный контроль на каждом этапе</span></span>
           </h2>
         </div>
 
@@ -2036,11 +2111,11 @@
 
       <!-- 1-я фаза: белый манифест -->
       <div class="reveal__type" id="revealType">
-        <div class="reveal__eyebrow"><span>С нами надёжно и безопасно</span></div>
+        <div class="reveal__eyebrow"><span>С нами надёжно и безопасно</span></div>
         <h2 class="reveal__h" id="revealH">
           <span class="ln"><span>«Согласовываем архитектуру,</span></span>
-          <span class="ln"><span>конструктив и инженерию до стройки,</span></span>
-          <span class="ln"><span>а не решаем конфликты на объекте</span></span>
+          <span class="ln"><span>конструктив и инженерию до стройки,</span></span>
+          <span class="ln"><span>а не решаем конфликты на объекте</span></span>
         </h2>
       </div>
 
@@ -2050,13 +2125,13 @@
         <div class="pr__head" data-pr-in>
           <!-- имя и кикер стоят в одну строку по базовой линии, как в макете -->
           <div class="pr__titleline">
-            <span class="pr__name" id="prName">Атриум</span>
             <span class="pr__kicker" id="prKicker">Бизнес центр</span>
+            <span class="pr__name" id="prName">Атриум</span>
           </div>
           <p class="pr__desc" id="prDesc">
-            Архитектура делового пространства, построенная на контрасте:
-            выразительные арки, прозрачность стекла и характер металла
-            объединены в единый городской силуэт
+            Архитектура делового пространства, построенная на контрасте:
+            выразительные арки, прозрачность стекла и характер металла
+            объединены в единый городской силуэт
           </p>
         </div>
 
@@ -2109,15 +2184,16 @@
           <div class="how__num">01</div>
           <div class="how__body">
             <p class="how__text">
-              Проверяем, где можно строить,
-              <u>до того</u> как вы влюбитесь в планировку
+              Проверяем, где можно строить,
+              <u>до того</u> как вы влюбитесь в планировку
             </p>
             <p class="how__note">
-              Геология, рельеф, инсоляция, подъезды и ограничения участка —
-              до концепции. Иначе красивая планировка упирается в то,
-              что на этом пятне её построить нельзя.
+              Геология, рельеф, инсоляция, подъезды и ограничения участка —
+              до концепции. Иначе красивая планировка упирается в то,
+              что на этом пятне её построить нельзя.
             </p>
             <span class="how__rule"></span>
+            <figure class="how__shot"><img src="assets/services/landscape.jpg" alt="Анализ участка до концепции" loading="lazy" decoding="async"></figure>
           </div>
         </div>
 
@@ -2125,15 +2201,16 @@
           <div class="how__num">02</div>
           <div class="how__body">
             <p class="how__text">
-              Согласовываем архитектуру, конструктив и инженерию
-              <u>до стройки</u>, а не решаем конфликты на объекте
+              Согласовываем архитектуру, конструктив и инженерию
+              <u>до стройки</u>, а не решаем конфликты на объекте
             </p>
             <p class="how__note">
-              Все три раздела сводятся в одной модели. Коллизии видно
-              на экране, а не в момент, когда балка проходит там,
-              где по проекту шёл воздуховод.
+              Все три раздела сводятся в одной модели. Коллизии видно
+              на экране, а не в момент, когда балка проходит там,
+              где по проекту шёл воздуховод.
             </p>
             <span class="how__rule"></span>
+            <figure class="how__shot"><img src="assets/services/architecture.jpg" alt="Сведение разделов в одной модели" loading="lazy" decoding="async"></figure>
           </div>
         </div>
 
@@ -2142,14 +2219,15 @@
           <div class="how__body">
             <p class="how__text">
               Критические узлы проверяем
-              <u>до того</u>, как их закроет отделка
+              <u>до того</u>, как их закроет отделка
             </p>
             <p class="how__note">
-              Гидроизоляция, примыкания, уклоны и доступ к обслуживанию —
-              на выезде, пока к ним есть доступ. После отделки любая
+              Гидроизоляция, примыкания, уклоны и доступ к обслуживанию —
+              на выезде, пока к ним есть доступ. После отделки любая
               ошибка стоит демонтажа.
             </p>
             <span class="how__rule"></span>
+            <figure class="how__shot"><img src="assets/services/supervision.jpg" alt="Проверка узлов на объекте" loading="lazy" decoding="async"></figure>
           </div>
         </div>
       </div>
@@ -2162,10 +2240,10 @@
   <section class="flow" id="flow">
     <div class="container">
       <div class="flow__head">
-        <h2 class="flow__title">Что входит в проект</h2>
+        <h2 class="flow__title">Что входит в проект</h2>
         <p class="flow__lead">
-          Четыре этапа с понятным составом работ. В правой колонке —
-          что остаётся у вас на руках после каждого из них.
+          Четыре этапа с понятным составом работ. В правой колонке —
+          что остаётся у вас на руках после каждого из них.
         </p>
       </div>
 
@@ -2180,18 +2258,18 @@
           </div>
           <div class="flow__main">
             <div class="flow__num">01</div>
-            <h3 class="flow__name">Старт и участок</h3>
+            <h3 class="flow__name">Старт и участок</h3>
             <p class="flow__do">
               Изучаем ограничения участка, рельеф, инсоляцию, подъезды
-              и сценарии жизни семьи: где работают, как приезжают гости,
-              где хранятся вещи и как меняется дом зимой.
+              и сценарии жизни семьи: где работают, как приезжают гости,
+              где хранятся вещи и как меняется дом зимой.
             </p>
           </div>
           <div class="flow__get">
             <div class="flow__get-label">Вы получаете</div>
             <ul class="flow__docs">
               <li>Техническое задание</li>
-              <li>Выводы по участку</li>
+              <li>Выводы по участку</li>
               <li>Согласованный состав задач</li>
             </ul>
           </div>
@@ -2208,8 +2286,8 @@
             <h3 class="flow__name">Концепция</h3>
             <p class="flow__do">
               Собираем планировки, объём, логику света, приватности
-              и маршрутов. Проверяем ключевые решения на реализуемость
-              в целевом бюджете до финального утверждения.
+              и маршрутов. Проверяем ключевые решения на реализуемость
+              в целевом бюджете до финального утверждения.
             </p>
           </div>
           <div class="flow__get">
@@ -2233,8 +2311,8 @@
             <h3 class="flow__name">Проектирование</h3>
             <p class="flow__do">
               Согласовываем архитектуру, конструктив, инженерные системы,
-              материалы и ключевые узлы. Фиксируем отметки, спецификации
-              и привязки, по которым подрядчик может строить.
+              материалы и ключевые узлы. Фиксируем отметки, спецификации
+              и привязки, по которым подрядчик может строить.
             </p>
           </div>
           <div class="flow__get">
@@ -2257,15 +2335,15 @@
             <div class="flow__num">04</div>
             <h3 class="flow__name">Реализация</h3>
             <p class="flow__do">
-              Отвечаем на вопросы подрядчиков, выезжаем на объект,
-              фиксируем изменения и замечания. Критические узлы проверяем
-              до того, как их закроет отделка.
+              Отвечаем на вопросы подрядчиков, выезжаем на объект,
+              фиксируем изменения и замечания. Критические узлы проверяем
+              до того, как их закроет отделка.
             </p>
           </div>
           <div class="flow__get">
             <div class="flow__get-label">Вы получаете</div>
             <ul class="flow__docs">
-              <li>Отчёты с выездов</li>
+              <li>Отчёты с выездов</li>
               <li>Журнал изменений</li>
               <li>Актуальную документацию</li>
             </ul>
@@ -2288,11 +2366,11 @@
   <section class="sup" id="supervision">
     <div class="container sup__inner">
       <div class="sup__head">
-        <h2 class="sup__title">Авторский надзор — это документ, а не заезд «посмотреть»</h2>
+        <h2 class="sup__title">Авторский надзор — это документ, а не заезд «посмотреть»</h2>
         <p class="sup__lead">
-          После каждого выезда вы получаете отчёт: что проверено,
-          что не соответствует проекту, что исправить и кто отвечает.
-          Ниже — фрагмент реального бланка.
+          После каждого выезда вы получаете отчёт: что проверено,
+          что не соответствует проекту, что исправить и кто отвечает.
+          Ниже — фрагмент реального бланка.
         </p>
       </div>
 
@@ -2308,7 +2386,7 @@
           </div>
           <div>
             <dt>Этап</dt>
-            <dd>Кровля и фасадный контур</dd>
+            <dd>Кровля и фасадный контур</dd>
           </div>
           <div>
             <dt>От бюро</dt>
@@ -2320,9 +2398,9 @@
           <li class="sup__row">
             <span class="sup__idx">01</span>
             <span class="sup__what">
-              <b>Примыкание кровли к парапету</b> выполнено без заведения
-              гидроизоляции на вертикаль. Узел К-04 в рабочей документации.
-              <span class="sup__who">Ответственный: подрядчик по кровле · срок 21.03</span>
+              <b>Примыкание кровли к парапету</b> выполнено без заведения
+              гидроизоляции на вертикаль. Узел К-04 в рабочей документации.
+              <span class="sup__who">Ответственный: подрядчик по кровле · срок 21.03</span>
             </span>
             <span class="sup__st sup__st--fix">Исправить</span>
           </li>
@@ -2331,7 +2409,7 @@
             <span class="sup__idx">02</span>
             <span class="sup__what">
               <b>Уклон террасы</b> 1,8% вместо проектных 2%. Проверено
-              нивелиром до укладки покрытия — переделка не потребуется.
+              нивелиром до укладки покрытия — переделка не потребуется.
               <span class="sup__who">Ответственный: прораб · срок 18.03</span>
             </span>
             <span class="sup__st sup__st--fix">Исправить</span>
@@ -2340,9 +2418,9 @@
           <li class="sup__row">
             <span class="sup__idx">03</span>
             <span class="sup__what">
-              <b>Закладные под внешние блоки</b> вынесены на техфасад
-              согласно проекту. Доступ для обслуживания сохранён.
-              <span class="sup__who">Проверено на объекте</span>
+              <b>Закладные под внешние блоки</b> вынесены на техфасад
+              согласно проекту. Доступ для обслуживания сохранён.
+              <span class="sup__who">Проверено на объекте</span>
             </span>
             <span class="sup__st sup__st--ok">Принято</span>
           </li>
@@ -2350,18 +2428,18 @@
           <li class="sup__row">
             <span class="sup__idx">04</span>
             <span class="sup__what">
-              <b>Замена профиля остекления</b> по инициативе подрядчика.
-              Влияние на бюджет и вид фасада зафиксировано, изменение
-              внесено в журнал и обновлённый чертёж.
-              <span class="sup__who">Согласовано с заказчиком 14.03</span>
+              <b>Замена профиля остекления</b> по инициативе подрядчика.
+              Влияние на бюджет и вид фасада зафиксировано, изменение
+              внесено в журнал и обновлённый чертёж.
+              <span class="sup__who">Согласовано с заказчиком 14.03</span>
             </span>
             <span class="sup__st sup__st--ok">В документации</span>
           </li>
         </ul>
 
         <div class="sup__foot">
-          <span>Замечания из отчёта попадают в <b>журнал изменений</b> и в актуальный комплект документации.</span>
-          <span>Следующий выезд — <b>28.03.2026</b></span>
+          <span>Замечания из отчёта попадают в <b>журнал изменений</b> и в актуальный комплект документации.</span>
+          <span>Следующий выезд — <b>28.03.2026</b></span>
         </div>
       </div>
     </div>
@@ -2373,8 +2451,8 @@
       <div class="svc__head">
         <div class="svc__eyebrow">Что мы делаем</div>
         <p class="svc__note">
-          Полный цикл: от первой концепции и рабочей документации
-          до авторского надзора на площадке.
+          Полный цикл: от первой концепции и рабочей документации
+          до авторского надзора на площадке.
         </p>
       </div>
 
@@ -2475,7 +2553,7 @@
            data-shots="assets/services/architecture.jpg, assets/services/interior.jpg, assets/services/landscape.jpg, assets/services/supervision.jpg, assets/services/visual.jpg">
     <div class="band__fact">
       <div class="band__num">4</div>
-      <div class="band__cap">этапа под одной ответственностью</div>
+      <div class="band__cap">этапа под одной ответственностью</div>
     </div>
   </section>
 
@@ -2483,10 +2561,10 @@
   <section class="faq" id="faq">
     <div class="container">
       <div class="faq__head">
-        <h2 class="faq__title">Вопросы, которые задают до первой встречи</h2>
+        <h2 class="faq__title">Вопросы, которые задают до первой встречи</h2>
         <p class="faq__lead">
-          Здесь нет обещаний, за которые мы не отвечаем.
-          Только то, что можем подтвердить процессом и документами.
+          Здесь нет обещаний, за которые мы не отвечаем.
+          Только то, что можем подтвердить процессом и документами.
         </p>
       </div>
 
@@ -2497,23 +2575,23 @@
             <span class="faq__sign" aria-hidden="true"></span>
           </button>
           <div class="faq__a"><div><p>
-            До покупки участка или до выбора подрядчика. На этом этапе
-            проще всего повлиять на ограничения и бюджет: мы посмотрим
-            геологию, рельеф, инсоляцию и подъезды до того, как появится
-            привязанность к конкретной планировке.
+            До покупки участка или до выбора подрядчика. На этом этапе
+            проще всего повлиять на ограничения и бюджет: мы посмотрим
+            геологию, рельеф, инсоляцию и подъезды до того, как появится
+            привязанность к конкретной планировке.
           </p></div></div>
         </div>
 
         <div class="faq__item">
           <button class="faq__q" type="button">
-            <span>Можно прийти со своим строителем?</span>
+            <span>Можно прийти со своим строителем?</span>
             <span class="faq__sign" aria-hidden="true"></span>
           </button>
           <div class="faq__a"><div><p>
-            Да, мы работаем с внешними подрядчиками. Наша зона —
-            проект и авторский контроль: помогаем прочитать сложные узлы
-            до начала работ, отвечаем на вопросы по документации
-            и фиксируем несоответствия в отчёте.
+            Да, мы работаем с внешними подрядчиками. Наша зона —
+            проект и авторский контроль: помогаем прочитать сложные узлы
+            до начала работ, отвечаем на вопросы по документации
+            и фиксируем несоответствия в отчёте.
           </p></div></div>
         </div>
 
@@ -2523,23 +2601,23 @@
             <span class="faq__sign" aria-hidden="true"></span>
           </button>
           <div class="faq__a"><div><p>
-            Нет. До геологии, проекта и состава работ честно назвать можно
-            только диапазон и факторы, которые на него влияют: тип фундамента,
-            конструктив, площадь остекления, инженерия и класс отделки.
-            Мы не продаём иллюзию точной цены, чтобы потом её пересматривать.
+            Нет. До геологии, проекта и состава работ честно назвать можно
+            только диапазон и факторы, которые на него влияют: тип фундамента,
+            конструктив, площадь остекления, инженерия и класс отделки.
+            Мы не продаём иллюзию точной цены, чтобы потом её пересматривать.
           </p></div></div>
         </div>
 
         <div class="faq__item">
           <button class="faq__q" type="button">
-            <span>Как часто вы бываете на объекте?</span>
+            <span>Как часто вы бываете на объекте?</span>
             <span class="faq__sign" aria-hidden="true"></span>
           </button>
           <div class="faq__a"><div><p>
-            Периодичность фиксируется договором и зависит от этапа.
-            На ответственных работах — чаще: критические узлы проверяем
-            до того, как их закроет отделка. После каждого выезда вы
-            получаете отчёт с замечаниями, сроками и ответственными.
+            Периодичность фиксируется договором и зависит от этапа.
+            На ответственных работах — чаще: критические узлы проверяем
+            до того, как их закроет отделка. После каждого выезда вы
+            получаете отчёт с замечаниями, сроками и ответственными.
           </p></div></div>
         </div>
 
@@ -2549,22 +2627,22 @@
             <span class="faq__sign" aria-hidden="true"></span>
           </button>
           <div class="faq__a"><div><p>
-            Да. Встречи и согласования проходят онлайн, образцы материалов
-            сверяем по фото при дневном свете и дублируем очной приёмкой
-            на объекте. Выезды на площадку в любом случае очные.
+            Да. Встречи и согласования проходят онлайн, образцы материалов
+            сверяем по фото при дневном свете и дублируем очной приёмкой
+            на объекте. Выезды на площадку в любом случае очные.
           </p></div></div>
         </div>
 
         <div class="faq__item">
           <button class="faq__q" type="button">
-            <span>Что будет, если решение нужно изменить на стройке?</span>
+            <span>Что будет, если решение нужно изменить на стройке?</span>
             <span class="faq__sign" aria-hidden="true"></span>
           </button>
           <div class="faq__a"><div><p>
-            Сначала обсуждаем влияние на бюджет, срок и смежные разделы.
-            Если изменение принимается — оно попадает в чертёж и журнал
-            изменений, а не остаётся решением «на глаз» в переписке.
-            В финале у вас остаётся актуальный комплект документации.
+            Сначала обсуждаем влияние на бюджет, срок и смежные разделы.
+            Если изменение принимается — оно попадает в чертёж и журнал
+            изменений, а не остаётся решением «на глаз» в переписке.
+            В финале у вас остаётся актуальный комплект документации.
           </p></div></div>
         </div>
       </div>
@@ -2578,13 +2656,13 @@
         <div>
           <h2 class="ask__title">Расскажите, каким должен быть ваш дом</h2>
           <p class="ask__lead">
-            На первой встрече разберём участок, задачи семьи и подскажем,
-            с какого этапа лучше начать. Это разговор, а не продажа проекта.
+            На первой встрече разберём участок, задачи семьи и подскажем,
+            с какого этапа лучше начать. Это разговор, а не продажа проекта.
           </p>
           <ul class="ask__prep">
             <li>Адрес или кадастровый номер участка</li>
             <li>Желаемые сроки</li>
-            <li>Ориентир по бюджету</li>
+            <li>Ориентир по бюджету</li>
           </ul>
         </div>
 
@@ -2603,17 +2681,17 @@
           </div>
           <div class="ask__field">
             <textarea id="fTask" name="task" placeholder=" " rows="2"></textarea>
-            <label for="fTask">Задача, сроки, ориентир по бюджету</label>
+            <label for="fTask">Задача, сроки, ориентир по бюджету</label>
           </div>
 
           <label class="ask__consent">
             <input type="checkbox" id="fOk" required />
-            <span>Согласен на обработку персональных данных в соответствии с
+            <span>Согласен на обработку персональных данных в соответствии с
               <a href="#" target="_blank" rel="noopener">политикой конфиденциальности</a>.</span>
           </label>
 
           <button class="ask__submit" type="submit" id="askBtn">
-            <span>Обсудить участок и задачу</span>
+            <span>Обсудить участок и задачу</span>
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M12 4v16M4 12h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
             </svg>
@@ -2627,7 +2705,7 @@
   <!-- ============ 10 · КОНТАКТ + ФУТЕР ============ -->
   <section class="contact" id="contact">
     <div class="container">
-      <div class="sec-eyebrow" style="color:rgba(238,234,226,.5)">04 — Начнём</div>
+      <div class="sec-eyebrow" style="color:rgba(238,234,226,.5)">04 — Начнём</div>
       <div class="contact__big">
         <a href="#">Обсудить проект
           <svg viewBox="0 0 24 24" fill="none"><path d="M12 4v16M4 12h16M7 7l10 10M17 7L7 17" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
@@ -2993,6 +3071,8 @@
       // Слайдшоу крутится только пока карточка кейса на экране.
       // На белом блоке выше кадр стоит на Атриуме — как в макете.
       if (window.__prSetRunning) window.__prSetRunning(pr > 0.5);
+      // первый показ карточки — запускаем отсчёт цифр от нуля
+      if (window.__prReveal) window.__prReveal(pr > 0.55);
       if (scrim) scrim.style.opacity = prE;
       prUi.style.opacity = prE;
       prUi.style.pointerEvents = prE > 0.6 ? "auto" : "none";
@@ -3033,7 +3113,7 @@
     const CASES = [
       {
         tab: "Атриум", kicker: "Бизнес центр", name: "Атриум",
-        desc: "Архитектура делового пространства, построенная на контрасте: " +
+        desc: "Архитектура делового пространства, построенная на контрасте: " +
               "выразительные арки, прозрачность стекла и характер металла " +
               "объединены в единый городской силуэт",
         stats: [["2019", "год постройки"], ["1600", "площадь этажа"], ["9", "этажей"]],
@@ -3043,7 +3123,7 @@
       },
       {
         tab: "Импульс", kicker: "Торговый центр", name: "Импульс",
-        desc: "Контраст фактур — светлого камня, тёмного металла и стекла — " +
+        desc: "Контраст фактур — светлого камня, тёмного металла и стекла — " +
               "придаёт архитектуре современный и динамичный характер. " +
               "Благоустроенная территория с фонтаном гармонично дополняет " +
               "облик делового пространства.",
@@ -3052,7 +3132,7 @@
       },
       {
         tab: "Гармония", kicker: "Жилой комплекс", name: "Гармония",
-        desc: "Жилой комплекс органично объединяет современную архитектуру и " +
+        desc: "Жилой комплекс органично объединяет современную архитектуру и " +
               "природный ландшафт. Плавные линии фасадов, озеленённые балконы " +
               "и контрастные фактуры создают образ уединённого городского оазиса.",
         stats: [["2023", "год постройки"], ["400", "площадь этажа"], ["17", "этажей"]],
@@ -3069,6 +3149,7 @@
     const caps = [...sec.querySelectorAll(".pr__cap")];
 
     let caseIdx = 0, shotIdx = 0, timer = null, tStart = 0;
+    let cardVisible = false;
     const SHOW_MS = 3000;
 
     const tabs = CASES.map((c, i) => {
@@ -3081,6 +3162,32 @@
       return b;
     });
 
+    /* Счётчик: цифра набегает от нуля до конечной. Год не крутим
+       с нуля — стартуем с близкого значения, иначе «2019» выглядит
+       как случайный перебор. */
+    const counters = new WeakMap();
+    function countTo(el, target) {
+      const to = parseInt(String(target).replace(/\D/g, ""), 10);
+      if (!isFinite(to)) { el.textContent = target; return; }
+      if (counters.get(el) === to) return;            // уже показано
+      counters.set(el, to);
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        el.textContent = target; return;
+      }
+      const from = to > 1900 ? to - 40 : 0;           // год — от близкого
+      const DUR = 900;
+      let t0 = null;
+      const ease = (t) => 1 - Math.pow(1 - t, 3);
+      (function step(ts) {
+        if (counters.get(el) !== to) return;          // значение сменилось
+        if (t0 === null) t0 = ts;
+        const k = Math.min((ts - t0) / DUR, 1);
+        el.textContent = Math.round(from + (to - from) * ease(k));
+        if (k < 1) requestAnimationFrame(step);
+        else el.textContent = target;
+      })(performance.now());
+    }
+
     function paintText() {
       const c = CASES[caseIdx];
       // у «Атриума» интерьерный кадр показывает другую площадь этажа
@@ -3088,7 +3195,13 @@
       elKicker.textContent = c.kicker;
       elName.textContent = c.name;
       elDesc.textContent = c.desc;
-      nums.forEach((n, i) => { if (n) n.textContent = st[i][0]; });
+      // цифры отсчитываются от нуля, но только когда карточка видна:
+      // при инициализации проставляем молча, иначе анимация уходит в пустоту
+      nums.forEach((n, i) => {
+        if (!n) return;
+        if (cardVisible) countTo(n, st[i][0]);
+        else { n.textContent = st[i][0]; counters.set(n, parseInt(String(st[i][0]).replace(/\D/g, ""), 10)); }
+      });
       caps.forEach((cap, i) => { cap.textContent = st[i][1]; });
       tabs.forEach((t, i) => t.classList.toggle("is-on", i === caseIdx));
     }
@@ -3127,6 +3240,16 @@
       }
     }
     window.__prSetRunning = setRunning;
+    // сцена сообщает, когда карточка появилась на экране
+    window.__prReveal = (visible) => {
+      if (visible === cardVisible) return;
+      cardVisible = visible;
+      if (visible) {
+        const c = CASES[caseIdx];
+        const st = (shotIdx === 1 && c.statsAlt) ? c.statsAlt : c.stats;
+        nums.forEach((n, i) => { if (n) { counters.delete(n); countTo(n, st[i][0]); } });
+      }
+    };
 
     paintShot(); paintText();
     }
@@ -3156,6 +3279,16 @@
       }
     }
     window.__prSetRunning = setRunning;
+    // сцена сообщает, когда карточка появилась на экране
+    window.__prReveal = (visible) => {
+      if (visible === cardVisible) return;
+      cardVisible = visible;
+      if (visible) {
+        const c = CASES[caseIdx];
+        const st = (shotIdx === 1 && c.statsAlt) ? c.statsAlt : c.stats;
+        nums.forEach((n, i) => { if (n) { counters.delete(n); countTo(n, st[i][0]); } });
+      }
+    };
 
     paintShot(); paintText();
 
@@ -3175,6 +3308,7 @@
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const cl = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+    const eo = (t) => 1 - Math.pow(1 - t, 3);
     const pad = (n) => String(n).padStart(2, "0");
 
     let last = -1, raf = null, idle = 0;
@@ -3203,9 +3337,29 @@
       let best = 0, bd = 1e9;
       items.forEach((el, i) => {
         const r = el.getBoundingClientRect();
-        const d = Math.abs(r.left + r.width / 2 - mid);
+        const c = r.left + r.width / 2;
+        const d = Math.abs(c - mid);
         if (d < bd) { bd = d; best = i; }
         el.classList.toggle("is-near", r.left < window.innerWidth * 0.72);
+
+        /* Кадр раскрывается по мере подхода принципа к центру и
+           схлопывается на выходе. focus: 0 — принцип далеко,
+           1 — стоит ровно по центру экрана. */
+        const shot = el.querySelector(".how__shot");
+        if (!shot) return;
+        const reach = window.innerWidth * 0.62;
+        const focus = cl(1 - d / reach);
+        const e = eo(focus);
+        // окно кадра открывается снизу вверх
+        shot.style.clipPath = `inset(${(1 - e) * 100}% 0 0 0)`;
+        // и слегка подаётся навстречу зрителю
+        shot.style.transform = `translate3d(0, ${(1 - e) * 34}px, 0)`;
+        const img = shot.firstElementChild;
+        if (img) {
+          // контр-зум: картинка успокаивается, когда принцип в фокусе
+          img.style.transform = `scale(${1.16 - e * 0.16})`;
+          img.style.filter = `grayscale(${1 - e * 0.85}) contrast(1.06) brightness(${0.82 + e * 0.18})`;
+        }
       });
       if (numEl) numEl.textContent = pad(best + 1);
     }
@@ -3385,15 +3539,15 @@
 
     const PEOPLE = [
       { src: "assets/team/p1.jpg", name: "Алексей Иванов", role: "Главный архитектор",
-        quote: "Хорошая архитектура начинается не с формы, а с вопроса: как здесь будут жить через двадцать лет." },
+        quote: "Хорошая архитектура начинается не с формы, а с вопроса: как здесь будут жить через двадцать лет." },
       { src: "assets/team/p2.jpg", name: "Мария Лебедева", role: "Дизайнер интерьера",
-        quote: "Интерьер работает тогда, когда его не замечаешь — просто чувствуешь себя на своём месте." },
+        quote: "Интерьер работает тогда, когда его не замечаешь — просто чувствуешь себя на своём месте." },
       { src: "assets/team/p3.jpg", name: "Дмитрий Соловьёв", role: "Руководитель проектов",
-        quote: "Сроки и бюджет — не ограничения, а часть замысла. Мы держим их наравне с эстетикой." },
+        quote: "Сроки и бюджет — не ограничения, а часть замысла. Мы держим их наравне с эстетикой." },
       { src: "assets/team/p4.jpg", name: "Анна Ковалёва", role: "Ведущий архитектор",
-        quote: "Свет — главный материал. Всё остальное лишь помогает ему проявиться." },
+        quote: "Свет — главный материал. Всё остальное лишь помогает ему проявиться." },
       { src: "assets/team/p5.jpg", name: "Ольга Северина", role: "Главный конструктор",
-        quote: "Красивое решение почти всегда оказывается и самым прочным. Это не совпадение." },
+        quote: "Красивое решение почти всегда оказывается и самым прочным. Это не совпадение." },
     ];
     const N = PEOPLE.length;
     const GAP = 900;            // расстояние между карточками по Z
@@ -3647,6 +3801,9 @@
       split.lines.forEach((ln) => {
         const w = document.createElement("span");
         w.style.display = "block";
+        // Маска обязана быть по высоте строки: отрицательный margin
+        // схлопывал строки друг на друга. Запас даём через line-height
+        // самого заголовка, а не компенсацией.
         w.style.overflow = "hidden";
         ln.parentNode.insertBefore(w, ln);
         w.appendChild(ln);
