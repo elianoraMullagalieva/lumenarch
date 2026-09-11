@@ -353,7 +353,7 @@
     align-items: center;
     padding: clamp(0.85rem, 0.74rem + 0.44vw, 1.25rem);
     gap: clamp(0.95rem, 0.8rem + 0.66vw, 1.6rem);
-    border-radius: 24px;
+    border-radius: 14px;
     isolation: isolate;
 
     /* ── СТЕКЛО ПО ФОРМУЛЕ APPLE LIQUID GLASS ─────────────────────
@@ -365,17 +365,18 @@
        Подложка почти нулевая (7%), блюр умеренный (8px) — видно
        формы и свет позади, но материал остаётся заметным за счёт
        насыщенности и световой кромки, а не за счёт мутности. */
-    background: rgba(255, 255, 255, 0.07);
-    backdrop-filter: blur(8px) saturate(135%) brightness(1.04);
-    -webkit-backdrop-filter: blur(8px) saturate(135%) brightness(1.04);
-    border: 1px solid rgba(255, 255, 255, 0.22);
+    /* Тёмное стекло: подложка уводит в графит, а не в белый.
+       Светлая обводка по периметру убрана — она читалась как рамка,
+       а не как материал. Блюр чуть слабее, чтобы фон читался. */
+    background: rgba(18, 20, 28, 0.30);
+    backdrop-filter: blur(6px) saturate(130%);
+    -webkit-backdrop-filter: blur(6px) saturate(130%);
+    border: none;
     box-shadow:
-      /* specular edge — «толщина» стекла */
-      inset 0 1px 0 rgba(255, 255, 255, 0.55),
-      /* отражённый свет снизу */
-      inset 0 -1px 0 rgba(255, 255, 255, 0.10),
+      /* лёгкий внутренний объём без явной кромки */
+      inset 0 0 40px rgba(255, 255, 255, 0.05),
       /* отрыв от кадра */
-      0 10px 30px rgba(0, 0, 0, 0.26);
+      0 10px 30px rgba(0, 0, 0, 0.28);
   }
 
   /* Преломление по кромке: backdrop-filter умеет только размывать
@@ -409,11 +410,10 @@
     padding: 0 clamp(0.74rem, 0.64rem + 0.44vw, 1.16rem);
     border-radius: 100px;
     /* лёгкое стекло вместо прозрачной обводки */
-    background: rgba(255, 255, 255, 0.10);
-    backdrop-filter: blur(6px) saturate(140%);
-    -webkit-backdrop-filter: blur(6px) saturate(140%);
-    border: 1px solid rgba(255, 255, 255, 0.26);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    background: rgba(18, 20, 28, 0.34);
+    backdrop-filter: blur(5px) saturate(130%);
+    -webkit-backdrop-filter: blur(5px) saturate(130%);
+    border: 1px solid rgba(255, 255, 255, 0.16);
     font-family: "Onest", sans-serif;
     font-weight: 400;
     font-size: clamp(0.57rem, 0.52rem + 0.215vw, 0.78rem);
@@ -842,16 +842,21 @@
     gap: clamp(1.25rem, 0.8252rem + 1.812vw, 3.0rem);
   }
   /* огромный контурный номер — фирменная деталь вместо иконки */
+  /* Номер — компактная белая плашка с чёрной цифрой (по макету),
+     выровнена по началу текста. Контурная цифра-гигант убрана. */
   .how__num {
-    flex: none;
+    flex: none; align-self: flex-start;
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: clamp(3.0rem, 2.72rem + 1.2vw, 3.75rem);
+    height: clamp(1.9rem, 1.74rem + 0.68vw, 2.375rem);
+    padding: 0 clamp(0.6rem, 0.53rem + 0.3vw, 0.85rem);
+    border-radius: 8px;
+    background: #fff; color: #111;
     font-family: "Onest", sans-serif; font-weight: 400;
-    font-size: clamp(4.0rem, 2.4223rem + 6.731vw, 10.5rem); line-height: .78;
-    letter-spacing: -0.05em;
-    color: transparent;
-    -webkit-text-stroke: 1px rgba(255, 255, 255, 0.38);
-    transition: -webkit-text-stroke-color .6s var(--ease-out);
+    font-size: clamp(0.8125rem, 0.75rem + 0.26vw, 1.0625rem);
+    line-height: 1; letter-spacing: .01em;
+    font-variant-numeric: tabular-nums;
   }
-  .how__item.is-near .how__num { -webkit-text-stroke-color: rgba(255,255,255,.85); }
 
   .how__body { padding-top: clamp(0.375rem, 0.193rem + 0.777vw, 1.125rem); }
   .how__text {
@@ -864,13 +869,7 @@
     text-decoration: none;
     position: relative; white-space: nowrap;
   }
-  .how__text u::after {
-    content: ""; position: absolute; left: 0; right: 0; bottom: -.12em;
-    height: 1px; background: #fff;
-    transform: scaleX(0); transform-origin: left center;
-    transition: transform .9s var(--ease-out);
-  }
-  .how__item.is-near .how__text u::after { transform: scaleX(1); }
+  /* подчёркивание убрано: акцент держится кеглем, а не линией */
 
   .how__note {
     margin-top: clamp(0.875rem, 0.693rem + 0.777vw, 1.625rem);
@@ -903,7 +902,6 @@
   @media (max-width: 860px) {
     .how { height: 300vh; }
     .how__item { width: 84vw; gap: 16px; }
-    .how__num { font-size: clamp(2.875rem, 2.2075rem + 2.848vw, 5.625rem); }
   }
 
   /* ================================================================
@@ -1075,13 +1073,22 @@
 
     // длина проезда = ширина ленты минус экран
     function span() {
-      return Math.max(0, track.scrollWidth - window.innerWidth);
+      // доводим ленту так, чтобы ЦЕНТР последнего пункта встал в центр
+      // экрана: иначе третий принцип не попадает в фокус
+      const items = track.querySelectorAll(".how__item");
+      const lastEl = items[items.length - 1];
+      if (!lastEl) return Math.max(0, track.scrollWidth - window.innerWidth);
+      const trackLeft = track.getBoundingClientRect().left;
+      const r = lastEl.getBoundingClientRect();
+      const centerInTrack = (r.left - trackLeft) + r.width / 2
+        + (parseFloat(getComputedStyle(track).transform.split(",")[4]) || 0) * -1;
+      return Math.max(0, centerInTrack - window.innerWidth / 2);
     }
 
     function draw(p) {
-      // небольшая «полка» в начале и конце, чтобы первый и последний
-      // принцип успели прочитаться, а не проскочили
-      const e = cl((p - 0.06) / 0.88);
+      // Полка только в начале: в конце лента обязана доехать полностью,
+      // иначе третий принцип не доходит до центра и остаётся в блюре.
+      const e = cl((p - 0.05) / 0.80);
       track.style.transform = `translate3d(${-e * span()}px, 0, 0)`;
       if (bar) bar.style.width = (e * 100) + "%";
 
@@ -2319,10 +2326,6 @@
   <!-- ============ 04 · КАК ИМЕННО (горизонтальный проезд) ============ -->
   <section class="how" id="how">
     <div class="how__vp">
-      <div class="how__head">
-        <div class="how__eyebrow">Как именно</div>
-        <div class="how__counter"><b id="howNum">01</b> / 03</div>
-      </div>
 
       <div class="how__track" id="howTrack">
         <div class="how__item">
@@ -3301,26 +3304,26 @@
       if (eb) {
         tl.to(eb, {
           opacity: 1, filter: "blur(0px)", y: 0,
-          duration: 0.95, ease: "power3.out",
+          duration: 0.8, ease: "power3.out",
         }, 0);
       }
 
-      /* Больше ступеней: сперва отдельно «С нами надёжно и безопасно»,
-         и только через заметную паузу пойдёт заголовок — по строке,
-         с шагом 0.32с. Так вход читается поэтапно, а не разом. */
-      const LN_AT = [0.75, 1.07, 1.39];
+      /* Ступени видны, но не тянутся: eyebrow идёт первым, затем
+         строки заголовка с шагом 0.22с — середина между «слишком
+         быстро» и «слишком медленно». */
+      const LN_AT = [0.42, 0.64, 0.86];
       lines.forEach((ln, i) => {
         tl.to(ln, {
           opacity: 1, filter: "blur(0px)", y: 0,
-          duration: 1.15, ease: "power3.out",
-        }, LN_AT[i] ?? (0.75 + i * 0.32));
+          duration: 0.95, ease: "power3.out",
+        }, LN_AT[i] ?? (0.42 + i * 0.22));
       });
 
       // кадр: clip-path растёт от сцены, здесь только контр-зум картинки
       tl.to({ z: 1.12 }, {
-        z: 1, duration: 1.3, ease: "power3.out",
+        z: 1, duration: 1.1, ease: "power3.out",
         onUpdate() { revealZoom = this.targets()[0].z; last = -1; kick(); },
-      }, 1.5);
+      }, 0.95);
 
       /* Запуск НЕ по входу секции, а по факту смыкания белой шторки:
          пока она едет, на экране ещё живёт сторителлинг со своей
@@ -3635,13 +3638,22 @@
 
     // длина проезда = ширина ленты минус экран
     function span() {
-      return Math.max(0, track.scrollWidth - window.innerWidth);
+      // доводим ленту так, чтобы ЦЕНТР последнего пункта встал в центр
+      // экрана: иначе третий принцип не попадает в фокус
+      const items = track.querySelectorAll(".how__item");
+      const lastEl = items[items.length - 1];
+      if (!lastEl) return Math.max(0, track.scrollWidth - window.innerWidth);
+      const trackLeft = track.getBoundingClientRect().left;
+      const r = lastEl.getBoundingClientRect();
+      const centerInTrack = (r.left - trackLeft) + r.width / 2
+        + (parseFloat(getComputedStyle(track).transform.split(",")[4]) || 0) * -1;
+      return Math.max(0, centerInTrack - window.innerWidth / 2);
     }
 
     function draw(p) {
-      // небольшая «полка» в начале и конце, чтобы первый и последний
-      // принцип успели прочитаться, а не проскочили
-      const e = cl((p - 0.06) / 0.88);
+      // Полка только в начале: в конце лента обязана доехать полностью,
+      // иначе третий принцип не доходит до центра и остаётся в блюре.
+      const e = cl((p - 0.05) / 0.80);
       track.style.transform = `translate3d(${-e * span()}px, 0, 0)`;
       if (bar) bar.style.width = (e * 100) + "%";
 
@@ -4436,7 +4448,7 @@
     let done = 0;
     const total = assets.length + 1;              // +1 — видео первого экрана
     let shown = 0, target = 0;
-    const MIN_MS = 2400;                        // держим экран хотя бы столько
+    const MIN_MS = 1600;                        // держим экран хотя бы столько
     const t0 = performance.now();
 
     const tick = () => {
