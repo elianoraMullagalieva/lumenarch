@@ -131,20 +131,6 @@
      Держит только hero-заголовок Lumen/Arch (центральный, для него
      cover-кроп по краям красив и совпадает с макетом).
      ============================================================ */
-  .scene {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-items: center;
-    pointer-events: none;
-    z-index: 10;
-  }
-  .scene__scaled {
-    position: relative;
-    width: 1920px;
-    height: 1080px;
-    transform-origin: center center;
-  }
 
   /* HERO вынесен из cover-сцены и привязан к вьюпорту:
      размеры/смещения в vw сохраняют пропорции макета (база 1920),
@@ -591,7 +577,6 @@
     }
     .story { height: 100vh; }
     .story__viewport { position: relative; }
-    .char { transform: none; }
   }
 
   /* ================================================================
@@ -1143,7 +1128,6 @@
     transition: opacity .45s var(--ease-out);
   }
   .team__btn.is-active .team__ava::after { opacity: 1; }
-  .team__arrows { display: none; }
 
   @media (max-width: 860px) {
     .team__stage { aspect-ratio: 4 / 5; max-height: none; }
@@ -1243,34 +1227,7 @@
     background: var(--l-bg); color: var(--l-ink);
     padding: clamp(90px, 15vh, 180px) 0 clamp(70px, 11vh, 140px);
   }
-  .ask__grid {
-    display: grid; grid-template-columns: 1fr minmax(320px, 46%);
-    gap: clamp(2.25rem, 1.1274rem + 4.79vw, 6.875rem); align-items: start;
-  }
-  .ask__title {
-    font-family: "Onest", sans-serif; font-weight: 400;
-    font-size: clamp(2.375rem, 0.949rem + 6.084vw, 8.25rem); line-height: .9;
-    letter-spacing: -0.05em; text-transform: uppercase;
-    max-width: 13ch; text-wrap: balance;
-    margin-bottom: clamp(1.25rem, 0.9769rem + 1.165vw, 2.375rem);
-  }
-  .ask__lead {
-    max-width: 42ch; font-family: "Onest", sans-serif;
-    font-size: clamp(0.875rem, 0.7992rem + 0.324vw, 1.1875rem); line-height: 1.5;
-    color: var(--l-ink-mid); margin-bottom: clamp(1.5rem, 1.1966rem + 1.294vw, 2.75rem);
-  }
   /* что подготовить — как чек-лист бланка */
-  .ask__prep { list-style: none; max-width: 40ch; }
-  .ask__prep li {
-    position: relative; padding: clamp(0.5625rem, 0.5018rem + 0.259vw, 0.8125rem) 0 clamp(0.5625rem, 0.5018rem + 0.259vw, 0.8125rem) clamp(1.5rem, 1.3786rem + 0.518vw, 2.0rem);
-    border-top: 1px solid var(--l-line);
-    font-family: "Onest", sans-serif;
-    font-size: clamp(0.8125rem, 0.7518rem + 0.259vw, 1.0625rem); color: var(--l-ink);
-  }
-  .ask__prep li::before {
-    content: ""; position: absolute; left: 0; top: 50%;
-    width: clamp(0.625rem, 0.5795rem + 0.194vw, 0.8125rem); height: 1px; background: var(--l-ink);
-  }
 
   /* сама форма */
   .ask__form { display: flex; flex-direction: column; gap: clamp(0.875rem, 0.7536rem + 0.518vw, 1.375rem); }
@@ -1324,7 +1281,6 @@
   }
 
   @media (max-width: 900px) {
-    .ask__grid { grid-template-columns: 1fr; gap: 40px; }
   }
 
 
@@ -1493,7 +1449,6 @@
   .how, .team { padding-top: 0; padding-bottom: 0; }
 
   /* содержимое sticky-сцен держит отступ от краёв вьюпорта */
-  .steps__vp, .team__vp { padding: clamp(48px, 7vh, 90px) 0; }
 
   /* ================================================================
      ПРЕЛОАДЕР · стопка пластин на WebGL + счётчик загрузки
@@ -1960,14 +1915,6 @@
 
   /* Кнопки слегка приподнимаются при наведении — без смещения вбок.
      Магнитное притяжение к курсору убрано: оно выглядело дёргано. */
-  .cta-nav, .ask__submit, .b2-cta__circle, .pr__arrow, .team__arrow {
-    transition: transform .35s var(--ease-out), background .35s var(--ease-out),
-                color .35s var(--ease-out), border-color .35s var(--ease-out),
-                box-shadow .35s var(--ease-out);
-  }
-  .cta-nav:hover, .ask__submit:hover, .pr__arrow:hover, .team__arrow:hover {
-    transform: translateY(-1px);
-  }
   .b2-cta:hover .b2-cta__circle { transform: translateY(-1px) scale(1.04); }
   /* Аватарки: позицию по дуге задаёт JS в inline-стиле кнопки,
      поэтому подъём вешаем на внутренний кружок — иначе hover
