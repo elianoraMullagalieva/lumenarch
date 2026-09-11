@@ -1343,10 +1343,10 @@
   /* кадр: абсолютный, центр — середина сцены, дальше двигает только JS */
   .band__shot {
     position: absolute; left: 50%; top: 50%;
-    width: clamp(7rem, 5.1rem + 8vw, 13rem);
-    height: clamp(8.4rem, 6.1rem + 9.6vw, 15.6rem);
-    margin-left: calc(clamp(7rem, 5.1rem + 8vw, 13rem) / -2);
-    margin-top: calc(clamp(8.4rem, 6.1rem + 9.6vw, 15.6rem) / -2);
+    width: clamp(4.6rem, 3.4rem + 5.2vw, 8.4rem);
+    height: clamp(5.5rem, 4.1rem + 6.2vw, 10.1rem);
+    margin-left: calc(clamp(4.6rem, 3.4rem + 5.2vw, 8.4rem) / -2);
+    margin-top: calc(clamp(5.5rem, 4.1rem + 6.2vw, 10.1rem) / -2);
     overflow: hidden; border-radius: 2px;
     backface-visibility: hidden;
     will-change: transform, opacity;
@@ -1579,7 +1579,7 @@
     position: relative;
     width: 100%; height: clamp(380px, 66vh, 700px);
     margin-top: clamp(68px, 10vh, 118px);
-    perspective: 1400px;
+    perspective: 1750px;
     transform-style: preserve-3d;
   }
 
@@ -1803,13 +1803,15 @@
      логотип-звезда тоже чёрная. Раньше логотип оставался белым
      и пропадал, а плашки теряли фон.
      ================================================================ */
-  .topbar--dark .brand__name { color: #16150f; }
-  .topbar--dark .brand__mark { color: #16150f; }
-  .topbar--dark .burger { background: #16150f; }
-  .topbar--dark .burger span { background: #fff; }
-  .topbar--dark .cta-nav { background: #16150f; }
+  /* Плашки БЕЛЫЕ → логотип-звезда и бренд тоже белые, текст внутри
+     плашек тёмный. Цвет логотипа всегда совпадает с цветом плашек. */
+  .topbar--dark .brand__name { color: #fff; }
+  .topbar--dark .brand__mark { color: #fff; }
+  .topbar--dark .burger { background: #fff; }
+  .topbar--dark .burger span { background: #16150f; }
+  .topbar--dark .cta-nav { background: #fff; }
   .topbar--dark .cta-nav span,
-  .topbar--dark .cta-nav svg { color: #fff; }
+  .topbar--dark .cta-nav svg { color: #16150f; }
 
   /* ================================================================
      04 · УСЛУГИ — hover image reveal
@@ -2012,7 +2014,7 @@
           </div>
           <!-- миниатюра частного объекта (та же вилла, что на фоне) -->
           <div class="glass__thumb">
-            <img src="assets/project-1-dubai.jpg" alt="Частный объект" />
+            <picture><source srcset="assets/project-1-dubai.webp" type="image/webp"><img src="assets/project-1-dubai.jpg" alt="Частный объект" /></picture>
           </div>
         </div>
       </div>
@@ -2061,12 +2063,12 @@
       <div class="reveal__frame" id="revealFrame">
         <!-- 3 объекта × 2 кадра: экстерьер + интерьер, слайдшоу каждые 4 сек -->
         <div class="reveal__shots" id="prShots">
-          <img class="reveal__shot is-on" src="assets/cases/heydar-hq.jpg" alt="Культурный центр «Атриум»" id="revealImg" />
-          <img class="reveal__shot" src="assets/cases/a2-hq.jpg" alt="Интерьер бизнес-центра «Атриум»" />
-          <img class="reveal__shot" src="assets/cases/i1-hq.jpg" alt="Торговый центр «Импульс»" loading="lazy" />
-          <img class="reveal__shot" src="assets/cases/i2-hq.jpg" alt="Интерьер ТЦ «Импульс»" loading="lazy" />
-          <img class="reveal__shot" src="assets/cases/g1-hq.jpg" alt="Жилой комплекс «Гармония»" loading="lazy" />
-          <img class="reveal__shot" src="assets/cases/g2-hq.jpg" alt="Интерьер ЖК «Гармония»" loading="lazy" />
+          <picture><source srcset="assets/cases/heydar-hq.webp" type="image/webp"><img class="reveal__shot is-on" src="assets/cases/heydar-hq.webp" alt="Культурный центр «Атриум»" id="revealImg" /></picture>
+          <picture><source srcset="assets/cases/a2-hq.webp" type="image/webp"><img class="reveal__shot" src="assets/cases/a2-hq.webp" alt="Интерьер бизнес-центра «Атриум»" /></picture>
+          <picture><source srcset="assets/cases/i1-hq.webp" type="image/webp"><img class="reveal__shot" src="assets/cases/i1-hq.webp" alt="Торговый центр «Импульс»" loading="lazy" /></picture>
+          <picture><source srcset="assets/cases/i2-hq.webp" type="image/webp"><img class="reveal__shot" src="assets/cases/i2-hq.webp" alt="Интерьер ТЦ «Импульс»" loading="lazy" /></picture>
+          <picture><source srcset="assets/cases/g1-hq.webp" type="image/webp"><img class="reveal__shot" src="assets/cases/g1-hq.webp" alt="Жилой комплекс «Гармония»" loading="lazy" /></picture>
+          <picture><source srcset="assets/cases/g2-hq.webp" type="image/webp"><img class="reveal__shot" src="assets/cases/g2-hq.webp" alt="Интерьер ЖК «Гармония»" loading="lazy" /></picture>
         </div>
         <!-- затемнение под текст проекта — появляется только к финалу -->
         <div class="reveal__scrim" id="revealScrim"></div>
@@ -2232,11 +2234,11 @@
 
     <!-- превью, следующее за курсором (одно на весь список) -->
     <div class="svc__preview" id="svcPreview" aria-hidden="true">
-      <div class="svc__pic"><img src="assets/services/architecture.jpg" alt="" loading="lazy" decoding="async"></div>
-      <div class="svc__pic"><img src="assets/services/interior.jpg"     alt="" loading="lazy" decoding="async"></div>
-      <div class="svc__pic"><img src="assets/services/landscape.jpg"    alt="" loading="lazy" decoding="async"></div>
-      <div class="svc__pic"><img src="assets/services/supervision.jpg"  alt="" loading="lazy" decoding="async"></div>
-      <div class="svc__pic"><img src="assets/services/visual.jpg"       alt="" loading="lazy" decoding="async"></div>
+      <div class="svc__pic"><picture><source srcset="assets/services/architecture.webp" type="image/webp"><img src="assets/services/architecture.webp" alt="" loading="lazy" decoding="async"></picture></div>
+      <div class="svc__pic"><picture><source srcset="assets/services/interior.webp" type="image/webp"><img src="assets/services/interior.webp"     alt="" loading="lazy" decoding="async"></picture></div>
+      <div class="svc__pic"><picture><source srcset="assets/services/landscape.webp" type="image/webp"><img src="assets/services/landscape.webp"    alt="" loading="lazy" decoding="async"></picture></div>
+      <div class="svc__pic"><picture><source srcset="assets/services/supervision.webp" type="image/webp"><img src="assets/services/supervision.webp"  alt="" loading="lazy" decoding="async"></picture></div>
+      <div class="svc__pic"><picture><source srcset="assets/services/visual.webp" type="image/webp"><img src="assets/services/visual.webp"       alt="" loading="lazy" decoding="async"></picture></div>
     </div>
   </section>
 
@@ -2252,7 +2254,7 @@
           <h3 class="step__title">Разбираем задачу</h3>
           <p class="step__text">Обсуждаем участок, сценарии жизни семьи и бюджетный ориентир. Подсказываем, с какого этапа начинать именно вам.</p>
           <figure class="step__shot">
-            <img src="assets/services/architecture.jpg" alt="Первая встреча" loading="lazy" decoding="async">
+            <picture><source srcset="assets/services/architecture.webp" type="image/webp"><img src="assets/services/architecture.webp" alt="Первая встреча" loading="lazy" decoding="async"></picture>
             <figcaption class="step__cap">Первая встреча</figcaption>
           </figure>
         </article>
@@ -2261,7 +2263,7 @@
           <h3 class="step__title">Изучаем участок</h3>
           <p class="step__text">Проверяем геологию, рельеф, инсоляцию и границы застройки — до того как вы влюбитесь в планировку.</p>
           <figure class="step__shot">
-            <img src="assets/steps/s02.jpg" alt="Выезд на участок" loading="lazy" decoding="async">
+            <picture><source srcset="assets/steps/s02.webp" type="image/webp"><img src="assets/steps/s02.jpg" alt="Выезд на участок" loading="lazy" decoding="async"></picture>
             <figcaption class="step__cap">Выезд на участок</figcaption>
           </figure>
         </article>
@@ -2270,7 +2272,7 @@
           <h3 class="step__title">Фиксируем требования</h3>
           <p class="step__text">Записываем состав помещений и приоритеты в техническое задание. Оно защищает от «а мы думали, вы это тоже делаете».</p>
           <figure class="step__shot">
-            <img src="assets/services/interior.jpg" alt="Техническое задание" loading="lazy" decoding="async">
+            <picture><source srcset="assets/services/interior.webp" type="image/webp"><img src="assets/services/interior.webp" alt="Техническое задание" loading="lazy" decoding="async"></picture>
             <figcaption class="step__cap">Техническое задание</figcaption>
           </figure>
         </article>
@@ -2279,7 +2281,7 @@
           <h3 class="step__title">Разрабатываем концепцию</h3>
           <p class="step__text">Собираем планировки, объём и логику света. Сразу проверяем решения на реализуемость в целевом бюджете.</p>
           <figure class="step__shot">
-            <img src="assets/cases/i1-hq.jpg" alt="Концепция объёма" loading="lazy" decoding="async">
+            <picture><source srcset="assets/cases/i1-hq.webp" type="image/webp"><img src="assets/cases/i1-hq.webp" alt="Концепция объёма" loading="lazy" decoding="async"></picture>
             <figcaption class="step__cap">Концепция объёма</figcaption>
           </figure>
         </article>
@@ -2288,7 +2290,7 @@
           <h3 class="step__title">Согласовываем разделы</h3>
           <p class="step__text">Сводим архитектуру, конструктив и инженерию в одной модели — до стройки, а не на объекте.</p>
           <figure class="step__shot">
-            <img src="assets/cases/heydar-hq.jpg" alt="Единая модель" loading="lazy" decoding="async">
+            <picture><source srcset="assets/cases/heydar-hq.webp" type="image/webp"><img src="assets/cases/heydar-hq.webp" alt="Единая модель" loading="lazy" decoding="async"></picture>
             <figcaption class="step__cap">Единая модель</figcaption>
           </figure>
         </article>
@@ -2297,7 +2299,7 @@
           <h3 class="step__title">Выпускаем документацию</h3>
           <p class="step__text">Готовим отметки, узлы и спецификации, по которым подрядчик строит, а не додумывает.</p>
           <figure class="step__shot">
-            <img src="assets/services/visual.jpg" alt="Рабочие чертежи" loading="lazy" decoding="async">
+            <picture><source srcset="assets/services/visual.webp" type="image/webp"><img src="assets/services/visual.webp" alt="Рабочие чертежи" loading="lazy" decoding="async"></picture>
             <figcaption class="step__cap">Рабочие чертежи</figcaption>
           </figure>
         </article>
@@ -2306,7 +2308,7 @@
           <h3 class="step__title">Контролируем стройку</h3>
           <p class="step__text">Проверяем критические узлы до того, как их закроет отделка. После выезда отдаём отчёт с замечаниями и сроками.</p>
           <figure class="step__shot">
-            <img src="assets/services/supervision.jpg" alt="Авторский надзор" loading="lazy" decoding="async">
+            <picture><source srcset="assets/services/supervision.webp" type="image/webp"><img src="assets/services/supervision.webp" alt="Авторский надзор" loading="lazy" decoding="async"></picture>
             <figcaption class="step__cap">Авторский надзор</figcaption>
           </figure>
         </article>
@@ -2315,7 +2317,7 @@
           <h3 class="step__title">Передаём объект</h3>
           <p class="step__text">Отдаём актуальный комплект чертежей и паспорт дома: что где проложено и как это обслуживать.</p>
           <figure class="step__shot">
-            <img src="assets/cases/a2-hq.jpg" alt="Сдача объекта" loading="lazy" decoding="async">
+            <picture><source srcset="assets/cases/a2-hq.webp" type="image/webp"><img src="assets/cases/a2-hq.webp" alt="Сдача объекта" loading="lazy" decoding="async"></picture>
             <figcaption class="step__cap">Сдача объекта</figcaption>
           </figure>
         </article>
@@ -2442,7 +2444,7 @@
 
   <!-- лента фактов: разбивает текстовый блок перед надзором -->
   <section class="band" data-band data-speed="1"
-           data-shots="assets/cases/a1-hq.jpg, assets/cases/i2-hq.jpg, assets/cases/g1-hq.jpg, assets/cases/a2-hq.jpg, assets/cases/i1-hq.jpg, assets/cases/g2-hq.jpg">
+           data-shots="assets/cases/a1-hq.jpg, assets/cases/i2-hq.jpg, assets/cases/g1-hq.jpg, assets/cases/a2-hq.jpg, assets/cases/i1-hq.jpg, assets/cases/g2-hq.webp">
     <div class="band__fact">
       <div class="band__num">12</div>
       <div class="band__cap">объектов с 2021 по 2026</div>
@@ -2475,7 +2477,7 @@
 
   <!-- лента услуг: визуальная пауза перед FAQ -->
   <section class="band" data-band data-speed="-1"
-           data-shots="assets/services/architecture.jpg, assets/services/interior.jpg, assets/services/landscape.jpg, assets/services/supervision.jpg, assets/services/visual.jpg">
+           data-shots="assets/services/architecture.jpg, assets/services/interior.jpg, assets/services/landscape.jpg, assets/services/supervision.jpg, assets/services/visual.webp">
     <div class="band__fact">
       <div class="band__num">4</div>
       <div class="band__cap">этапа под одной ответственностью</div>
@@ -3589,15 +3591,15 @@
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const PEOPLE = [
-      { src: "assets/team/p1.jpg", name: "Алексей Иванов", role: "Главный архитектор",
+      { src: "assets/team/p1.webp", name: "Алексей Иванов", role: "Главный архитектор",
         quote: "Хорошая архитектура начинается не с формы, а с вопроса: как здесь будут жить через двадцать лет." },
-      { src: "assets/team/p2.jpg", name: "Мария Лебедева", role: "Дизайнер интерьера",
+      { src: "assets/team/p2.webp", name: "Мария Лебедева", role: "Дизайнер интерьера",
         quote: "Интерьер работает тогда, когда его не замечаешь — просто чувствуешь себя на своём месте." },
-      { src: "assets/team/p3.jpg", name: "Дмитрий Соловьёв", role: "Руководитель проектов",
+      { src: "assets/team/p3.webp", name: "Дмитрий Соловьёв", role: "Руководитель проектов",
         quote: "Сроки и бюджет — не ограничения, а часть замысла. Мы держим их наравне с эстетикой." },
-      { src: "assets/team/p4.jpg", name: "Анна Ковалёва", role: "Ведущий архитектор",
+      { src: "assets/team/p4.webp", name: "Анна Ковалёва", role: "Ведущий архитектор",
         quote: "Свет — главный материал. Всё остальное лишь помогает ему проявиться." },
-      { src: "assets/team/p5.jpg", name: "Артём Северин", role: "Главный конструктор",
+      { src: "assets/team/p5.webp", name: "Артём Северин", role: "Главный конструктор",
         quote: "Красивое решение почти всегда оказывается и самым прочным. Это не совпадение." },
     ];
     const M = PEOPLE.length;
@@ -3810,7 +3812,7 @@
          барабан: ближние кадры крупнее и ярче, дальние мельчают
          и уходят в глубину. */
       const ROWS = 3;
-      const PER_ROW = 9;                     // кадров на ярусе
+      const PER_ROW = 11;                    // кадров на ярусе
       const row = document.createElement("div");
       row.className = "band__row";
 
@@ -3834,13 +3836,13 @@
           items.push({
             el: fig, row: r, idx: k,
             // угловой джиттер: кадры не стоят ровными колоннами
-            jitDeg: (n1 - 0.5) * 16,
+            jitDeg: (n1 - 0.5) * 9,
             // персональный радиус: часть кадров ближе, часть глубже
-            radK: 0.78 + n2 * 0.5,
+            radK: 0.72 + n2 * 0.62,
             // вертикальный джиттер внутри яруса
             jitY: (n3 - 0.5) * 0.42,
             // собственный размер кадра (мелкие/крупные вперемешку)
-            sizeK: 0.42 + noise(seed + 91) * 0.62
+            sizeK: 0.28 + noise(seed + 91) * 0.8
           });
           seed++;
         }
@@ -3865,7 +3867,7 @@
         const h = items[0].el.offsetHeight || 150;
         /* радиус считаем от ширины контейнера: передняя дуга должна
            умещаться в кадр, а не улетать за края */
-        const radius = cl(W * 0.46, 300, 780);
+        const radius = cl(W * 0.50, 320, 820);
         const stepDeg = 360 / PER_ROW;
         // барабан крутится сам + подкручивается скроллом
         const spin = (p * 130 + (performance.now() - t0) * 0.0042 * 6) * dir;
@@ -3881,12 +3883,12 @@
           const z = Math.cos(rad) * rr - radius;       // ~0 у ближнего края
           const front = Math.cos(rad);                 // 1 — к зрителю
           // вертикальный разлёт ярусов + личный джиттер по высоте
-          const spread = Math.min(h * 1.08, H * 0.30);
+          const spread = Math.min(h * 1.7, H * 0.31);
           const y = (rw - (ROWS - 1) / 2) * spread + it.jitY * spread;
           /* глубина решает размер: ближние ~1.25, дальние ~0.4.
              плюс собственный калибр кадра — размеры вперемешку */
           const depth = (front + 1) / 2;               // 0 дальний .. 1 ближний
-          const sc = (0.40 + 0.85 * Math.pow(depth, 1.35)) * (0.72 + it.sizeK * 0.5);
+          const sc = (0.40 + 0.85 * Math.pow(depth, 1.5)) * (0.70 + it.sizeK * 0.58);
           const op = front < -0.45 ? 0 : cl((front + 0.45) / 0.75, 0, 1) * 0.9 + 0.1;
           el.style.transform =
             `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, ${z.toFixed(1)}px)` +
@@ -4245,8 +4247,8 @@
     /* ---------- счётчик по реальному прогрессу ---------- */
     const assets = [
       "assets/hero-poster.jpg",
-      "assets/cases/heydar-hq.jpg",
-      "assets/cases/a2-hq.jpg",
+      "assets/cases/heydar-hq.webp",
+      "assets/cases/a2-hq.webp",
     ];
     let done = 0;
     const total = assets.length + 1;              // +1 — видео первого экрана
@@ -4323,19 +4325,21 @@
        этому просветы между соседями равны ПО ПОСТРОЕНИЮ и остаются
        равными на любом угле поворота — барабан просто крутится.
 
-       STEP_DEG = 38° — угловой шаг между гранями. Тогда:
-         off ±1  →  rotateY ±38°   (заметный разворот внутрь)
-         off ±2  →  rotateY ±76°   (почти строго в профиль, как в референсе)
+       STEP_DEG = 29° — угловой шаг между гранями. Тогда:
+         off ±1  →  rotateY ±29°   (заметный разворот внутрь)
+         off ±2  →  rotateY ±58°
+         off ±2.5 → rotateY ±73°   (почти в профиль, как в референсе)
        В кадре при этом стоят шесть карточек: центральная, по две с
        каждой стороны и та, что въезжает на полушаге.
 
-       GAP = 1.10 — грани раздвинуты на 10% ширины, чтобы между
+       GAP = 1.26 — грани раздвинуты на 26% ширины, чтобы между
        карточками был ровный просвет, а не глухая стена барабана.
+       Грани дальше 82° не рисуем — там карточка вырождается в полоску.
        Радиус апофемы считается так, чтобы стороны многоугольника
        ровно совпадали с шириной карточки: R = W·GAP / (2·tan(θ/2)). */
-    const STEP_DEG = 38;
-    const GAP = 1.10;
-    const VIS = 2.6;               // сколько шагов от центра ещё рисуем
+    const STEP_DEG = 29;
+    const GAP = 1.26;
+    const VIS = 3.0;               // сколько шагов от центра ещё рисуем
 
     function geom() {
       const w = cards[0].offsetWidth || 320;
@@ -4381,10 +4385,14 @@
         const rotY = -ang * 180 / Math.PI;    // касательная: центр = 0°
 
         /* Задние грани барабана не рисуем: карточки непрозрачные,
-           и вылезшая из-за спины «изнанка» ломает картинку. */
-        const hidden = a > VIS;
+           и вылезшая из-за спины «изнанка» ломает картинку.
+           Режем ровно по силуэту барабана — на |rotateY| = 90°:
+           дальше грань смотрит от зрителя и вырождается в полоску. */
+        const deg = Math.abs(ang) * 180 / Math.PI;
+        const hidden = deg >= 82 || a > VIS;
         const scale = 1 - Math.min(0.05, a * 0.016);
-        const opacity = hidden ? 0 : cl(1 - Math.max(0, a - (VIS - 0.6)) / 0.6, 0, 1);
+        // гасим грань плавно на подходе к профилю, чтобы не мигала
+        const opacity = hidden ? 0 : cl((82 - deg) / 10, 0, 1);
         // подблюриваем всё, кроме центральной — акцент на активной
         const blur = a < 0.5 ? 0 : Math.min(5, (a - 0.5) * 2.6);
 
