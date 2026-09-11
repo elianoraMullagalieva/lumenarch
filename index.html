@@ -315,7 +315,6 @@
     flex: none;
     margin-top: 4px;
     color: #fff;
-    animation: markPulse 3s var(--ease-soft) infinite;
   }
   .eyebrow__text {
     font-family: "Onest", sans-serif;
@@ -325,11 +324,6 @@
     text-transform: uppercase;
     color: #fff;
   }
-  @keyframes markPulse {
-    0%, 100% {
-      opacity: 0.55;
-      transform: scale(1) rotate(0deg);
-    }
     50% {
       opacity: 1;
       transform: scale(1.12) rotate(45deg);
@@ -554,70 +548,6 @@
   }
   .layer > * {
     pointer-events: auto;
-  }
-
-  /* ============================================================
-     ПОДСКАЗКА "листайте"
-     ============================================================ */
-  .scroll-hint {
-    position: absolute;
-    left: 50%;
-    bottom: var(--pad-y);
-    transform: translateX(-50%);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 12px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--ink-mid);
-    opacity: 0;
-    z-index: 40;
-    transition: opacity 1s var(--ease-out);
-  }
-  .scroll-hint.show {
-    opacity: 1;
-  }
-  .scroll-hint__dot {
-    width: 22px;
-    height: 34px;
-    border: 1.5px solid var(--ink-mid);
-    border-radius: 12px;
-    position: relative;
-  }
-  .scroll-hint__dot::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    top: 6px;
-    width: 3px;
-    height: 6px;
-    border-radius: 3px;
-    background: var(--ink-mid);
-    transform: translateX(-50%);
-    animation: wheel 1.8s var(--ease-out) infinite;
-  }
-  @keyframes wheel {
-    0% { opacity: 0; transform: translate(-50%, 0); }
-    30% { opacity: 1; }
-    100% { opacity: 0; transform: translate(-50%, 12px); }
-  }
-
-  /* прогресс-линия сверху */
-  .progress {
-    position: fixed;
-    left: 0;
-    top: 0;
-    height: 2px;
-    width: 100%;
-    background: transparent;
-    z-index: 60;
-    pointer-events: none;
-  }
-  .progress__bar {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, rgba(255, 255, 255, 0.3), #fff);
   }
 
   /* ============================================================
@@ -966,9 +896,9 @@
   }
   .flow__title {
     font-family: "Onest", sans-serif; font-weight: 400;
-    font-size: clamp(28px, 3.6vw, 68px); line-height: 1;
-    letter-spacing: -0.04em; text-transform: uppercase;
-    max-width: 16ch;
+    font-size: clamp(36px, 6.2vw, 124px); line-height: .9;
+    letter-spacing: -0.05em; text-transform: uppercase;
+    max-width: 14ch; text-wrap: balance;
   }
   .flow__lead {
     max-width: 40ch;
@@ -1241,8 +1171,9 @@
   }
   .sup__title {
     font-family: "Onest", sans-serif; font-weight: 400;
-    font-size: clamp(28px, 3.6vw, 68px); line-height: 1;
-    letter-spacing: -0.04em; text-transform: uppercase; max-width: 18ch;
+    font-size: clamp(26px, 3.1vw, 58px); line-height: 1.02;
+    letter-spacing: -0.035em; text-transform: uppercase;
+    max-width: 26ch; text-wrap: balance;
   }
   .sup__lead {
     max-width: 38ch; font-family: "Onest", sans-serif;
@@ -1481,11 +1412,6 @@
     white-space: nowrap; z-index: 1;
   }
   /* дублёр поверх фото — обрезан по центру, даёт эффект «сквозь» */
-  /* Дублёр поверх фото больше не блендим: любой blend на портрете
-     даёт цветную грязь. Вместо этого имя живёт ОДНИМ контурным слоем
-     под карточкой — портрет физически перекрывает часть букв,
-     и получается честный эффект «сквозь», без артефактов. */
-  .team__ghost--over { display: none; }
 
   /* сцена туннеля */
   .team__stage {
@@ -1677,8 +1603,9 @@
   }
   .faq__title {
     font-family: "Onest", sans-serif; font-weight: 400;
-    font-size: clamp(28px, 3.6vw, 68px); line-height: 1;
-    letter-spacing: -0.04em; text-transform: uppercase; max-width: 14ch;
+    font-size: clamp(34px, 5.6vw, 108px); line-height: .94;
+    letter-spacing: -0.045em; text-transform: uppercase;
+    max-width: 20ch; text-wrap: balance;
   }
   .faq__lead {
     max-width: 34ch; font-family: "Onest", sans-serif;
@@ -1754,9 +1681,10 @@
   }
   .ask__title {
     font-family: "Onest", sans-serif; font-weight: 400;
-    font-size: clamp(30px, 4.2vw, 78px); line-height: 1;
-    letter-spacing: -0.04em; text-transform: uppercase;
-    max-width: 15ch; margin-bottom: clamp(20px, 2.6vw, 38px);
+    font-size: clamp(38px, 6.6vw, 132px); line-height: .9;
+    letter-spacing: -0.05em; text-transform: uppercase;
+    max-width: 13ch; text-wrap: balance;
+    margin-bottom: clamp(20px, 2.6vw, 38px);
   }
   .ask__lead {
     max-width: 42ch; font-family: "Onest", sans-serif;
@@ -1902,8 +1830,6 @@
 
 </style>
 
-<div class="progress"><div class="progress__bar" id="progressBar"></div></div>
-
 <section class="story" id="story">
   <div class="story__viewport">
     <!-- ФОН: видео-скраб + заглушка -->
@@ -1994,12 +1920,6 @@
           </span>
         </a>
       </div>
-    </div>
-
-    <!-- подсказка -->
-    <div class="scroll-hint" id="hint">
-      <span class="scroll-hint__dot"></span>
-      Листайте
     </div>
   </div>
 </section>
@@ -2481,8 +2401,6 @@
 
       <div class="team__stage" id="teamStage"></div>
 
-      <div class="team__ghost team__ghost--over" id="teamGhostOver"></div>
-
       <div class="team__meta">
         <div class="team__role" id="teamRole"></div>
         <p class="team__quote" id="teamQuote"></p>
@@ -2735,7 +2653,6 @@
   const b2lead = document.getElementById("b2lead");
   const b2cta = document.querySelector(".b2-cta");
   const fallback = document.querySelector(".bg__fallback");
-  const progressBar = document.getElementById("progressBar");
 
   let videoReady = false, videoDuration = 0;
 
@@ -2849,8 +2766,6 @@
     // Досмотренный сторителлинг остаётся прибитым к вьюпорту, чтобы
     // следующая сцена наехала на него сверху, а не вытолкнула вверх.
     story.classList.toggle("story--pinned", p >= 0.999);
-
-    progressBar.style.width = `${p * 100}%`;
   }
 
   /* Единый цикл: сглаживает время видео и перерисовывает оверлеи.
@@ -2933,11 +2848,6 @@
   /* ============================================================
      5. ПОДСКАЗКА "листайте"
      ============================================================ */
-  const hint = document.getElementById("hint");
-  setTimeout(() => { if (window.scrollY < 40) hint.classList.add("show"); }, 3200);
-  window.addEventListener("scroll", () => {
-    if (window.scrollY > 40) hint.classList.remove("show");
-  }, { passive: true });
 
   /* ================================================================
      СЦЕНА 3 — МАНИФЕСТ → РАСКРЫТИЕ КАДРА → ПРОЕКТ «АТРИУМ»
@@ -3437,7 +3347,6 @@
     });
 
     const ghost = document.getElementById("teamGhost");
-    const ghostOver = document.getElementById("teamGhostOver");
     const roleEl = document.getElementById("teamRole");
     const quoteEl = document.getElementById("teamQuote");
     const numEl = document.getElementById("teamNum");
@@ -3448,7 +3357,6 @@
       shown = i;
       const p = PEOPLE[i];
       if (ghost) ghost.textContent = p.name;
-      if (ghostOver) ghostOver.textContent = p.name;
       if (numEl) numEl.textContent = pad(i + 1);
       cards.forEach((c, k) => c.classList.toggle("is-front", k === i));
 
@@ -3467,23 +3375,23 @@
       cards.forEach((c, i) => {
         const z = i * GAP - camZ;                 // положение относительно камеры
         const depth = z / GAP;                    // 0 = в фокусе, >0 — глубже
-        // ближняя карточка пролетает мимо зрителя
-        const scale = gsap.utils.clamp(.5, 1.25, 1 - depth * 0.12);
-        // видна только карточка в фокусе и слегка — соседняя сзади;
-        // иначе дальние просвечивают сквозь ближнюю прямоугольником
         const ad = Math.abs(depth);
-        const opacity = z < -GAP * 0.45 ? 0
-          : ad < 0.5 ? 1
-          : gsap.utils.clamp(0, 1, 1 - (ad - 0.5) * 2.2);
-        const rotY = gsap.utils.clamp(-24, 24, depth * 9);
-        const x = depth * 46;                     // лёгкий разлёт вбок
-        const y = Math.sin(depth * 1.1) * 26;     // волна по вертикали
+
+        // Видны ПЯТЬ карточек: только так работает перспектива. Дальние
+        // не «просвечивают прямоугольником», а честно уходят в глубину —
+        // за счёт размытия и затемнения, а не обнуления прозрачности.
+        const scale = gsap.utils.clamp(.42, 1.18, 1 - depth * 0.17);
+        const opacity = z < -GAP * 0.5 ? 0 : gsap.utils.clamp(0, 1, 1 - ad / 2.6);
+        const blur = gsap.utils.clamp(0, 7, (ad - 0.25) * 3);
+        const rotY = gsap.utils.clamp(-26, 26, depth * 15);
+        // карточки стоят по дуге, а не стопкой — читается коридор
+        const x = Math.sin(depth * 0.62) * 300;
+        const y = Math.cos(depth * 0.5) * 22 - 22;
         gsap.set(c, {
-          x: "-50%", y: "-50%",
-          xPercent: 0, yPercent: 0,
-          transform: `translate(-50%, -50%) translate3d(${x}px, ${y}px, ${-z * 0.42}px) rotateY(${rotY}deg) scale(${scale})`,
+          transform: `translate(-50%, -50%) translate3d(${x}px, ${y}px, ${-z * 0.5}px) rotateY(${rotY}deg) scale(${scale})`,
           opacity,
-          zIndex: 100 - Math.round(Math.abs(depth) * 10),
+          filter: blur > 0.1 ? `blur(${blur}px)` : "none",
+          zIndex: 100 - Math.round(ad * 10),
         });
       });
     }
@@ -3502,6 +3410,12 @@
 
     layout(0); setActive(0);
     addEventListener("resize", () => ScrollTrigger.refresh());
+    // страницу достраивают ленты и SplitText — без пересчёта позиции
+    // всех триггеров уезжают на высоту добавленного контента
+    addEventListener("load", () => ScrollTrigger.refresh());
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => ScrollTrigger.refresh());
+    }
   })();
 
   /* ---- 07 · Отчёт надзора: строки проявляются по одной ---- */
@@ -3727,5 +3641,22 @@
     });
   })();
 
+  /* ================================================================
+     ФИНАЛЬНЫЙ ПЕРЕСЧЁТ ScrollTrigger
+     Все блоки выше достраивают DOM (ленты фото, разбивка строк).
+     Без общего refresh триггеры остаются с координатами, посчитанными
+     до этого, и pin-секции срабатывают не в своих местах.
+     ================================================================ */
+  (function () {
+    if (!window.gsap || !window.ScrollTrigger) return;
+    const refresh = () => ScrollTrigger.refresh();
+    addEventListener("load", refresh);
+    // картинки в лентах грузятся лениво и меняют высоту по ходу
+    let t = null;
+    new ResizeObserver(() => {
+      clearTimeout(t);
+      t = setTimeout(refresh, 120);
+    }).observe(document.body);
+  })();
+
 </script>
-<script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
