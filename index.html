@@ -4213,10 +4213,11 @@
         float k = max(dot(n, KEY), 0.0);
         float f = max(dot(n, FILL), 0.0);
         float graze = 1.0 - clamp(abs(n.z), 0.0, 1.0);
-        vec3 c = uBase * (0.08 + 0.62 * pow(k, 2.0));
-        c += uAcc * 0.80 * pow(k, 9.0);
-        c += uAcc * 0.35 * pow(f, 6.0);
-        c += uAcc * 0.32 * pow(graze, 3.0) * (0.40 + 0.60 * max(n.y, 0.0));
+        // Почти плоская заливка: объём лишь намечен, без резких граней
+        // и бликов — пластины читаются как светлая бумага, а не металл.
+        vec3 c = uBase * (0.86 + 0.13 * pow(k, 1.0));
+        c += uAcc * 0.05 * pow(k, 16.0);
+        c += uAcc * 0.03 * pow(graze, 1.6);
         gl_FragColor = vec4(clamp(c, 0.0, 1.0), 1.0);
       }`;
 
@@ -4346,13 +4347,14 @@
           gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL);
           gl.clearColor(0, 0, 0, 0);
 
-          // пластины в цветах сайта: тёплый графит на off-white
-          const BASE = [0.086, 0.082, 0.059];   // #16150f
+          // светло-серые пластины на тёплом off-white: тёмный графит
+          // давал «дыру» в светлом макете
+          const BASE = [0.88, 0.875, 0.862];    // ≈ #e0dfdc
           const ACC  = [1, 1, 1];
           const COUNT = 5, SPACING = 0.1, SCALE = 3;
           const TILT_X = Math.PI/10, TILT_Y = Math.PI/4;
           const SWEEP = Math.PI/2, DUR = 1, STAG = 0.25;
-          const g = roundedBox(1, 0.1, 1, 0.05 * 0.26 * 2, 4);
+          const g = roundedBox(1, 0.07, 1, 0.035 * 0.4, 8);
           const bufP = gl.createBuffer(), bufN = gl.createBuffer(), bufI = gl.createBuffer();
           gl.bindBuffer(gl.ARRAY_BUFFER, bufP); gl.bufferData(gl.ARRAY_BUFFER, g.pos, gl.STATIC_DRAW);
           gl.bindBuffer(gl.ARRAY_BUFFER, bufN); gl.bufferData(gl.ARRAY_BUFFER, g.nrm, gl.STATIC_DRAW);
@@ -4364,7 +4366,7 @@
           const easeBackOut = (t) => { const c = 1.70158, u = t - 1; return u*u*((c+1)*u + c) + 1; };
 
           const resize = () => {
-            const dpr = Math.min(devicePixelRatio || 1, 2);
+            const dpr = Math.min(devicePixelRatio || 1, 3);
             const w = Math.max(1, Math.round(canvas.clientWidth * dpr));
             const h = Math.max(1, Math.round(canvas.clientHeight * dpr));
             if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
@@ -4380,7 +4382,7 @@
             clock = (clock + dt * (57 / 50)) % cycle;
             const aspect = canvas.width / canvas.height;
             persp(proj, (45 * Math.PI) / 180, aspect, 0.1, 200);
-            ident(view); trans(view, 0, 0, -(9.5 / Math.min(1, aspect)));
+            ident(view); trans(view, 0, 0, -(12.5 / Math.min(1, aspect)));
             mul(proj, view, pv);
             gl.uniform3fv(uBase, BASE); gl.uniform3fv(uAcc, ACC);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -4413,11 +4415,15 @@
     let done = 0;
     const total = assets.length + 1;              // +1 — видео первого экрана
     let shown = 0, target = 0;
+    const MIN_MS = 2400;                        // держим экран хотя бы столько
+    const t0 = performance.now();
 
     const tick = () => {
       // цифра догоняет реальный прогресс, но не прыгает
-      shown += Math.max(0.4, (target - shown) * 0.08);
-      if (shown > target) shown = target;
+      const byTime = ((performance.now() - t0) / MIN_MS) * 100;
+      const cap = Math.min(target, byTime);     // не обгоняем минимальный показ
+      shown += Math.max(0.25, (cap - shown) * 0.07);
+      if (shown > cap) shown = cap;
       if (numEl) numEl.textContent = String(Math.min(100, Math.floor(shown))).padStart(3, "0");
       if (shown < 100) requestAnimationFrame(tick);
       else finish();
