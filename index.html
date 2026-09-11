@@ -3474,9 +3474,15 @@
          экрана: сторителлинг уже ушёл, его шапка не видна. Только
          теперь показываем шапку манифеста и пускаем текст —
          иначе на стыке было бы два меню одновременно. */
-      const closed = sec.getBoundingClientRect().top <= 2;
-      top.classList.toggle("is-hidden", !closed);
-      if (closed && window.__revealStart) window.__revealStart();
+      /* Шапку показываем, когда шторка сомкнулась полностью, а текст
+         пускаем чуть раньше — когда до верха остаётся ~12% экрана.
+         Иначе между приходом шторки и появлением текста висит
+         пустой белый кадр. */
+      const topY = sec.getBoundingClientRect().top;
+      top.classList.toggle("is-hidden", topY > 2);
+      if (topY <= window.innerHeight * 0.12 && window.__revealStart) {
+        window.__revealStart();
+      }
 
       // ---- фаза 3: карточка проекта поверх раскрытого кадра ----
       const pr = cl((p - 0.62) / 0.16);
