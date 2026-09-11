@@ -106,10 +106,9 @@
   .bg__fallback {
     position: absolute;
     inset: 0;
-    background:
-      radial-gradient(120% 80% at 25% 15%, rgba(120, 130, 200, 0.35), transparent 55%),
-      radial-gradient(140% 90% at 80% 90%, rgba(220, 160, 90, 0.28), transparent 50%),
-      linear-gradient(160deg, #23244a 0%, #2b2d56 45%, #1a1b38 100%);
+    /* Пока грузится видео, показываем его же первый кадр, а не
+       синий градиент: иначе первый экран открывается пустым. */
+    background: #14161f url("assets/hero-poster.jpg") center/cover no-repeat;
     transition: opacity 0.6s var(--ease-out);
   }
   .bg.has-video .bg__fallback {
@@ -347,45 +346,37 @@
     position: absolute;
     right: clamp(1.5rem, 0.7112rem + 3.366vw, 4.75rem);
     bottom: clamp(40px, 8.3vh, 90px);
-    width: clamp(19rem, 17.1rem + 8.1vw, 27rem);
+    width: clamp(21rem, 18.6rem + 10.2vw, 30rem);
     display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: center;
     padding: clamp(0.85rem, 0.74rem + 0.44vw, 1.25rem);
     gap: clamp(0.95rem, 0.8rem + 0.66vw, 1.6rem);
-    border-radius: 20px;
+    border-radius: 24px;
     isolation: isolate;
 
-    /* ── НАСТОЯЩЕЕ СТЕКЛО ──────────────────────────────────────────
-       Плотная заливка давала «мыло»: фон был не виден, читалась
-       серая плашка. Настоящее стекло строится наоборот — подложка
-       почти прозрачная, а материал делают четыре слоя:
-         1) сильное размытие + подъём насыщенности фона,
-         2) преломление по краям (SVG feDisplacementMap),
-         3) градиент бликов по поверхности,
-         4) световые кромки сверху и снизу.
-       Никакого will-change/transform — composited-слой отключает
-       backdrop-filter.                                              */
-    background: rgba(255, 255, 255, 0.055);
-    backdrop-filter: blur(18px) saturate(210%) brightness(1.06);
-    -webkit-backdrop-filter: blur(18px) saturate(210%) brightness(1.06);
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    /* ── СТЕКЛО ПО ФОРМУЛЕ APPLE LIQUID GLASS ─────────────────────
+       Ключ ко всему — ПЕРВАЯ внутренняя линия сверху: именно она
+       создаёт иллюзию толщины и отличает стекло от плёнки.
+       Подложка светлая и почти прозрачная (13%), а не тёмная
+       заливка — тогда фон виден насквозь, без «мыла».           */
+    background: rgba(255, 255, 255, 0.13);
+    backdrop-filter: blur(12px) saturate(170%);
+    -webkit-backdrop-filter: blur(12px) saturate(170%);
+    border: 1px solid rgba(255, 255, 255, 0.30);
     box-shadow:
-      /* верхняя кромка — стекло ловит свет */
-      inset 0 1px 0.5px rgba(255, 255, 255, 0.55),
-      /* нижняя — отражённый свет от фона */
-      inset 0 -1px 0.5px rgba(255, 255, 255, 0.16),
-      /* внутренний объём */
-      inset 0 0 40px rgba(255, 255, 255, 0.06),
-      /* тень отрывает плашку от кадра */
-      0 16px 36px rgba(4, 6, 16, 0.28),
-      0 36px 80px rgba(4, 6, 16, 0.22);
+      /* specular edge — «толщина» стекла */
+      inset 0 1.5px 0 rgba(255, 255, 255, 0.85),
+      /* отражённый свет снизу */
+      inset 0 -1px 0 rgba(255, 255, 255, 0.14),
+      /* отрыв от кадра */
+      0 10px 30px rgba(0, 0, 0, 0.32);
   }
 
-  /* Слой преломления: искривляет фон по краям, как толстое стекло.
-     Chromium применяет SVG-фильтр к backdrop, остальные браузеры
-     просто его игнорируют — плашка остаётся корректной. */
+  /* Преломление по кромке: backdrop-filter умеет только размывать
+     и НЕ смещает пиксели, поэтому линза делается SVG-фильтром.
+     Маска держит эффект у краёв — центр стекла остаётся чистым. */
   .glass::before {
     content: "";
     position: absolute; inset: 0;
@@ -393,27 +384,10 @@
     backdrop-filter: url(#glassRefract);
     -webkit-backdrop-filter: url(#glassRefract);
     pointer-events: none;
-    /* преломление заметно только у кромки, в центре стекло чистое */
-    mask-image: radial-gradient(120% 120% at 50% 50%,
-                transparent 52%, #000 88%);
-    -webkit-mask-image: radial-gradient(120% 120% at 50% 50%,
-                transparent 52%, #000 88%);
-  }
-
-  /* Блик по поверхности: диагональная засветка из верхнего угла. */
-  .glass::after {
-    content: "";
-    position: absolute; inset: 0;
-    border-radius: inherit;
-    pointer-events: none;
-    background:
-      linear-gradient(138deg,
-        rgba(255, 255, 255, 0.22) 0%,
-        rgba(255, 255, 255, 0.06) 18%,
-        rgba(255, 255, 255, 0) 42%,
-        rgba(255, 255, 255, 0) 72%,
-        rgba(255, 255, 255, 0.10) 100%);
-    mix-blend-mode: soft-light;
+    mask-image: radial-gradient(125% 125% at 50% 50%,
+                transparent 58%, #000 92%);
+    -webkit-mask-image: radial-gradient(125% 125% at 50% 50%,
+                transparent 58%, #000 92%);
   }
 
   .glass__body {
@@ -444,6 +418,9 @@
     white-space: nowrap;
   }
   .glass__title {
+    /* ломается по заданным <br>, а не сам */
+    text-wrap: initial;
+    white-space: nowrap;
     font-weight: 400;
     font-size: clamp(1.0625rem, 0.9867rem + 0.324vw, 1.375rem);
     line-height: 1.22;
@@ -647,7 +624,7 @@
   /* ОДНА сцена на манифест + раскрытие кадра + карточку проекта.
      420vh: 100vh — сам sticky-вьюпорт, 320vh — длина скролла сцены.
      Такой запас нужен, чтобы кадр рос МЕДЛЕННО, без рывка. */
-  .reveal { position: relative; height: 420vh; background: #fff; z-index: 1; }
+  .reveal { position: relative; height: 310vh; background: #fff; z-index: 1; }
   .reveal__vp {
     position: sticky; top: 0; height: 100vh; width: 100%;
     overflow: hidden; background: #fff;
@@ -773,12 +750,18 @@
     display: grid; grid-template-columns: 1fr auto 1fr;
     align-items: end; gap: clamp(1.25rem, 0.6432rem + 2.589vw, 3.75rem);
   }
-  .pr__stat { display: flex; flex-direction: column; align-items: flex-start; }
-  .pr__stat--mid { align-items: center; text-align: center; }
-  .pr__stat--end { align-items: flex-end; text-align: right; }
-  /* Подпись выравнивается по центру своей цифры — во всех трёх
-     метриках одинаково, как в макете. */
-  .pr__stat .pr__cap { align-self: center; text-align: center; }
+  /* Цифра и подпись — один блок по ширине ЦИФРЫ, поэтому подпись
+     центрируется относительно неё, а не относительно колонки сетки.
+     Раньше align-self: center считал центр всей колонки — из-за
+     разной ширины колонок подписи съезжали. */
+  .pr__stat {
+    display: flex; flex-direction: column;
+    align-items: center;              /* центр по ширине цифры */
+    width: fit-content;
+  }
+  .pr__stat--mid { margin-inline: auto; }
+  .pr__stat--end { margin-left: auto; }
+  .pr__stat .pr__cap { text-align: center; }
   .pr__num {
     font-family: "Onest", sans-serif; font-weight: 400;
     font-size: clamp(3.875rem, 2.6917rem + 5.049vw, 8.75rem); line-height: .92;
@@ -2080,7 +2063,7 @@
     <!-- ФОН: видео-скраб + заглушка -->
     <div class="bg" id="bg">
       <!-- Фон-видео (скраб по скроллу). Оптимизировано: все кадры ключевые, 1280px, ~3МБ. -->
-      <video class="bg__video" id="clip" data-src="assets/scrub-web.mp4" muted playsinline webkit-playsinline preload="auto"></video>
+      <video class="bg__video" id="clip" data-src="assets/scrub-web.mp4" poster="assets/hero-poster.jpg" muted playsinline webkit-playsinline preload="auto"></video>
       <div class="bg__fallback"></div>
       <div class="bg__scrim"></div>
     </div>
@@ -2126,7 +2109,7 @@
         <div class="glass" id="glass">
           <div class="glass__body">
             <span class="glass__chip">Наши проекты</span>
-            <p class="glass__title">Проект торгового<br />центра в Москве</p>
+            <p class="glass__title">Проект торгового<br />центра в Москве</p>
             <a class="glass__btn" href="#">
               <span>Подробнее</span>
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -3164,7 +3147,7 @@
       type.style.opacity = 1 - out;
 
       // ---- фаза 2: медленное раскрытие кадра (почти половина сцены) ----
-      const g = eInOut(cl((p - 0.20) / 0.48));
+      const g = eInOut(cl((p - 0.18) / 0.38));
       // кадр всегда во всю ширину; растёт только по высоте: 46vh → 100vh,
       // то есть плавно «вытягивается» вверх, как в макете
       frame.style.width = "100vw";
