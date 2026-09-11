@@ -95,6 +95,9 @@
     inset: 0;
     overflow: hidden;
   }
+  /* постер остаётся под видео: если кадр на миг не готов,
+     вместо чёрного просвета видна та же картинка */
+  .bg { background: #14161f url("assets/hero-poster.jpg") center/cover no-repeat; }
   .bg__video {
     position: absolute;
     inset: -2%;
@@ -992,8 +995,11 @@
      короткая цитата и зона ответственности. Внизу аватарки дугой.
      ================================================================ */
   .team {
-    background: var(--l-ink);
+    background-color: #16150f !important;
     color: #fff;
+    /* Воздух делаем ВНУТРЕННИМ отступом: margin-top оставлял
+       светлую полосу между тёмными секциями. */
+    padding-top: clamp(60px, 10vh, 130px);
     min-height: 100vh;
     display: flex; flex-direction: column; justify-content: center;
     padding: clamp(52px, 8vh, 96px) 0;
@@ -1090,20 +1096,38 @@
   /* ---- ДУГА АВАТАРОК ---- */
   .team__nav {
     position: relative;
-    height: clamp(86px, 10vh, 124px);
-    margin-top: clamp(18px, 2.6vh, 36px);
+    /* запас по высоте под подписи в две строки */
+    height: clamp(126px, 15vh, 178px);
+    margin-top: clamp(26px, 3.6vh, 48px);
   }
   .team__track { position: relative; width: 100%; height: 100%; }
   .team__btn {
     position: absolute; left: 50%; top: 50%;
-    width: var(--btn, 62px); height: var(--btn, 62px);
+    width: var(--btn, 62px);
     margin: calc(var(--btn, 62px) / -2) 0 0 calc(var(--btn, 62px) / -2);
     border: none; padding: 0; cursor: pointer;
-    border-radius: 50%; overflow: hidden;
-    background: #2a2924;
+    background: none;
+    display: flex; flex-direction: column; align-items: center;
+    gap: clamp(6px, .8vh, 10px);
     will-change: transform, opacity;
+  }
+  /* сам кружок с портретом */
+  .team__ava {
+    display: block; width: 100%; aspect-ratio: 1;
+    border-radius: 50%; overflow: hidden; position: relative;
+    background: #2a2924;
     transition: box-shadow .45s var(--ease-out);
   }
+  /* имя под аватаркой в две строки мелким шрифтом */
+  .team__cap {
+    font-family: "Onest", sans-serif; font-weight: 400;
+    font-size: clamp(0.6rem, 0.55rem + 0.2vw, 0.75rem);
+    line-height: 1.25; letter-spacing: .01em;
+    color: rgba(255, 255, 255, 0.5);
+    white-space: nowrap; text-align: center;
+    transition: color .45s var(--ease-out);
+  }
+  .team__btn.is-active .team__cap { color: #fff; }
   .team__btn img {
     width: 100%; height: 100%; object-fit: cover; object-position: center 18%;
     display: block;
@@ -1112,13 +1136,13 @@
   }
   .team__btn:hover img { opacity: .82; }
   .team__btn.is-active img { filter: grayscale(0); opacity: 1; }
-  .team__btn.is-active { box-shadow: 0 10px 26px rgba(0, 0, 0, .45); }
-  .team__btn::after {
+  .team__btn.is-active .team__ava { box-shadow: 0 10px 26px rgba(0, 0, 0, .45); }
+  .team__ava::after {
     content: ""; position: absolute; inset: 0; border-radius: 50%;
     border: 2px solid #fff; opacity: 0;
     transition: opacity .45s var(--ease-out);
   }
-  .team__btn.is-active::after { opacity: 1; }
+  .team__btn.is-active .team__ava::after { opacity: 1; }
   .team__arrows { display: none; }
 
   @media (max-width: 860px) {
@@ -1265,21 +1289,7 @@
     outline: none; border-color: var(--l-ink);
   }
   /* плавающая подпись поля */
-  .ask__field label {
-    position: absolute; left: 0; top: clamp(1.0rem, 0.8786rem + 0.518vw, 1.5rem);
-    font-family: "Onest", sans-serif;
-    font-size: clamp(0.8125rem, 0.7518rem + 0.259vw, 1.0625rem); color: var(--l-ink-low);
-    pointer-events: none;
-    transition: transform .4s var(--ease-out), font-size .4s var(--ease-out), color .4s var(--ease-out);
-  }
-  .ask__field input:focus + label,
-  .ask__field textarea:focus + label,
-  .ask__field input:not(:placeholder-shown) + label,
-  .ask__field textarea:not(:placeholder-shown) + label {
-    transform: translateY(calc(-1 * clamp(1.0rem, 0.8786rem + 0.518vw, 1.5rem)));
-    font-size: clamp(0.625rem, 0.5947rem + 0.129vw, 0.75rem);
-    letter-spacing: .1em; text-transform: uppercase; color: var(--l-ink-low);
-  }
+
 
   .ask__consent {
     display: flex; gap: 12px; align-items: flex-start;
@@ -1327,9 +1337,12 @@
      ================================================================ */
   .band {
     position: relative;
-    height: clamp(420px, 66vh, 760px);
+    /* блок занимает весь экран: сверху заголовок, под ним карусель */
+    height: 100vh;
+    min-height: 620px;
     overflow: hidden;
     background: var(--l-ink);
+    display: flex; flex-direction: column;
     /* объёмная сцена: кадры расставлены по цилиндру вокруг зрителя */
     perspective: 1250px;
     transform-style: preserve-3d;
@@ -1425,7 +1438,10 @@
     .cta-nav svg { width: 13px; height: 13px; }
 
     /* фон-видео не шире экрана */
-    .bg__video { inset: 0; width: 100%; height: 100%; }
+    /* постер остаётся под видео: если кадр на миг не готов,
+     вместо чёрного просвета видна та же картинка */
+  .bg { background: #14161f url("assets/hero-poster.jpg") center/cover no-repeat; }
+  .bg__video { inset: 0; width: 100%; height: 100%; }
 
     /* кадры лент и кейсов не выходят за край */
     .reveal__frame img, .reveal__shot { max-width: 100vw; }
@@ -1585,8 +1601,8 @@
 
   .step {
     position: absolute; left: 50%; top: 50%;
-    width: clamp(15rem, 12.2rem + 12vw, 22rem);
-    height: clamp(21rem, 17.2rem + 16.5vw, 31rem);
+    width: clamp(17rem, 13.5rem + 15vw, 27rem);
+    height: clamp(23rem, 18.6rem + 19vw, 36rem);
     margin: 0;
     display: flex; flex-direction: column;
     padding: clamp(0.9rem, 0.78rem + 0.5vw, 1.3rem);
@@ -1803,15 +1819,16 @@
      логотип-звезда тоже чёрная. Раньше логотип оставался белым
      и пропадал, а плашки теряли фон.
      ================================================================ */
-  /* Плашки БЕЛЫЕ → логотип-звезда и бренд тоже белые, текст внутри
-     плашек тёмный. Цвет логотипа всегда совпадает с цветом плашек. */
-  .topbar--dark .brand__name { color: #fff; }
-  .topbar--dark .brand__mark { color: #fff; }
-  .topbar--dark .burger { background: #fff; }
-  .topbar--dark .burger span { background: #16150f; }
-  .topbar--dark .cta-nav { background: #fff; }
+  /* Класс включается, когда под шапкой СВЕТЛЫЙ фон: плашки и звезда
+     становятся тёмными, текст внутри плашек — светлым. Логотип всегда
+     в цвете плашек. На тёмном фоне работает базовый стиль (белый). */
+  .topbar--dark .brand__name { color: #16150f; }
+  .topbar--dark .brand__mark { color: #16150f; }
+  .topbar--dark .burger { background: #16150f; }
+  .topbar--dark .burger span { background: #fff; }
+  .topbar--dark .cta-nav { background: #16150f; }
   .topbar--dark .cta-nav span,
-  .topbar--dark .cta-nav svg { color: #16150f; }
+  .topbar--dark .cta-nav svg { color: #fff; }
 
   /* ================================================================
      04 · УСЛУГИ — hover image reveal
@@ -1915,6 +1932,192 @@
     .svc__list.is-hovering .svc__label { color: #fff; }
   }
 
+
+  /* заголовок над каруселью «12 объектов» */
+  .band__head {
+    position: relative; z-index: 4;
+    padding: clamp(52px, 8vh, 96px) var(--pad-x) 0;
+    text-align: center; pointer-events: none;
+  }
+  .band__label {
+    font-family: "Onest", sans-serif;
+    font-size: clamp(0.75rem, 0.69rem + 0.26vw, 1.0625rem);
+    letter-spacing: .06em; text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
+    display: inline-flex; align-items: center; gap: 12px;
+    margin-bottom: clamp(10px, 1.6vh, 20px);
+  }
+  .band__label::before { content: ""; width: 40px; height: 1px; background: rgba(255,255,255,.4); }
+  .band__title {
+    font-family: "Onest", sans-serif; font-weight: 400;
+    font-size: clamp(1.5rem, 1.16rem + 1.45vw, 2.75rem);
+    line-height: 1.08; letter-spacing: -0.035em;
+    text-transform: uppercase; color: #fff;
+    max-width: 24ch; margin: 0 auto;
+  }
+  /* сцена карусели занимает остаток экрана */
+  .band__stage { position: relative; flex: 1 1 auto; min-height: 0; }
+
+  /* Кнопки слегка приподнимаются при наведении — без смещения вбок.
+     Магнитное притяжение к курсору убрано: оно выглядело дёргано. */
+  .cta-nav, .ask__submit, .b2-cta__circle, .pr__arrow, .team__arrow {
+    transition: transform .35s var(--ease-out), background .35s var(--ease-out),
+                color .35s var(--ease-out), border-color .35s var(--ease-out),
+                box-shadow .35s var(--ease-out);
+  }
+  .cta-nav:hover, .ask__submit:hover, .pr__arrow:hover, .team__arrow:hover {
+    transform: translateY(-1px);
+  }
+  .b2-cta:hover .b2-cta__circle { transform: translateY(-1px) scale(1.04); }
+  /* Аватарки: позицию по дуге задаёт JS в inline-стиле кнопки,
+     поэтому подъём вешаем на внутренний кружок — иначе hover
+     перебил бы раскладку и аватарка прыгнула бы в центр. */
+  .team__ava { transition: transform .35s var(--ease-out), box-shadow .45s var(--ease-out); }
+  .team__btn:hover .team__ava { transform: translateY(-2px); }
+
+  /* Базовое правило блока команды: было утрачено при чистках,
+     из-за чего секция шла без фона и подписи сливались. */
+  section.team {
+    background-color: #16150f;
+    color: #fff;
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding-top: clamp(60px, 10vh, 130px) !important;
+    padding-bottom: clamp(52px, 8vh, 96px) !important;
+    overflow: hidden;
+  }
+  section.team > .container { width: 100%; }
+
+  /* ================================================================
+     ФОРМА ЗАЯВКИ — тёмная карточка в две колонки (по референсу)
+     Слева градиентная зона с шагами, справа поля ввода.
+     ================================================================ */
+  section.ask {
+    background-color: #16150f;
+    padding: clamp(60px, 10vh, 130px) 0 clamp(52px, 8vh, 96px);
+  }
+  .ask__card {
+    display: grid; grid-template-columns: 1.05fr 1fr;
+    border-radius: 18px; overflow: hidden;
+    background: #1c1b16;
+    box-shadow: 0 30px 80px rgba(0,0,0,.45);
+  }
+  /* левая зона с градиентом и шагами */
+  .ask__side {
+    position: relative;
+    padding: clamp(28px, 4vw, 56px);
+    display: flex; flex-direction: column; justify-content: flex-end;
+    background:
+      radial-gradient(120% 100% at 0% 0%, rgba(126, 138, 122, .55), transparent 62%),
+      linear-gradient(155deg, #3c4a3e 0%, #222a24 55%, #1b1f1c 100%);
+    min-height: clamp(360px, 46vh, 520px);
+  }
+  .ask__side h2 {
+    font-family: "Onest", sans-serif; font-weight: 400;
+    font-size: clamp(1.6rem, 1.2rem + 1.8vw, 3rem);
+    line-height: 1.04; letter-spacing: -0.035em; color: #fff;
+    max-width: 14ch; margin-bottom: clamp(10px, 1.4vh, 18px);
+  }
+  .ask__side p {
+    font-family: "Onest", sans-serif;
+    font-size: clamp(0.82rem, 0.76rem + 0.26vw, 1rem);
+    line-height: 1.45; color: rgba(255,255,255,.62);
+    max-width: 32ch; margin-bottom: clamp(22px, 3vh, 38px);
+  }
+  /* три шага плитками */
+  .ask__steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(8px, 1vw, 14px); }
+  .ask__step {
+    border-radius: 12px; padding: clamp(12px, 1.4vw, 18px);
+    background: rgba(255,255,255,.10);
+    border: 1px solid rgba(255,255,255,.10);
+    font-family: "Onest", sans-serif;
+    font-size: clamp(0.72rem, 0.66rem + 0.24vw, 0.88rem);
+    line-height: 1.3; color: rgba(255,255,255,.8);
+  }
+  .ask__step:first-child { background: #fff; color: #16150f; border-color: #fff; }
+  .ask__step i {
+    display: grid; place-items: center; font-style: normal;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: rgba(255,255,255,.16); color: #fff;
+    font-size: 11px; margin-bottom: 10px;
+  }
+  .ask__step:first-child i { background: #16150f; color: #fff; }
+
+  /* правая колонка с полями */
+  .ask__form {
+    padding: clamp(28px, 4vw, 56px);
+    display: flex; flex-direction: column; gap: clamp(12px, 1.5vh, 18px);
+    background: #16150f;
+  }
+  .ask__form h3 {
+    font-family: "Onest", sans-serif; font-weight: 400;
+    font-size: clamp(1.15rem, 1rem + 0.7vw, 1.6rem);
+    letter-spacing: -0.02em; color: #fff; text-align: center;
+  }
+  .ask__hint {
+    font-family: "Onest", sans-serif; text-align: center;
+    font-size: clamp(0.75rem, 0.7rem + 0.2vw, 0.88rem);
+    color: rgba(255,255,255,.5); margin-bottom: clamp(6px, 1vh, 12px);
+  }
+  .ask__row { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(10px, 1.2vw, 16px); }
+  .ask__field label {
+    display: block; font-family: "Onest", sans-serif;
+    font-size: clamp(0.7rem, 0.66rem + 0.16vw, 0.82rem);
+    color: rgba(255,255,255,.55); margin-bottom: 7px;
+  }
+  .ask__field input, .ask__field textarea {
+    width: 100%; border-radius: 9px;
+    background: #222119; border: 1px solid rgba(255,255,255,.09);
+    padding: clamp(10px, 1.2vw, 14px) clamp(12px, 1.3vw, 16px);
+    font-family: "Onest", sans-serif;
+    font-size: clamp(0.82rem, 0.78rem + 0.18vw, 0.95rem);
+    color: #fff; transition: border-color .3s var(--ease-out);
+  }
+  .ask__field textarea { resize: none; min-height: 78px; }
+  .ask__field input::placeholder, .ask__field textarea::placeholder { color: rgba(255,255,255,.3); }
+  .ask__field input:focus, .ask__field textarea:focus {
+    outline: none; border-color: rgba(255,255,255,.38);
+  }
+  .ask__consent {
+    display: flex; gap: 10px; align-items: flex-start;
+    font-family: "Onest", sans-serif;
+    font-size: clamp(0.68rem, 0.64rem + 0.16vw, 0.78rem);
+    line-height: 1.4; color: rgba(255,255,255,.45);
+  }
+  .ask__consent input { margin-top: 2px; accent-color: #fff; flex: none; }
+  .ask__consent a { color: rgba(255,255,255,.7); }
+  .ask__submit {
+    width: 100%; border: none; cursor: pointer;
+    border-radius: 9px; background: #fff; color: #16150f;
+    padding: clamp(12px, 1.4vw, 16px);
+    font-family: "Onest", sans-serif; font-weight: 500;
+    font-size: clamp(0.82rem, 0.78rem + 0.18vw, 0.95rem);
+    letter-spacing: .02em;
+  }
+  .ask__status {
+    font-family: "Onest", sans-serif; text-align: center;
+    font-size: clamp(0.72rem, 0.68rem + 0.16vw, 0.82rem);
+    color: rgba(255,255,255,.55); min-height: 1.3em;
+  }
+
+  @media (max-width: 900px) {
+    .ask__card { grid-template-columns: 1fr; }
+    .ask__row { grid-template-columns: 1fr; }
+  }
+
+  /* ── Вариант 2: тёмный фон, карточки чуть светлее ──────────────── */
+  .steps--dark { background: #16150f; }
+  .steps--dark .steps__label { color: rgba(255,255,255,.5); }
+  .steps--dark .steps__label::before { background: rgba(255,255,255,.4); }
+  .steps--dark .steps__title { color: #fff; }
+  .steps--dark .step {
+    background: #23221c;
+    box-shadow: 0 2px 6px rgba(0,0,0,.25), 0 18px 44px rgba(0,0,0,.4);
+  }
+  .steps--dark .step__chip { background: rgba(255,255,255,.12); color: rgba(255,255,255,.86); }
+  .steps--dark .step__title { color: #fff; }
+  .steps--dark .step__text { color: rgba(255,255,255,.62); }
+  .steps--dark .step__shot { background: #2c2a23; }
 </style>
 
 <!-- Прелоадер: вращающаяся стопка пластин + счётчик -->
@@ -2325,6 +2528,89 @@
     </div>
   </section>
 
+  <!-- ВАРИАНТ 2: тёмный фон, карточки светлее -->
+  <section class="steps steps--dark" id="stepsDark">
+    <div class="steps__vp">
+      <header class="steps__head">
+        <h2 class="steps__title">Путь от заявки<br />до сданного объекта</h2>
+      </header>
+      <div class="steps__stage" id="stepsStageDark">
+        <article class="step">
+          <span class="step__chip">01 / 08</span>
+          <h3 class="step__title">Разбираем задачу</h3>
+          <p class="step__text">Обсуждаем участок, сценарии жизни семьи и бюджетный ориентир. Подсказываем, с какого этапа начинать именно вам.</p>
+          <figure class="step__shot">
+            <picture><source srcset="assets/services/architecture.webp" type="image/webp"><img src="assets/services/architecture.webp" alt="Первая встреча" loading="lazy" decoding="async"></picture>
+            <figcaption class="step__cap">Первая встреча</figcaption>
+          </figure>
+        </article>
+        <article class="step">
+          <span class="step__chip">02 / 08</span>
+          <h3 class="step__title">Изучаем участок</h3>
+          <p class="step__text">Проверяем геологию, рельеф, инсоляцию и границы застройки — до того как вы влюбитесь в планировку.</p>
+          <figure class="step__shot">
+            <picture><source srcset="assets/steps/s02.webp" type="image/webp"><img src="assets/steps/s02.jpg" alt="Выезд на участок" loading="lazy" decoding="async"></picture>
+            <figcaption class="step__cap">Выезд на участок</figcaption>
+          </figure>
+        </article>
+        <article class="step">
+          <span class="step__chip">03 / 08</span>
+          <h3 class="step__title">Фиксируем требования</h3>
+          <p class="step__text">Записываем состав помещений и приоритеты в техническое задание. Оно защищает от «а мы думали, вы это тоже делаете».</p>
+          <figure class="step__shot">
+            <picture><source srcset="assets/services/interior.webp" type="image/webp"><img src="assets/services/interior.webp" alt="Техническое задание" loading="lazy" decoding="async"></picture>
+            <figcaption class="step__cap">Техническое задание</figcaption>
+          </figure>
+        </article>
+        <article class="step">
+          <span class="step__chip">04 / 08</span>
+          <h3 class="step__title">Разрабатываем концепцию</h3>
+          <p class="step__text">Собираем планировки, объём и логику света. Сразу проверяем решения на реализуемость в целевом бюджете.</p>
+          <figure class="step__shot">
+            <picture><source srcset="assets/cases/i1-hq.webp" type="image/webp"><img src="assets/cases/i1-hq.webp" alt="Концепция объёма" loading="lazy" decoding="async"></picture>
+            <figcaption class="step__cap">Концепция объёма</figcaption>
+          </figure>
+        </article>
+        <article class="step">
+          <span class="step__chip">05 / 08</span>
+          <h3 class="step__title">Согласовываем разделы</h3>
+          <p class="step__text">Сводим архитектуру, конструктив и инженерию в одной модели — до стройки, а не на объекте.</p>
+          <figure class="step__shot">
+            <picture><source srcset="assets/cases/heydar-hq.webp" type="image/webp"><img src="assets/cases/heydar-hq.webp" alt="Единая модель" loading="lazy" decoding="async"></picture>
+            <figcaption class="step__cap">Единая модель</figcaption>
+          </figure>
+        </article>
+        <article class="step">
+          <span class="step__chip">06 / 08</span>
+          <h3 class="step__title">Выпускаем документацию</h3>
+          <p class="step__text">Готовим отметки, узлы и спецификации, по которым подрядчик строит, а не додумывает.</p>
+          <figure class="step__shot">
+            <picture><source srcset="assets/services/visual.webp" type="image/webp"><img src="assets/services/visual.webp" alt="Рабочие чертежи" loading="lazy" decoding="async"></picture>
+            <figcaption class="step__cap">Рабочие чертежи</figcaption>
+          </figure>
+        </article>
+        <article class="step">
+          <span class="step__chip">07 / 08</span>
+          <h3 class="step__title">Контролируем стройку</h3>
+          <p class="step__text">Проверяем критические узлы до того, как их закроет отделка. После выезда отдаём отчёт с замечаниями и сроками.</p>
+          <figure class="step__shot">
+            <picture><source srcset="assets/services/supervision.webp" type="image/webp"><img src="assets/services/supervision.webp" alt="Авторский надзор" loading="lazy" decoding="async"></picture>
+            <figcaption class="step__cap">Авторский надзор</figcaption>
+          </figure>
+        </article>
+        <article class="step">
+          <span class="step__chip">08 / 08</span>
+          <h3 class="step__title">Передаём объект</h3>
+          <p class="step__text">Отдаём актуальный комплект чертежей и паспорт дома: что где проложено и как это обслуживать.</p>
+          <figure class="step__shot">
+            <picture><source srcset="assets/cases/a2-hq.webp" type="image/webp"><img src="assets/cases/a2-hq.webp" alt="Сдача объекта" loading="lazy" decoding="async"></picture>
+            <figcaption class="step__cap">Сдача объекта</figcaption>
+          </figure>
+        </article>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ 05 · ЧТО ВХОДИТ В ПРОЕКТ (чертёжный таймлайн) ============ -->
   <section class="flow" id="flow">
     <div class="container">
@@ -2444,7 +2730,12 @@
 
   <!-- лента фактов: разбивает текстовый блок перед надзором -->
   <section class="band" data-band data-speed="1"
-           data-shots="assets/cases/a1-hq.jpg, assets/cases/i2-hq.jpg, assets/cases/g1-hq.jpg, assets/cases/a2-hq.jpg, assets/cases/i1-hq.jpg, assets/cases/g2-hq.webp">
+           data-shots="assets/cases/a1-hq.webp, assets/cases/i2-hq.webp, assets/cases/g1-hq.webp, assets/cases/a2-hq.webp, assets/cases/i1-hq.webp, assets/cases/g2-hq.webp">
+    <header class="band__head">
+      <div class="band__label">Наши работы</div>
+      <h2 class="band__title">12 реализованных объектов<br />с 2021 по 2026 год</h2>
+    </header>
+    <div class="band__stage" data-band-stage></div>
     <div class="band__fact">
       <div class="band__num">12</div>
       <div class="band__cap">объектов с 2021 по 2026</div>
@@ -2477,7 +2768,12 @@
 
   <!-- лента услуг: визуальная пауза перед FAQ -->
   <section class="band" data-band data-speed="-1"
-           data-shots="assets/services/architecture.jpg, assets/services/interior.jpg, assets/services/landscape.jpg, assets/services/supervision.jpg, assets/services/visual.webp">
+           data-shots="assets/services/architecture.webp, assets/services/interior.webp, assets/services/landscape.webp, assets/services/supervision.webp, assets/services/visual.webp">
+    <header class="band__head">
+      <div class="band__label">Что мы делаем</div>
+      <h2 class="band__title">Полный цикл работ<br />под одной ответственностью</h2>
+    </header>
+    <div class="band__stage" data-band-stage></div>
     <div class="band__fact">
       <div class="band__num">4</div>
       <div class="band__cap">этапа под одной ответственностью</div>
@@ -2576,53 +2872,55 @@
     </div>
   </section>
 
-  <!-- ============ 09 · ЗАЯВКА ============ -->
+  <!-- ============ ЗАЯВКА ============ -->
   <section class="ask" id="ask">
     <div class="container">
-      <div class="ask__grid">
-        <div>
-          <h2 class="ask__title">Расскажите, каким должен быть ваш дом</h2>
-          <p class="ask__lead">
-            На первой встрече разберём участок, задачи семьи и подскажем,
-            с какого этапа лучше начать. Это разговор, а не продажа проекта.
-          </p>
-          <ul class="ask__prep">
-            <li>Адрес или кадастровый номер участка</li>
-            <li>Желаемые сроки</li>
-            <li>Ориентир по бюджету</li>
-          </ul>
+      <div class="ask__card">
+        <!-- левая зона: три шага -->
+        <div class="ask__side">
+          <h2>Расскажите, каким должен быть ваш дом</h2>
+          <p>На первой встрече разберём участок, задачи семьи и подскажем,
+             с какого этапа лучше начать.</p>
+          <div class="ask__steps">
+            <div class="ask__step"><i>1</i>Оставляете заявку</div>
+            <div class="ask__step"><i>2</i>Созваниваемся и уточняем</div>
+            <div class="ask__step"><i>3</i>Встречаемся на участке</div>
+          </div>
         </div>
 
+        <!-- правая зона: поля -->
         <form class="ask__form" id="askForm" novalidate>
-          <div class="ask__field">
-            <input type="text" id="fName" name="name" placeholder=" " autocomplete="name" required />
-            <label for="fName">Как вас зовут</label>
+          <h3>Обсудить проект</h3>
+          <p class="ask__hint">Ответим в течение рабочего дня</p>
+
+          <div class="ask__row">
+            <div class="ask__field">
+              <label for="fName">Имя</label>
+              <input type="text" id="fName" name="name" placeholder="Например, Анна" autocomplete="name" required />
+            </div>
+            <div class="ask__field">
+              <label for="fPhone">Телефон или телеграм</label>
+              <input type="tel" id="fPhone" name="phone" placeholder="+7 900 000-00-00" autocomplete="tel" required />
+            </div>
           </div>
+
           <div class="ask__field">
-            <input type="tel" id="fPhone" name="phone" placeholder=" " autocomplete="tel" required />
-            <label for="fPhone">Телефон или телеграм</label>
+            <label for="fPlot">Участок</label>
+            <input type="text" id="fPlot" name="plot" placeholder="Адрес или кадастровый номер" />
           </div>
+
           <div class="ask__field">
-            <input type="text" id="fPlot" name="plot" placeholder=" " />
-            <label for="fPlot">Участок: адрес или кадастровый номер</label>
-          </div>
-          <div class="ask__field">
-            <textarea id="fTask" name="task" placeholder=" " rows="2"></textarea>
-            <label for="fTask">Задача, сроки, ориентир по бюджету</label>
+            <label for="fTask">Задача</label>
+            <textarea id="fTask" name="task" rows="2" placeholder="Сроки, ориентир по бюджету, пожелания"></textarea>
           </div>
 
           <label class="ask__consent">
             <input type="checkbox" id="fOk" required />
-            <span>Согласен на обработку персональных данных в соответствии с
+            <span>Согласен на обработку персональных данных в соответствии с
               <a href="#" target="_blank" rel="noopener">политикой конфиденциальности</a>.</span>
           </label>
 
-          <button class="ask__submit" type="submit" id="askBtn">
-            <span>Обсудить участок и задачу</span>
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M12 4v16M4 12h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
-            </svg>
-          </button>
+          <button class="ask__submit" type="submit" id="askBtn">Отправить заявку</button>
           <div class="ask__status" id="askStatus" role="status"></div>
         </form>
       </div>
@@ -2869,9 +3167,13 @@
       targetTime = scrollP * Math.max(0, videoDuration - 0.05);
       const diff = targetTime - smoothTime;
       if (Math.abs(diff) > 0.004) {
-        smoothTime += diff * 0.16;
-        // seek только когда прошлый завершился — иначе браузер их отменяет
-        if (!clip.seeking) {
+        /* Назад видео декодируется тяжелее: браузер идёт от ближайшего
+           ключевого кадра и на миг отдаёт пустой кадр — отсюда мигание.
+           Поэтому при обратном ходе сглаживаем медленнее и не шлём
+           новый seek, пока не готов предыдущий. */
+        const back = diff < 0;
+        smoothTime += diff * (back ? 0.10 : 0.16);
+        if (!clip.seeking && clip.readyState >= 2) {
           try { clip.currentTime = smoothTime; } catch (e) {}
         }
         busy = true;
@@ -3019,8 +3321,12 @@
       const scrub = g >= 0.999 ? 1 : 1 + (1 - g) * 0.06;
       img.style.transform = `translateX(-50%) scale(${scrub * revealZoom})`;
 
-      // шапка светлеет только когда кадр реально дошёл до неё
-      top.classList.toggle("topbar--dark", g * 100 < 90);
+      /* Цвет шапки зависит от того, что под ней СЕЙЧАС:
+         белая шторка манифеста или светлое фото кейса — тёмные плашки,
+         тёмный кадр — белые. Раньше решал только рост кадра, и на
+         светлом «Атриуме» белая звезда пропадала. */
+      const overLight = g * 100 < 90 || (CASES[caseIdx] && CASES[caseIdx].light);
+      top.classList.toggle("topbar--dark", !!overLight);
 
       /* Белая шторка считается сомкнутой, когда секция дошла до верха
          экрана: сторителлинг уже ушёл, его шапка не видна. Только
@@ -3168,7 +3474,7 @@
        ================================================================ */
     const CASES = [
       {
-        tab: "Атриум", kicker: "Бизнес центр", name: "Атриум",
+        tab: "Атриум", kicker: "Бизнес центр", name: "Атриум", light: true,
         desc: "Архитектура делового пространства, построенная на контрасте: " +
               "выразительные арки, прозрачность стекла и характер металла " +
               "объединены в единый городской силуэт",
@@ -3178,7 +3484,7 @@
         shots: [0, 1],
       },
       {
-        tab: "Импульс", kicker: "Торговый центр", name: "Импульс",
+        tab: "Импульс", kicker: "Торговый центр", name: "Импульс", light: true,
         desc: "Контраст фактур — светлого камня, тёмного металла и стекла — " +
               "придаёт архитектуре современный и динамичный характер. " +
               "Благоустроенная территория с фонтаном гармонично дополняет " +
@@ -3187,7 +3493,7 @@
         shots: [2, 3],
       },
       {
-        tab: "Гармония", kicker: "Жилой комплекс", name: "Гармония",
+        tab: "Гармония", kicker: "Жилой комплекс", name: "Гармония", light: true,
         desc: "Жилой комплекс органично объединяет современную архитектуру и " +
               "природный ландшафт. Плавные линии фасадов, озеленённые балконы " +
               "и контрастные фактуры создают образ уединённого городского оазиса.",
@@ -3623,7 +3929,9 @@
       b.className = "team__btn";
       b.type = "button";
       b.setAttribute("aria-label", p.name);
-      b.innerHTML = `<img src="${p.src}" alt="" decoding="async">`;
+      const [first, last] = p.name.split(" ");
+      b.innerHTML = `<span class="team__ava"><img src="${p.src}" alt="" decoding="async"></span>
+        <span class="team__cap">${first}<br>${last || ""}</span>`;
       b.addEventListener("click", () => show(i));
       track.appendChild(b);
       return b;
@@ -3847,7 +4155,7 @@
           seed++;
         }
       }
-      band.prepend(row);
+      (band.querySelector('[data-band-stage]') || band).appendChild(row);
 
       if (reduced) {                         // статичная сетка, без RAF
         items.forEach(({ el }) => { el.style.opacity = ""; });
@@ -3956,48 +4264,7 @@
     ScrollTrigger.refresh();
   })();
 
-  /* ================================================================
-     ПЕРЕИСПОЛЬЗУЕМАЯ ФИШКА · МАГНИТНЫЕ ЭЛЕМЕНТЫ
-     Кнопки и круглые стрелки притягиваются к курсору в своей зоне.
-     Механика GSAP Magnetic Button: смещение = вектор до курсора,
-     умноженный на силу, с quickTo-сглаживанием и возвратом на elastic.
-     Вешается по селектору — новые кнопки подхватываются сами.
-     ================================================================ */
-  (function () {
-    if (!window.gsap) return;
-    if (!matchMedia("(hover: hover) and (pointer: fine)").matches) return;
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    const SEL = ".cta-nav, .ask__submit, .b2-cta__circle, .pr__arrow, .team__arrow";
-
-    document.querySelectorAll(SEL).forEach((el) => {
-      const power = el.classList.contains("pr__arrow") || el.classList.contains("team__arrow") ? 0.5 : 0.32;
-      const zone = 1.9;                       // радиус притяжения от размера элемента
-      const xTo = gsap.quickTo(el, "x", { duration: 0.5, ease: "power3.out" });
-      const yTo = gsap.quickTo(el, "y", { duration: 0.5, ease: "power3.out" });
-
-      function onMove(e) {
-        const r = el.getBoundingClientRect();
-        const cx = r.left + r.width / 2;
-        const cy = r.top + r.height / 2;
-        const dx = e.clientX - cx;
-        const dy = e.clientY - cy;
-        const dist = Math.hypot(dx, dy);
-        const reach = Math.max(r.width, r.height) * zone;
-        if (dist > reach) { xTo(0); yTo(0); return; }
-        // ближе к центру — сильнее тянет
-        const k = (1 - dist / reach) * power;
-        xTo(dx * k);
-        yTo(dy * k);
-      }
-      function onLeave() {
-        gsap.to(el, { x: 0, y: 0, duration: 0.9, ease: "elastic.out(1, 0.4)" });
-      }
-
-      addEventListener("pointermove", onMove, { passive: true });
-      el.addEventListener("pointerleave", onLeave);
-    });
-  })();
 
   /* ================================================================
      ФИНАЛЬНЫЙ ПЕРЕСЧЁТ ScrollTrigger
@@ -4308,8 +4575,15 @@
      экрана, чтобы читалось, но не тянуло.
      ================================================================ */
   (function () {
-    const stage = document.getElementById("stepsStage");
-    if (!stage) return;
+    /* Блок существует в двух вариантах (светлый и тёмный) — инициализируем
+       каждый отдельно, чтобы обе карусели крутились независимо. */
+    const stages = [document.getElementById("stepsStage"),
+                    document.getElementById("stepsStageDark")].filter(Boolean);
+    if (!stages.length) return;
+    stages.forEach((stage) => initSteps(stage));
+    return;
+
+    function initSteps(stage) {
     const sec = stage.closest(".steps");
     const cards = [...stage.querySelectorAll(".step")];
     if (!cards.length) return;
@@ -4435,6 +4709,7 @@
     addEventListener("scroll", () => { if (live) kick(); }, { passive: true });
     addEventListener("resize", () => { last = -1; if (live) kick(); }, { passive: true });
     draw(progress());
+    }
   })();
 
 </script>
