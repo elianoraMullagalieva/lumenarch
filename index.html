@@ -345,38 +345,75 @@
      ============================================================ */
   .glass {
     position: absolute;
-    /* координаты и размеры из макета: 511.92 × 194.94, right 76.08, bottom 90.06 */
     right: clamp(1.5rem, 0.7112rem + 3.366vw, 4.75rem);
     bottom: clamp(40px, 8.3vh, 90px);
-    width: clamp(22.5rem, 20.1942rem + 9.838vw, 32.0rem);
+    width: clamp(19rem, 17.1rem + 8.1vw, 27rem);
     display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    padding: clamp(1.0rem, 0.8786rem + 0.518vw, 1.5rem);
-    gap: clamp(1.125rem, 0.943rem + 0.777vw, 1.875rem);
-    border-radius: 18px;
+    padding: clamp(0.85rem, 0.74rem + 0.44vw, 1.25rem);
+    gap: clamp(0.95rem, 0.8rem + 0.66vw, 1.6rem);
+    border-radius: 20px;
     isolation: isolate;
 
-    /* ── СТЕКЛО ПО МАКЕТУ ──────────────────────────────────────────
-       Значения ровно из Figma: холодная синеватая подложка 10%,
-       blur(20px) и широкая внутренняя засветка 68px.
-       К ним добавлены только физические детали, которых нет в Figma,
-       но без которых стекло выглядит плоским: подъём насыщенности
-       фона, световые кромки и тень. Никакого will-change/transform —
-       любой composited-слой отключает backdrop-filter.              */
-    /* Плотное стекло БЕЗ обводки — как в макете: карточка читается
-       за счёт затемнения и мягкой тени, а не за счёт рамки.
-       Оттенок чуть светлее фона + лёгкий подъём яркости подложки,
-       чтобы плашка не сливалась с тёмной ночной сценой. */
-    background: rgba(52, 58, 74, 0.60);
-    backdrop-filter: blur(24px) saturate(150%) brightness(1.14);
-    -webkit-backdrop-filter: blur(24px) saturate(150%) brightness(1.14);
-    border: none;
+    /* ── НАСТОЯЩЕЕ СТЕКЛО ──────────────────────────────────────────
+       Плотная заливка давала «мыло»: фон был не виден, читалась
+       серая плашка. Настоящее стекло строится наоборот — подложка
+       почти прозрачная, а материал делают четыре слоя:
+         1) сильное размытие + подъём насыщенности фона,
+         2) преломление по краям (SVG feDisplacementMap),
+         3) градиент бликов по поверхности,
+         4) световые кромки сверху и снизу.
+       Никакого will-change/transform — composited-слой отключает
+       backdrop-filter.                                              */
+    background: rgba(255, 255, 255, 0.055);
+    backdrop-filter: blur(18px) saturate(210%) brightness(1.06);
+    -webkit-backdrop-filter: blur(18px) saturate(210%) brightness(1.06);
+    border: 1px solid rgba(255, 255, 255, 0.18);
     box-shadow:
-      inset 0 0 68px rgba(255, 255, 255, 0.07),
-      0 18px 40px rgba(4, 6, 16, 0.30),
-      0 40px 90px rgba(4, 6, 16, 0.26);
+      /* верхняя кромка — стекло ловит свет */
+      inset 0 1px 0.5px rgba(255, 255, 255, 0.55),
+      /* нижняя — отражённый свет от фона */
+      inset 0 -1px 0.5px rgba(255, 255, 255, 0.16),
+      /* внутренний объём */
+      inset 0 0 40px rgba(255, 255, 255, 0.06),
+      /* тень отрывает плашку от кадра */
+      0 16px 36px rgba(4, 6, 16, 0.28),
+      0 36px 80px rgba(4, 6, 16, 0.22);
+  }
+
+  /* Слой преломления: искривляет фон по краям, как толстое стекло.
+     Chromium применяет SVG-фильтр к backdrop, остальные браузеры
+     просто его игнорируют — плашка остаётся корректной. */
+  .glass::before {
+    content: "";
+    position: absolute; inset: 0;
+    border-radius: inherit;
+    backdrop-filter: url(#glassRefract);
+    -webkit-backdrop-filter: url(#glassRefract);
+    pointer-events: none;
+    /* преломление заметно только у кромки, в центре стекло чистое */
+    mask-image: radial-gradient(120% 120% at 50% 50%,
+                transparent 52%, #000 88%);
+    -webkit-mask-image: radial-gradient(120% 120% at 50% 50%,
+                transparent 52%, #000 88%);
+  }
+
+  /* Блик по поверхности: диагональная засветка из верхнего угла. */
+  .glass::after {
+    content: "";
+    position: absolute; inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background:
+      linear-gradient(138deg,
+        rgba(255, 255, 255, 0.22) 0%,
+        rgba(255, 255, 255, 0.06) 18%,
+        rgba(255, 255, 255, 0) 42%,
+        rgba(255, 255, 255, 0) 72%,
+        rgba(255, 255, 255, 0.10) 100%);
+    mix-blend-mode: soft-light;
   }
 
   .glass__body {
@@ -390,14 +427,18 @@
   .glass__chip {
     display: inline-flex;
     align-items: center;
-    height: clamp(1.75rem, 1.5983rem + 0.647vw, 2.375rem);
-    padding: 0 clamp(0.875rem, 0.7536rem + 0.518vw, 1.375rem);
+    height: clamp(1.5rem, 1.37rem + 0.55vw, 2.0rem);
+    padding: 0 clamp(0.74rem, 0.64rem + 0.44vw, 1.16rem);
     border-radius: 100px;
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.55);
+    /* лёгкое стекло вместо прозрачной обводки */
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px) saturate(160%);
+    -webkit-backdrop-filter: blur(10px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.30);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
     font-family: "Onest", sans-serif;
     font-weight: 400;
-    font-size: clamp(0.6875rem, 0.6268rem + 0.259vw, 0.9375rem);
+    font-size: clamp(0.57rem, 0.52rem + 0.215vw, 0.78rem);
     letter-spacing: 0.01em;
     color: #fff;
     white-space: nowrap;
@@ -424,7 +465,7 @@
   .glass__btn span {
     font-family: "Onest", sans-serif;
     font-weight: 400;
-    font-size: clamp(0.75rem, 0.6742rem + 0.324vw, 1.0625rem);
+    font-size: clamp(0.58rem, 0.527rem + 0.226vw, 0.79rem);
     letter-spacing: 0.02em;
     text-transform: uppercase;
     color: #fff;
@@ -434,8 +475,8 @@
     transition: border-color 0.4s var(--ease-out);
   }
   .glass__btn svg {
-    width: clamp(0.8125rem, 0.7367rem + 0.324vw, 1.125rem);
-    height: clamp(0.8125rem, 0.7367rem + 0.324vw, 1.125rem);
+    width: clamp(0.62rem, 0.565rem + 0.235vw, 0.85rem);
+    height: clamp(0.62rem, 0.565rem + 0.235vw, 0.85rem);
     flex: none;
     color: #fff;
     transition: transform 0.45s var(--ease-out);
@@ -2005,6 +2046,35 @@
   .how__vp, .team__vp { padding: clamp(48px, 7vh, 90px) 0; }
 </style>
 
+<!-- Фильтр преломления для стеклянных плашек.
+     backdrop-filter умеет только размывать, но НЕ смещает пиксели —
+     поэтому «настоящее» стекло собирается из SVG: feTurbulence даёт
+     карту смещения, feDisplacementMap искривляет фон как линза,
+     feSpecularLighting добавляет блик по кромке. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <filter id="glassRefract" x="-20%" y="-20%" width="140%" height="140%"
+            color-interpolation-filters="sRGB">
+      <!-- мягкая неоднородность стекла -->
+      <feTurbulence type="fractalNoise" baseFrequency="0.008 0.014"
+                    numOctaves="2" seed="7" result="noise" />
+      <feGaussianBlur in="noise" stdDeviation="6" result="softNoise" />
+      <!-- преломление: фон смещается по карте, как за толстым стеклом -->
+      <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="18"
+                         xChannelSelector="R" yChannelSelector="G"
+                         result="refracted" />
+      <!-- направленный блик по поверхности -->
+      <feSpecularLighting in="softNoise" surfaceScale="3"
+                          specularConstant="0.55" specularExponent="28"
+                          lighting-color="#ffffff" result="spec">
+        <fePointLight x="-180" y="-260" z="420" />
+      </feSpecularLighting>
+      <feComposite in="spec" in2="refracted" operator="in" result="specClip" />
+      <feBlend in="refracted" in2="specClip" mode="screen" />
+    </filter>
+  </defs>
+</svg>
+
 <section class="story" id="story">
   <div class="story__viewport">
     <!-- ФОН: видео-скраб + заглушка -->
@@ -3053,7 +3123,6 @@
     const prUi = document.getElementById("prUi");
     const lines = [...sec.querySelectorAll(".reveal__h .ln > span")];
     const eb = sec.querySelector(".reveal__eyebrow > span");
-    const items = [...sec.querySelectorAll("[data-pr-in]")];
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const cl = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
@@ -3062,6 +3131,9 @@
     const eInOut = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
     let last = -1, raf = null, idle = 0;
+    /* Входной контр-зум кадра: 1.12 → 1. Крутится GSAP-твином при первом
+       появлении секции, читается в draw() и перемножается с зумом сцены. */
+    let revealZoom = reduce ? 1 : 1.12;
 
     function progress() {
       const r = sec.getBoundingClientRect();
@@ -3080,20 +3152,12 @@
          0.78–1.00  карточка держится — зритель успевает её прочитать
                     до того, как сцена отпустит кадр                    */
 
-      // ---- фаза 1: манифест ----
-      const inn = cl(p / 0.12);
-      if (eb) {
-        const e = eo(cl(inn / 0.5));
-        eb.style.transform = `translate3d(0, ${(1 - e) * 130}%, 0)`;
-        eb.style.opacity = e;
-      }
-      /* Строки манифеста не выезжают: текст просто проявляется вместе
-         с блоком. Построчный выезд на этом заголовке читался дёргано. */
-      const tEase = eo(cl(inn / 0.6));
-      lines.forEach((ln) => {
-        ln.style.transform = "none";
-        ln.style.opacity = tEase;
-      });
+      /* ---- фаза 1: манифест ----
+         Появление eyebrow и трёх строк заголовка теперь целиком на GSAP
+         (многослойная лесенка с blur, см. блок «МАНИФЕСТ · СЛОИ» ниже).
+         Сцена НЕ трогает их opacity/transform, иначе покадровая перерисовка
+         затирала бы твины. Уход манифеста вверх остаётся за сценой —
+         он двигает контейнер .reveal__type, а не отдельные слои. */
 
       const out = eo(cl((p - 0.26) / 0.14));
       type.style.transform = `translate3d(0, ${-out * 30}vh, 0)`;
@@ -3106,10 +3170,13 @@
       frame.style.width = "100vw";
       frame.style.height = (g >= 0.999 ? 100 : 46 + g * 54) + "vh";
       frame.style.borderRadius = "0px";
-      // лёгкий контр-зум в начале: кадр «дышит», а не растягивается
-      img.style.transform = g >= 0.999
-        ? "translateX(-50%)"
-        : `translateX(-50%) scale(${1 + (1 - g) * 0.06})`;
+      /* лёгкий контр-зум в начале: кадр «дышит», а не растягивается.
+         Второй множитель — входной контр-зум 1.12 → 1, его крутит GSAP
+         при первом появлении секции и пишет в revealZoom. Сцена и твин
+         правят РАЗНЫЕ величины и перемножаются здесь, поэтому не
+         затирают друг друга (без чтения стилей в скролл-цикле). */
+      const scrub = g >= 0.999 ? 1 : 1 + (1 - g) * 0.06;
+      img.style.transform = `translateX(-50%) scale(${scrub * revealZoom})`;
 
       // шапка светлеет только когда кадр реально дошёл до неё
       top.classList.toggle("topbar--dark", g * 100 < 90);
@@ -3126,16 +3193,10 @@
       prUi.style.opacity = prE;
       prUi.style.pointerEvents = prE > 0.6 ? "auto" : "none";
 
-      if (reduce) {
-        items.forEach(el => { el.style.opacity = "1"; el.style.transform = "none"; });
-      } else {
-        items.forEach((el, i) => {
-          const d = i * 0.12;
-          const e = eo(cl((pr - d) / (1 - d)));
-          el.style.opacity = e;
-          el.style.transform = `translate3d(0, ${(1 - e) * 34}px, 0)`;
-        });
-      }
+      /* Слои карточки кейса больше не выводятся по прогрессу сцены:
+         их ведёт одноразовый GSAP-таймлайн «КЕЙС · СПУТНИКИ», который
+         стартует по window.__prReveal. Сцена отвечает только за scrim
+         и общую непрозрачность контейнера .pr__ui (выше). */
     }
 
     function loop() {
@@ -3152,6 +3213,76 @@
     addEventListener("resize", () => { last = -1; kick(); }, { passive: true });
     draw(progress());
     kick();
+
+    /* ================================================================
+       МАНИФЕСТ · СЛОИ
+       Лесенка из 5 слоёв. Приём появления — не fade, а РАСФОКУС: слой
+       выходит из размытия и одновременно подтягивается по вертикали.
+       У каждого слоя своя задержка, поэтому строки читаются по очереди,
+       а не вспыхивают разом. Запускается один раз при входе секции.
+         0.00  eyebrow          blur 12px
+         0.15  строка 1         blur 20px
+         0.28  строка 2         blur 20px
+         0.41  строка 3         blur 20px
+         0.55  кадр             контр-зум 1.12 → 1
+       ================================================================ */
+    (function manifestLayers() {
+      const layers = [eb, ...lines].filter(Boolean);
+      // без анимации: всё сразу на месте, ни блюра, ни сдвига
+      if (reduce || !window.gsap) {
+        layers.forEach((el) => {
+          el.style.opacity = "1";
+          el.style.filter = "none";
+          el.style.transform = "none";
+        });
+        revealZoom = 1;
+        return;
+      }
+
+      gsap.registerPlugin(ScrollTrigger);
+
+      // стартовое состояние выставляем сразу, чтобы не было вспышки
+      // несмазанного текста до срабатывания триггера
+      if (eb) gsap.set(eb, { opacity: 0, filter: "blur(12px)", y: 20 });
+      gsap.set(lines, { opacity: 0, filter: "blur(20px)", y: 28 });
+
+      const tl = gsap.timeline({
+        paused: true,
+        // блюр дорог в отрисовке — снимаем фильтр совсем, когда отыграл
+        onComplete() {
+          layers.forEach((el) => { el.style.filter = "none"; });
+        },
+      });
+
+      if (eb) {
+        tl.to(eb, {
+          opacity: 1, filter: "blur(0px)", y: 0,
+          duration: 0.95, ease: "power3.out",
+        }, 0);
+      }
+
+      // три строки заголовка: шаг 0.13с — лесенка видна, но не вяло
+      const LN_AT = [0.15, 0.28, 0.41];
+      lines.forEach((ln, i) => {
+        tl.to(ln, {
+          opacity: 1, filter: "blur(0px)", y: 0,
+          duration: 1.0, ease: "power3.out",
+        }, LN_AT[i] ?? (0.15 + i * 0.13));
+      });
+
+      // кадр: clip-path растёт от сцены, здесь только контр-зум картинки
+      tl.to({ z: 1.12 }, {
+        z: 1, duration: 1.1, ease: "power3.out",
+        onUpdate() { revealZoom = this.targets()[0].z; last = -1; kick(); },
+      }, 0.55);
+
+      ScrollTrigger.create({
+        trigger: sec,
+        start: "top 70%",
+        once: true,
+        onEnter: () => tl.play(),
+      });
+    })();
 
     /* ================================================================
        КЕЙСЫ: 3 объекта, у каждого 2 кадра (экстерьер + интерьер).
@@ -3199,6 +3330,7 @@
 
     let caseIdx = 0, shotIdx = 0, timer = null, tStart = 0;
     let cardVisible = false;
+    const prReduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
     const SHOW_MS = 3000;
 
     const tabs = CASES.map((c, i) => {
@@ -3271,36 +3403,14 @@
       }, SHOW_MS);
     }
 
+    /* Переключение объекта табом или стрелкой: показываем первый кадр
+       кейса и перезапускаем отсчёт слайдшоу, если оно уже идёт. */
     function goCase(i) {
       caseIdx = ((i % CASES.length) + CASES.length) % CASES.length;
       shotIdx = 0;
-      // Слайдшоу стартует ТОЛЬКО когда кадр раскрылся и карточка проекта
-    // проявилась. Пока идёт белый блок «Согласовываем архитектуру»,
-    // в кадре всегда первый кадр Атриума — как в макете.
-    let running = false;
-    function setRunning(on) {
-      if (on === running) return;
-      running = on;
-      if (on) { restart(); }
-      else {
-        clearInterval(timer); timer = null;
-        // возвращаемся к началу: Атриум, вид снаружи
-        caseIdx = 0; shotIdx = 0; paintShot(); paintText();
-      }
-    }
-    window.__prSetRunning = setRunning;
-    // сцена сообщает, когда карточка появилась на экране
-    window.__prReveal = (visible) => {
-      if (visible === cardVisible) return;
-      cardVisible = visible;
-      if (visible) {
-        const c = CASES[caseIdx];
-        const st = (shotIdx === 1 && c.statsAlt) ? c.statsAlt : c.stats;
-        nums.forEach((n, i) => { if (n) { counters.delete(n); countTo(n, st[i][0]); } });
-      }
-    };
-
-    paintShot(); paintText();
+      paintShot();
+      paintText();
+      if (running) restart();
     }
     document.getElementById("prPrev")?.addEventListener("click", () => goCase(caseIdx - 1));
     document.getElementById("prNext")?.addEventListener("click", () => goCase(caseIdx + 1));
@@ -3328,16 +3438,125 @@
       }
     }
     window.__prSetRunning = setRunning;
+
+    /* ================================================================
+       КЕЙС · СПУТНИКИ
+       Карточка не появляется целиком: элементы влетают по одному, каждый
+       со своей стороны и со своим расфокусом. Имя объекта приходит сбоку
+       (x −40), остальное — снизу. Метрики идут лесенкой с шагом 0.12с,
+       и счётчик цифр стартует ВМЕСТЕ со своей метрикой, а не раньше.
+         0.10  kicker      blur 14px
+         0.20  name        blur 24px, x −40
+         0.35  desc        blur 12px, y +20
+         0.50  метрика 1   blur 16px, y +30
+         0.62  метрика 2
+         0.74  метрика 3
+         0.90  табы        y +24
+       Проигрывается ОДИН раз — при первом показе карточки.
+       ================================================================ */
+    const prLayers = {
+      kicker: sec.querySelector(".pr__kicker"),
+      name: sec.querySelector(".pr__name"),
+      desc: sec.querySelector(".pr__desc"),
+      stats: [...sec.querySelectorAll(".pr__stat")],
+      tabs: sec.querySelector(".pr__tabs"),
+    };
+    const STAT_AT = [0.50, 0.62, 0.74];
+
+    // цифры считаем в момент прихода своей метрики
+    function countStat(i) {
+      const n = nums[i];
+      if (!n) return;
+      const c = CASES[caseIdx];
+      const st = (shotIdx === 1 && c.statsAlt) ? c.statsAlt : c.stats;
+      counters.delete(n);
+      countTo(n, st[i][0]);
+    }
+
+    let prTl = null;
+    function buildPrTl() {
+      const all = [
+        prLayers.kicker, prLayers.name, prLayers.desc,
+        ...prLayers.stats, prLayers.tabs,
+      ].filter(Boolean);
+
+      if (prReduce || !window.gsap) {
+        all.forEach((el) => {
+          el.style.opacity = "1";
+          el.style.filter = "none";
+          el.style.transform = "none";
+        });
+        return null;
+      }
+
+      gsap.set(all, { opacity: 0 });
+      if (prLayers.kicker) gsap.set(prLayers.kicker, { filter: "blur(14px)" });
+      if (prLayers.name) gsap.set(prLayers.name, { filter: "blur(24px)", x: -40 });
+      if (prLayers.desc) gsap.set(prLayers.desc, { filter: "blur(12px)", y: 20 });
+      gsap.set(prLayers.stats, { filter: "blur(16px)", y: 30 });
+      if (prLayers.tabs) gsap.set(prLayers.tabs, { y: 24 });
+
+      const tl = gsap.timeline({
+        paused: true,
+        onComplete() { all.forEach((el) => { el.style.filter = "none"; }); },
+      });
+
+      if (prLayers.kicker) {
+        tl.to(prLayers.kicker, {
+          opacity: 1, filter: "blur(0px)",
+          duration: 0.9, ease: "power3.out",
+        }, 0.10);
+      }
+      if (prLayers.name) {
+        tl.to(prLayers.name, {
+          opacity: 1, filter: "blur(0px)", x: 0,
+          duration: 1.05, ease: "power3.out",
+        }, 0.20);
+      }
+      if (prLayers.desc) {
+        tl.to(prLayers.desc, {
+          opacity: 1, filter: "blur(0px)", y: 0,
+          duration: 0.95, ease: "power3.out",
+        }, 0.35);
+      }
+      prLayers.stats.forEach((el, i) => {
+        tl.to(el, {
+          opacity: 1, filter: "blur(0px)", y: 0,
+          duration: 1.0, ease: "power3.out",
+          onStart: () => countStat(i),
+        }, STAT_AT[i] ?? (0.50 + i * 0.12));
+      });
+      if (prLayers.tabs) {
+        tl.to(prLayers.tabs, {
+          opacity: 1, y: 0,
+          duration: 0.9, ease: "power3.out",
+        }, 0.90);
+      }
+      return tl;
+    }
+
+    let prPlayed = false;
     // сцена сообщает, когда карточка появилась на экране
     window.__prReveal = (visible) => {
       if (visible === cardVisible) return;
       cardVisible = visible;
-      if (visible) {
+      if (!visible) return;
+      if (prPlayed) {
+        // повторный заход: слои уже на месте, просто пересчитываем цифры
         const c = CASES[caseIdx];
         const st = (shotIdx === 1 && c.statsAlt) ? c.statsAlt : c.stats;
         nums.forEach((n, i) => { if (n) { counters.delete(n); countTo(n, st[i][0]); } });
+        return;
       }
+      prPlayed = true;
+      if (prTl === null) prTl = buildPrTl();
+      // без анимации счётчики всё равно должны отработать
+      if (!prTl) { nums.forEach((n, i) => { if (n) countStat(i); }); return; }
+      prTl.play();
     };
+
+    // до первого показа карточка должна быть «разобрана» на слои
+    prTl = buildPrTl();
 
     paintShot(); paintText();
 
