@@ -1551,7 +1551,7 @@
   /* шапка стоит НАД каруселью и не пересекается с ней */
   .steps__head {
     position: relative; z-index: 5;
-    padding: clamp(88px, 11vh, 120px) var(--pad-x) 0;
+    padding: clamp(97px, 12.1vh, 132px) var(--pad-x) 0;
     display: flex; flex-direction: column; align-items: center;
     gap: clamp(10px, 1.6vh, 20px);
     pointer-events: none;
@@ -1583,7 +1583,7 @@
     position: relative;
     /* сцена забирает всю высоту, оставшуюся после шапки */
     width: 100%; flex: 1 1 auto; min-height: 0;
-    margin-top: clamp(6px, 1vh, 18px);
+    margin-top: clamp(5px, 0.85vh, 15px);
     /* Эталон mod.tistols: контейнер перспективы шириной с карточку,
        точка схода — её центр. Именно поэтому крайние грани выходят
        ВЫШЕ центральной, а не ниже. */
@@ -1647,8 +1647,8 @@
     width: 100%;
     /* Одинаковая высота во всех карточках. flex-контейнер тянул
        блок по остатку места, поэтому фиксируем и запрещаем рост. */
-    flex: 0 0 clamp(7rem, 5.2rem + 7.4vw, 11.5rem);
-    height: clamp(7rem, 5.2rem + 7.4vw, 11.5rem);
+    flex: 0 0 clamp(8.4rem, 6.24rem + 8.9vw, 13.8rem);
+    height: clamp(8.4rem, 6.24rem + 8.9vw, 13.8rem);
     align-self: stretch;
     border-radius: 14px; overflow: hidden;
     background: #ebebeb;
@@ -4694,7 +4694,13 @@
            в профиль — гасим только у самой границы силуэта. */
         const opacity = hidden ? 0 : cl((84 - deg) / 14, 0, 1);
         // подблюриваем всё, кроме центральной — акцент на активной
-        const blur = a < 0.45 ? 0 : Math.min(2.6, (a - 0.45) * 1.5);
+        /* Блюр живёт только на старте блока: пока в кадре стоят
+           карточки 07/08, они подтушёваны и акцент идёт на первую.
+           Как только лента тронулась — резкость у всех. */
+        const intro = cl(1 - p / 0.10, 0, 1);
+        const blur = intro <= 0.01 || a < 0.45
+          ? 0
+          : Math.min(2.6, (a - 0.45) * 1.5) * intro;
 
         /* Каноника: сначала поворот вокруг оси, затем вынос по локальному
            Z. Порядок важен — матрицы не коммутативны. Контейнер сдвинут
