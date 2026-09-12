@@ -737,7 +737,7 @@
     white-space: nowrap;
     /* сдвиг вправо по макету: кикер начинается примерно на трети имени */
     margin-left: clamp(1.25rem, 0.0107rem + 5.291vw, 6.375rem);
-    margin-bottom: clamp(0.125rem, 0.0341rem + 0.388vw, 0.5rem);
+    margin-bottom: clamp(0rem, -0.09rem + 0.2vw, 0.18rem);
     text-shadow: 0 2px 24px rgba(0, 0, 0, .4);
   }
   /* имя объекта — крупное, 140px по макету */
@@ -1650,10 +1650,11 @@
     transform: translateY(18px);
     transition: opacity .9s var(--ease-out), transform 1.1s var(--ease-out);
   }
-  .story.is-in .nav,
   .story.is-in .eyebrow--bl,
   .story.is-in .glass { opacity: 1 !important; }
-  .story.is-in .nav { opacity: 1; transform: none; transition-delay: .35s; }
+  /* шапка живёт в body, вне .story: её появление вешаем на тот же
+     класс, но снятый с корня — иначе селектор не находит её вовсе */
+  body.hero-in .nav { opacity: 1 !important; transform: none; transition-delay: .35s; }
   .story.is-in .eyebrow--bl { opacity: 1; transform: none; transition-delay: .75s; }
   .story.is-in .glass { opacity: 1; transform: none; transition-delay: .95s; }
 
@@ -3148,6 +3149,7 @@
       requestAnimationFrame(introTick);
       // оркестр: шапка → eyebrow → плашка, каждый со своей задержкой
       story.classList.add("is-in");
+      document.body.classList.add("hero-in");   // .nav живёт в body
     };
     // страховка: если прелоадера нет или он не отработал
     setTimeout(() => window.__heroIntro && window.__heroIntro(), 4000);
@@ -3256,8 +3258,16 @@
          белая шторка манифеста или светлое фото кейса — тёмные плашки,
          тёмный кадр — белые. Раньше решал только рост кадра, и на
          светлом «Атриуме» белая звезда пропадала. */
-      const overLight = g * 100 < 90 || (CASES[caseIdx] && CASES[caseIdx].light);
+      // до раскрытия под шапкой белая шторка манифеста → тёмные плашки;
+      // когда фото занимает экран — решает только яркость самого кадра
+      const opened = g >= 0.9;
+      const overLight = opened
+        ? !!(CASES[caseIdx] && CASES[caseIdx].light)
+        : true;
       top.classList.toggle("topbar--dark", !!overLight);
+      // та же подсказка — для липкой шапки в body (она читает data-light)
+      sec.dataset.light = overLight ? "1" : "0";
+      if (window.__navTone) window.__navTone();
 
       /* Белая шторка считается сомкнутой, когда секция дошла до верха
          экрана: сторителлинг уже ушёл, его шапка не видна. Только
@@ -3424,7 +3434,7 @@
         shots: [2, 3],
       },
       {
-        tab: "Гармония", kicker: "Жилой комплекс", name: "Гармония", light: true,
+        tab: "Гармония", kicker: "Жилой комплекс", name: "Гармония", light: false,
         desc: "Жилой комплекс органично объединяет современную архитектуру и " +
               "природный ландшафт. Плавные линии фасадов, озеленённые балконы " +
               "и контрастные фактуры создают образ уединённого городского оазиса.",
@@ -3524,6 +3534,10 @@
       paintShot();
       paintText();
       if (running) restart();
+      // светлое фото или тёмное — шапка должна перекраситься сразу,
+      // не дожидаясь ближайшего движения колеса
+      sec.dataset.light = (CASES[caseIdx] && CASES[caseIdx].light) ? "1" : "0";
+      if (window.__navTone) window.__navTone();
     }
     document.getElementById("prPrev")?.addEventListener("click", () => goCase(caseIdx - 1));
     document.getElementById("prNext")?.addEventListener("click", () => goCase(caseIdx + 1));
@@ -3766,7 +3780,15 @@
       const dt = Math.min((ts - lastTs) / 1000, 1 / 30) || 1 / 60;
       lastTs = ts;
       springStep(dt);
-      preview.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`;
+      // зажимаем НАРИСОВАННОЕ положение, а не только цель: пружина
+      // проскакивает мимо границ при резком скролле
+      const rs = sec.getBoundingClientRect();
+      const w2 = preview.offsetWidth || 300, h2 = preview.offsetHeight || 400;
+      // коридор — центральные 80% экрана: кадр не подходит к краям
+      const lo = rs.width * 0.10 + w2 / 2, hi = rs.width * 0.90 - w2 / 2;
+      const dx = hi > lo ? Math.min(Math.max(x, lo), hi) : (lo + hi) / 2;
+      const dy = Math.min(Math.max(y, h2 / 2 + 12), rs.height - h2 / 2 - 12);
+      preview.style.transform = `translate3d(${dx}px, ${dy}px, 0) translate(-50%, -50%)`;
 
       const settled = Math.hypot(tx - x, ty - y) < 0.4 && Math.hypot(vx, vy) < 0.4;
       if (hovered === null && settled) { raf = null; return; }
@@ -3780,9 +3802,8 @@
       // превью живёт строго в колонке текста: считаем границы по самой
       // строке услуги, а не по секции, и зажимаем с ОБЕИХ сторон —
       // иначе у левого края кадр уезжал за экран
-      const lr = list.getBoundingClientRect();
-      const minX = lr.left - r.left + w / 2;
-      const maxX = lr.right - r.left - w / 2;
+      const minX = r.width * 0.10 + w / 2;
+      const maxX = r.width * 0.90 - w / 2;
       const want = e.clientX - r.left + OFFSET_X;
       tx = maxX > minX ? Math.min(Math.max(want, minX), maxX) : (minX + maxX) / 2;
       // по вертикали не даём вылезти за верх и низ секции
@@ -4707,8 +4728,29 @@
 
     function update() {
       const y = probeY();
+
+      // 1) медиа поверх секции важнее её фона: на .reveal лежит фото
+      //    кейса во весь экран, и красить надо по НЕМУ, а не по белому
+      //    фону секции. Считаем перекрывающим только то, что реально
+      //    накрывает линию шапки на всю ширину.
+      const over = [...document.querySelectorAll(".reveal img, .story video, .pr__shot img")]
+        .filter((m) => {
+          const r = m.getBoundingClientRect();
+          return r.top <= y && r.bottom > y && r.width > innerWidth * 0.7
+                 && getComputedStyle(m).visibility !== "hidden"
+                 && +getComputedStyle(m).opacity > 0.5;
+        });
+      if (over.length) {
+        // фото кейса и видео героя — тёмные сверху лишь иногда, поэтому
+        // берём подсказку из данных кейса, которую уже ведёт сцена
+        const lightShot = document.querySelector(".reveal") &&
+          document.querySelector(".reveal").dataset.light === "1";
+        nav.classList.toggle("nav--onLight", lightShot);
+        return;
+      }
+
+      // 2) иначе — по фону самой секции
       let dark = null;
-      // секция, которая сейчас пересекает линию шапки (последняя выигрывает)
       for (const sec of SECTIONS) {
         const r = sec.getBoundingClientRect();
         if (r.top <= y && r.bottom > y) {
@@ -4722,6 +4764,7 @@
 
     let tick = null;
     const kick = () => { if (!tick) tick = requestAnimationFrame(() => { tick = null; update(); }); };
+    window.__navTone = kick;          // зовём при смене кейса, без скролла
     addEventListener("scroll", kick, { passive: true });
     addEventListener("resize", kick, { passive: true });
     update();
