@@ -1551,7 +1551,7 @@
     /* сцена забирает всю высоту, оставшуюся после шапки */
     width: 100%; flex: 1 1 auto; min-height: 0;
     margin-top: clamp(20px, 3vh, 44px);
-    perspective: 1750px;
+    perspective: 1150px;
     transform-style: preserve-3d;
   }
 
@@ -4597,7 +4597,7 @@
        Радиус апофемы считается так, чтобы стороны многоугольника
        ровно совпадали с шириной карточки: R = W·GAP / (2·tan(θ/2)). */
     const STEP_DEG = 36;
-    const GAP = 1.28;
+    const GAP = 1.16;
     const VIS = 3.0;               // сколько шагов от центра ещё рисуем
 
     function geom() {
@@ -4643,24 +4643,27 @@
            соседями одинаковы при любом положении барабана. */
         const ang = off * stepRad;
         const x = Math.sin(ang) * R;
-        const z = Math.cos(ang) * R - R;      // центр — ближе всех к зрителю
-        const rotY = -ang * 180 / Math.PI;    // касательная: центр = 0°
+        // вогнутая дуга: края ближе к зрителю, центр глубже.
+        // вынос ограничен долей радиуса — иначе крайние карты
+        // подлетают к камере и раздуваются на весь экран
+        const z = (R - Math.cos(ang) * R) * 0.26;
+        const rotY = -ang * 180 / Math.PI;    // грань всегда лицом к зрителю
 
         /* Задние грани барабана не рисуем: карточки непрозрачные,
            и вылезшая из-за спины «изнанка» ломает картинку.
            Режем ровно по силуэту барабана — на |rotateY| = 90°:
            дальше грань смотрит от зрителя и вырождается в полоску. */
         const deg = Math.abs(ang) * 180 / Math.PI;
-        const hidden = deg >= 96 || a > VIS;
+        const hidden = deg >= 84 || a > VIS;
         const scale = 1 - Math.min(0.04, a * 0.013);
         /* В референсе крайние карточки видны узкими полосками почти
            в профиль — гасим только у самой границы силуэта. */
-        const opacity = hidden ? 0 : cl((96 - deg) / 14, 0, 1);
+        const opacity = hidden ? 0 : cl((84 - deg) / 14, 0, 1);
         // подблюриваем всё, кроме центральной — акцент на активной
         const blur = a < 1.9 ? 0 : Math.min(3, (a - 1.9) * 2.2);
 
         // дуга по вертикали: центр опущен, края приподняты — как в референсе
-        const lift = -Math.cos(ang) * (R * 0.085) + R * 0.085;
+        const lift = Math.cos(ang) * (R * 0.055) - R * 0.055;
         c.style.transform =
           `translate(-50%, -50%) translate3d(${x.toFixed(1)}px, ${lift.toFixed(1)}px, ${z.toFixed(1)}px) rotateY(${rotY.toFixed(2)}deg) scale(${scale.toFixed(3)})`;
         c.style.opacity = opacity.toFixed(3);
