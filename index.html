@@ -209,7 +209,7 @@
   .nav > * { pointer-events: auto; }
   .nav .brand__name, .nav .brand__mark,
   .nav .cta-nav, .nav .cta-nav span, .nav .cta-nav svg, .nav .burger {
-    transition: background-color .45s var(--ease-out), color .45s var(--ease-out);
+    transition: background-color .18s linear, color .18s linear;
   }
   /* НА СВЕТЛОМ ФОНЕ: плашки и звезда тёмные */
   .nav--onLight .brand__name,
@@ -842,7 +842,7 @@
   }
   .flow__title {
     font-family: "Onest", sans-serif; font-weight: 400;
-    font-size: clamp(2.25rem, 0.915rem + 5.696vw, 7.75rem); line-height: .9;
+    font-size: clamp(1.5rem, 1.16rem + 1.45vw, 2.75rem); line-height: 1.06;
     letter-spacing: -0.05em; text-transform: uppercase;
     max-width: 14ch; text-wrap: balance;
   }
@@ -1204,7 +1204,7 @@
   }
   .faq__title {
     font-family: "Onest", sans-serif; font-weight: 400;
-    font-size: clamp(2.125rem, 1.0024rem + 4.79vw, 6.75rem); line-height: .94;
+    font-size: clamp(1.5rem, 1.16rem + 1.45vw, 2.75rem); line-height: 1.06;
     letter-spacing: -0.045em; text-transform: uppercase;
     max-width: 20ch; text-wrap: balance;
   }
@@ -1551,7 +1551,7 @@
   /* шапка стоит НАД каруселью и не пересекается с ней */
   .steps__head {
     position: relative; z-index: 5;
-    padding: clamp(96px, 12vh, 132px) var(--pad-x) 0;
+    padding: clamp(88px, 11vh, 120px) var(--pad-x) 0;
     display: flex; flex-direction: column; align-items: center;
     gap: clamp(10px, 1.6vh, 20px);
     pointer-events: none;
@@ -1583,7 +1583,7 @@
     position: relative;
     /* сцена забирает всю высоту, оставшуюся после шапки */
     width: 100%; flex: 1 1 auto; min-height: 0;
-    margin-top: clamp(20px, 3vh, 44px);
+    margin-top: clamp(6px, 1vh, 18px);
     /* Эталон mod.tistols: контейнер перспективы шириной с карточку,
        точка схода — её центр. Именно поэтому крайние грани выходят
        ВЫШЕ центральной, а не ниже. */
@@ -1595,10 +1595,10 @@
   .step {
     position: absolute; left: 50%; top: 50%;
     width: clamp(16rem, 12rem + 16vw, 27rem);
-    height: min(clamp(22rem, 17.4rem + 20vw, 35rem), 76%);
+    height: min(clamp(24rem, 19rem + 22vw, 38rem), 84%);
     margin: 0;
     display: flex; flex-direction: column;
-    padding: clamp(0.9rem, 0.78rem + 0.5vw, 1.3rem);
+    padding: clamp(1.15rem, 0.98rem + 0.62vw, 1.65rem);
     border-radius: 20px;
     background: var(--l-card);
     box-shadow:
@@ -1617,7 +1617,7 @@
     padding: 0 clamp(0.7rem, 0.62rem + 0.34vw, 0.95rem);
     border-radius: 100px;
     /* светло-серая плашка из палитры сайта вместо чёрной */
-    background: var(--l-bg2); color: var(--l-ink-mid);
+    background: #ebebeb; color: #6e6e6e;
     font-family: "Onest", sans-serif;
     font-size: clamp(0.6875rem, 0.65rem + 0.16vw, 0.8125rem);
     letter-spacing: .06em; text-transform: uppercase;
@@ -1628,15 +1628,15 @@
   /* заголовок-глагол — главный акцент карточки */
   .step__title {
     font-family: "Onest", sans-serif; font-weight: 400;
-    font-size: clamp(1.35rem, 1.16rem + 0.82vw, 2.0rem);
-    line-height: 1.1; letter-spacing: -0.025em;
+    font-size: clamp(1.55rem, 1.33rem + 0.94vw, 2.3rem);
+    line-height: 1.12; letter-spacing: -0.025em;
     color: var(--l-ink);
     margin-bottom: clamp(0.5rem, 0.44rem + 0.26vw, 0.75rem);
   }
   .step__text {
     font-family: "Onest", sans-serif;
-    font-size: clamp(0.875rem, 0.83rem + 0.2vw, 1.0rem);
-    line-height: 1.42; color: var(--l-ink-mid);
+    font-size: clamp(1.0rem, 0.95rem + 0.23vw, 1.15rem);
+    line-height: 1.45; color: var(--l-ink-mid);
     margin-bottom: clamp(0.9rem, 0.78rem + 0.5vw, 1.3rem);
   }
 
@@ -1644,10 +1644,14 @@
   .step__shot {
     margin-top: auto;
     position: relative;
-    width: 100%; flex: 1 1 auto;
-    min-height: clamp(8rem, 6rem + 9vw, 14rem);
+    width: 100%;
+    /* Одинаковая высота во всех карточках. flex-контейнер тянул
+       блок по остатку места, поэтому фиксируем и запрещаем рост. */
+    flex: 0 0 clamp(7rem, 5.2rem + 7.4vw, 11.5rem);
+    height: clamp(7rem, 5.2rem + 7.4vw, 11.5rem);
+    align-self: stretch;
     border-radius: 14px; overflow: hidden;
-    background: var(--l-bg2);
+    background: #ebebeb;
   }
   .step__shot img {
     position: absolute; inset: 0;
@@ -3304,10 +3308,14 @@
       // когда фото занимает экран — решает только яркость самого кадра
       // пока кадр не раскрылся, под шапкой белая шторка манифеста;
       // как раскрылся — решает яркость самого фото
-      const opened = g >= 0.9;
+      // Ориентируемся не на прогресс, а на ФАКТ: кадр дорос до верха
+      // экрана и теперь лежит под шапкой. Прогресс отставал — шапка
+      // держала тёмный режим, когда под ней уже было фото.
+      const fr = frame && frame.getBoundingClientRect();
+      const opened = !!fr && fr.top <= 2 && fr.height >= innerHeight * 0.92;
       const overLight = opened
         ? !!(CASES[caseIdx] && CASES[caseIdx].light)
-        : g > 0.06;
+        : g > 0.04;
       top.classList.toggle("topbar--dark", !!overLight);
       // та же подсказка — для липкой шапки в body (она читает data-light)
       sec.dataset.light = overLight ? "1" : "0";
@@ -4694,7 +4702,7 @@
            в профиль — гасим только у самой границы силуэта. */
         const opacity = hidden ? 0 : cl((84 - deg) / 14, 0, 1);
         // подблюриваем всё, кроме центральной — акцент на активной
-        const blur = a < 1.9 ? 0 : Math.min(3, (a - 1.9) * 2.2);
+        const blur = a < 0.45 ? 0 : Math.min(2.6, (a - 0.45) * 1.5);
 
         /* Каноника: сначала поворот вокруг оси, затем вынос по локальному
            Z. Порядок важен — матрицы не коммутативны. Контейнер сдвинут
@@ -4785,8 +4793,8 @@
         return r.top <= y && r.bottom > y;
       };
       const media = inside(".story")
-        ? ".reveal > img, .reveal__shot img, .story video"
-        : ".reveal > img, .reveal__shot img";      // в .reveal видео уже под шторкой
+        ? "#revealFrame, .reveal > img, .reveal__shot img, .story video"
+        : "#revealFrame, .reveal > img, .reveal__shot img";  // в .reveal видео под шторкой
       const over = (inside(".story") || inside(".reveal"))
         ? [...document.querySelectorAll(media)]
             .filter((m) => {
