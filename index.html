@@ -2703,14 +2703,7 @@
     </div>
   </section>
 
-  <!-- лента услуг: визуальная пауза перед FAQ -->
-  <section class="band" data-band data-speed="-1"
-           data-shots="assets/services/architecture.webp, assets/services/interior.webp, assets/services/landscape.webp, assets/services/supervision.webp, assets/services/visual.webp">
-    <header class="band__head">
-      <h2 class="band__title">Полный цикл работ<br />под одной ответственностью</h2>
-    </header>
-    <div class="band__stage" data-band-stage></div>
-  </section>
+  
 
   <!-- ============ 08 · FAQ ============ -->
   <section class="faq" id="faq">
@@ -3260,10 +3253,12 @@
          светлом «Атриуме» белая звезда пропадала. */
       // до раскрытия под шапкой белая шторка манифеста → тёмные плашки;
       // когда фото занимает экран — решает только яркость самого кадра
+      // пока кадр не раскрылся, под шапкой белая шторка манифеста;
+      // как раскрылся — решает яркость самого фото
       const opened = g >= 0.9;
       const overLight = opened
         ? !!(CASES[caseIdx] && CASES[caseIdx].light)
-        : true;
+        : g > 0.06;
       top.classList.toggle("topbar--dark", !!overLight);
       // та же подсказка — для липкой шапки в body (она читает data-light)
       sec.dataset.light = overLight ? "1" : "0";
@@ -4736,19 +4731,31 @@
       //    кейса во весь экран, и красить надо по НЕМУ, а не по белому
       //    фону секции. Считаем перекрывающим только то, что реально
       //    накрывает линию шапки на всю ширину.
-      const over = [...document.querySelectorAll(".reveal img, .story video, .pr__shot img")]
-        .filter((m) => {
-          const r = m.getBoundingClientRect();
-          return r.top <= y && r.bottom > y && r.width > innerWidth * 0.7
-                 && getComputedStyle(m).visibility !== "hidden"
-                 && +getComputedStyle(m).opacity > 0.5;
-        });
+      // медиа считаем только внутри их собственной секции: видео героя
+      // лежит fixed и иначе «перекрывало» шапку на всех блоках сразу
+      const inside = (sel) => {
+        const host = document.querySelector(sel);
+        if (!host) return false;
+        const r = host.getBoundingClientRect();
+        return r.top <= y && r.bottom > y;
+      };
+      const over = (inside(".story") || inside(".reveal"))
+        ? [...document.querySelectorAll(".reveal > img, .reveal__shot img, .story video")]
+            .filter((m) => {
+              const r = m.getBoundingClientRect();
+              return r.top <= y && r.bottom > y && r.width > innerWidth * 0.7
+                     && getComputedStyle(m).visibility !== "hidden"
+                     && +getComputedStyle(m).opacity > 0.5;
+            })
+        : [];
       if (over.length) {
-        // фото кейса и видео героя — тёмные сверху лишь иногда, поэтому
-        // берём подсказку из данных кейса, которую уже ведёт сцена
-        const lightShot = document.querySelector(".reveal") &&
-          document.querySelector(".reveal").dataset.light === "1";
-        nav.classList.toggle("nav--onLight", lightShot);
+        // над видео героя шапка всегда белая: кадр тёмный по всей ленте
+        const onlyVideo = over.every((m) => m.tagName === "VIDEO");
+        if (onlyVideo) { nav.classList.remove("nav--onLight"); return; }
+
+        // над фото кейса решает флаг ИМЕННО этого кейса
+        const rev = document.querySelector(".reveal");
+        nav.classList.toggle("nav--onLight", !!rev && rev.dataset.light === "1");
         return;
       }
 
