@@ -284,8 +284,7 @@
     border-radius: 5px;
     text-decoration: none;
     flex: none;
-    transition: transform 0.5s var(--ease-out), box-shadow 0.5s var(--ease-out);
-    box-shadow: 0 1px 1px rgba(10, 10, 20, 0.06), 0 8px 20px rgba(10, 10, 20, 0.14);
+    transition: transform 0.5s var(--ease-out);
   }
   .cta-nav:hover {
     transform: translateY(-2px);
@@ -553,7 +552,7 @@
     box-shadow: 0 10px 26px rgba(0, 0, 0, 0.28);
   }
   .b2-cta__circle svg { width: 46%; height: 46%; transition: transform 0.45s var(--ease-out); }
-  .b2-cta:hover .b2-cta__circle { transform: scale(1.06); box-shadow: 0 14px 34px rgba(0, 0, 0, 0.34); }
+  .b2-cta:hover .b2-cta__circle { transform: scale(1.06); }
   .b2-cta:hover .b2-cta__circle svg { transform: translateX(3px); }
   .b2-title .line {
     display: block;
@@ -1546,12 +1545,21 @@
   .steps__label::before { content: ""; width: 40px; height: 1px; background: var(--l-ink); }
 
   /* сцена карусели */
+  .steps__ring {
+    position: absolute; inset: 0;
+    transform-style: preserve-3d;
+    transform: rotateY(180deg);        /* как .tistols-ring в эталоне */
+  }
   .steps__stage {
     position: relative;
     /* сцена забирает всю высоту, оставшуюся после шапки */
     width: 100%; flex: 1 1 auto; min-height: 0;
     margin-top: clamp(20px, 3vh, 44px);
-    perspective: 1150px;
+    /* Эталон mod.tistols: контейнер перспективы шириной с карточку,
+       точка схода — её центр. Именно поэтому крайние грани выходят
+       ВЫШЕ центральной, а не ниже. */
+    perspective: 2000px;
+    perspective-origin: 50% 50%;
     transform-style: preserve-3d;
   }
 
@@ -4604,8 +4612,8 @@
        Грани дальше 82° не рисуем — там карточка вырождается в полоску.
        Радиус апофемы считается так, чтобы стороны многоугольника
        ровно совпадали с шириной карточки: R = W·GAP / (2·tan(θ/2)). */
-    const STEP_DEG = 36;
-    const GAP = 1.16;
+    const STEP_DEG = 36;      // 10 граней, как в эталоне
+    const GAP = 1.085;       // 500/461 — запас радиуса из эталона
     const VIS = 3.0;               // сколько шагов от центра ещё рисуем
 
     function geom() {
@@ -4650,12 +4658,7 @@
            касательной на −angle. Именно поэтому расстояния между
            соседями одинаковы при любом положении барабана. */
         const ang = off * stepRad;
-        const x = Math.sin(ang) * R;
-        // вогнутая дуга: края ближе к зрителю, центр глубже.
-        // вынос ограничен долей радиуса — иначе крайние карты
-        // подлетают к камере и раздуваются на весь экран
-        const z = (R - Math.cos(ang) * R) * 0.26;
-        const rotY = -ang * 180 / Math.PI;    // грань всегда лицом к зрителю
+        const degAng = ang * 180 / Math.PI;
 
         /* Задние грани барабана не рисуем: карточки непрозрачные,
            и вылезшая из-за спины «изнанка» ломает картинку.
@@ -4670,10 +4673,16 @@
         // подблюриваем всё, кроме центральной — акцент на активной
         const blur = a < 1.9 ? 0 : Math.min(3, (a - 1.9) * 2.2);
 
-        // дуга по вертикали: центр опущен, края приподняты — как в референсе
-        const lift = Math.cos(ang) * (R * 0.055) - R * 0.055;
+        /* Каноника: сначала поворот вокруг оси, затем вынос по локальному
+           Z. Порядок важен — матрицы не коммутативны. Контейнер сдвинут
+           на -R, поэтому передняя грань оказывается в плоскости экрана. */
+        const px = Math.sin(ang) * R;
+        const pz = -Math.cos(ang) * R;
         c.style.transform =
-          `translate(-50%, -50%) translate3d(${x.toFixed(1)}px, ${lift.toFixed(1)}px, ${z.toFixed(1)}px) rotateY(${rotY.toFixed(2)}deg) scale(${scale.toFixed(3)})`;
+          `translate(-50%, -50%)` +
+          ` translate3d(${px.toFixed(2)}px, 0px, ${pz.toFixed(2)}px)` +
+          ` rotateY(${(-degAng).toFixed(2)}deg)` +
+          ` scale(${scale.toFixed(3)})`;
         c.style.opacity = opacity.toFixed(3);
         c.style.filter = blur > 0.1 ? `blur(${blur.toFixed(2)}px)` : "none";
         c.style.zIndex = String(200 - Math.round(a * 10));
@@ -4752,11 +4761,14 @@
         const r = host.getBoundingClientRect();
         return r.top <= y && r.bottom > y;
       };
+      const media = inside(".story")
+        ? ".reveal > img, .reveal__shot img, .story video"
+        : ".reveal > img, .reveal__shot img";      // в .reveal видео уже под шторкой
       const over = (inside(".story") || inside(".reveal"))
-        ? [...document.querySelectorAll(".reveal > img, .reveal__shot img, .story video")]
+        ? [...document.querySelectorAll(media)]
             .filter((m) => {
               const r = m.getBoundingClientRect();
-              return r.top <= y && r.bottom > y && r.width > innerWidth * 0.7
+              return r.top <= y && r.bottom > y && r.width > innerWidth * 0.92
                      && getComputedStyle(m).visibility !== "hidden"
                      && +getComputedStyle(m).opacity > 0.5;
             })
