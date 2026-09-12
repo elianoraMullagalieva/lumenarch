@@ -377,7 +377,7 @@
     /* Тёмное стекло: подложка уводит в графит, а не в белый.
        Светлая обводка по периметру убрана — она читалась как рамка,
        а не как материал. Блюр чуть слабее, чтобы фон читался. */
-    background: rgba(18, 20, 28, 0.30);
+    background: rgba(21, 23, 31, 0.30);
     backdrop-filter: blur(6px) saturate(130%);
     -webkit-backdrop-filter: blur(6px) saturate(130%);
     border: none;
@@ -400,10 +400,10 @@
     padding: 1px;
     background: linear-gradient(
       178deg,
-      rgba(255, 255, 255, 0.42) 0%,
-      rgba(255, 255, 255, 0.14) 22%,
-      rgba(255, 255, 255, 0.04) 48%,
-      rgba(255, 255, 255, 0.10) 100%
+      rgba(255, 255, 255, 0.084) 0%,
+      rgba(255, 255, 255, 0.028) 22%,
+      rgba(255, 255, 255, 0.008) 48%,
+      rgba(255, 255, 255, 0.020) 100%
     );
     -webkit-mask:
       linear-gradient(#000 0 0) content-box,
@@ -2044,13 +2044,12 @@
   }
   .ask__form h3 {
     font-family: "Onest", sans-serif; font-weight: 400;
-    font-size: clamp(1.15rem, 1rem + 0.7vw, 1.6rem);
-    letter-spacing: -0.02em; color: #fff; text-align: center;
-  }
-  .ask__hint {
-    font-family: "Onest", sans-serif; text-align: center;
-    font-size: clamp(0.75rem, 0.7rem + 0.2vw, 0.88rem);
-    color: rgba(255,255,255,.5); margin-bottom: clamp(6px, 1vh, 12px);
+    font-size: clamp(1.05rem, 0.92rem + 0.6vw, 1.4rem);
+    line-height: 1.3; letter-spacing: -0.02em; color: #fff;
+    /* по правому краю формы — выравнивание по колонке полей */
+    text-align: right;
+    margin: 0 0 clamp(10px, 1.6vh, 20px);
+    text-wrap: balance;
   }
   .ask__row { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(10px, 1.2vw, 16px); }
   .ask__field label {
@@ -2450,7 +2449,7 @@
         <article class="step">
           <span class="step__chip">01 / 08</span>
           <h3 class="step__title">Разбираем задачу</h3>
-          <p class="step__text">Обсуждаем участок, сценарии жизни семьи и бюджетный ориентир. Подсказываем, с какого этапа начинать именно вам.</p>
+          <p class="step__text">Разбираем участок, назначение объекта и бюджетный ориентир. Подсказываем, с какого этапа начинать именно вам.</p>
           <figure class="step__shot">
             <picture><source srcset="assets/services/architecture.webp" type="image/webp"><img src="assets/services/architecture.webp" alt="Первая встреча" loading="lazy" decoding="async"></picture>
             <figcaption class="step__cap">Первая встреча</figcaption>
@@ -2513,7 +2512,7 @@
         <article class="step">
           <span class="step__chip">08 / 08</span>
           <h3 class="step__title">Передаём объект</h3>
-          <p class="step__text">Отдаём актуальный комплект чертежей и паспорт дома: что где проложено и как это обслуживать.</p>
+          <p class="step__text">Отдаём актуальный комплект чертежей и паспорт объекта: что где проложено и как это обслуживать.</p>
           <figure class="step__shot">
             <picture><source srcset="assets/cases/a2-hq.webp" type="image/webp"><img src="assets/cases/a2-hq.webp" alt="Сдача объекта" loading="lazy" decoding="async"></picture>
             <figcaption class="step__cap">Сдача объекта</figcaption>
@@ -2533,7 +2532,7 @@
         <article class="step">
           <span class="step__chip">01 / 08</span>
           <h3 class="step__title">Разбираем задачу</h3>
-          <p class="step__text">Обсуждаем участок, сценарии жизни семьи и бюджетный ориентир. Подсказываем, с какого этапа начинать именно вам.</p>
+          <p class="step__text">Разбираем участок, назначение объекта и бюджетный ориентир. Подсказываем, с какого этапа начинать именно вам.</p>
           <figure class="step__shot">
             <picture><source srcset="assets/services/architecture.webp" type="image/webp"><img src="assets/services/architecture.webp" alt="Первая встреча" loading="lazy" decoding="async"></picture>
             <figcaption class="step__cap">Первая встреча</figcaption>
@@ -2596,7 +2595,7 @@
         <article class="step">
           <span class="step__chip">08 / 08</span>
           <h3 class="step__title">Передаём объект</h3>
-          <p class="step__text">Отдаём актуальный комплект чертежей и паспорт дома: что где проложено и как это обслуживать.</p>
+          <p class="step__text">Отдаём актуальный комплект чертежей и паспорт объекта: что где проложено и как это обслуживать.</p>
           <figure class="step__shot">
             <picture><source srcset="assets/cases/a2-hq.webp" type="image/webp"><img src="assets/cases/a2-hq.webp" alt="Сдача объекта" loading="lazy" decoding="async"></picture>
             <figcaption class="step__cap">Сдача объекта</figcaption>
@@ -2631,8 +2630,8 @@
             <h3 class="flow__name">Старт и участок</h3>
             <p class="flow__do">
               Изучаем ограничения участка, рельеф, инсоляцию, подъезды
-              и сценарии жизни семьи: где работают, как приезжают гости,
-              где хранятся вещи и как меняется дом зимой.
+              и сценарии эксплуатации: как движутся потоки людей,
+              где зоны загрузки и как объект работает в сезон.
             </p>
           </div>
           <div class="flow__get">
@@ -2856,8 +2855,8 @@
       <div class="ask__card">
         <!-- левая зона: три шага -->
         <div class="ask__side">
-          <h2>Расскажите, каким должен быть ваш дом</h2>
-          <p>На первой встрече разберём участок, задачи семьи и подскажем,
+          <h2>Расскажите,<br />каким должен быть<br />ваш объект</h2>
+          <p>На первой встрече разберём участок, задачи бизнеса и подскажем,
              с какого этапа лучше начать.</p>
           <div class="ask__steps">
             <div class="ask__step"><i>1</i>Оставляете заявку</div>
@@ -2868,8 +2867,7 @@
 
         <!-- правая зона: поля -->
         <form class="ask__form" id="askForm" novalidate>
-          <h3>Обсудить проект</h3>
-          <p class="ask__hint">Ответим в течение рабочего дня</p>
+          <h3 class="ask__lead">Свяжемся в течение 20 минут<br />и составим план для расчёта стоимости</h3>
 
           <div class="ask__row">
             <div class="ask__field">
@@ -2880,11 +2878,6 @@
               <label for="fPhone">Телефон или телеграм</label>
               <input type="tel" id="fPhone" name="phone" placeholder="+7 900 000-00-00" autocomplete="tel" required />
             </div>
-          </div>
-
-          <div class="ask__field">
-            <label for="fPlot">Участок</label>
-            <input type="text" id="fPlot" name="plot" placeholder="Адрес или кадастровый номер" />
           </div>
 
           <div class="ask__field">
@@ -4084,7 +4077,6 @@
         "<b>Заявка с сайта LumenArch</b>\n\n" +
         "Имя: " + esc(d.name) + "\n" +
         "Контакт: " + esc(d.phone) + "\n" +
-        "Участок: " + esc(d.plot) + "\n" +
         "Задача: " + esc(d.task);
 
       if (!TG.token || !TG.chat) {
@@ -4809,9 +4801,9 @@
         const onlyVideo = over.every((m) => m.tagName === "VIDEO");
         if (onlyVideo) { nav.classList.remove("nav--onLight"); return; }
 
-        // над фото кейса решает флаг ИМЕННО этого кейса
-        const rev = document.querySelector(".reveal");
-        nav.classList.toggle("nav--onLight", !!rev && rev.dataset.light === "1");
+        // над фото кейса шапка всегда белая: кадр занимает весь экран,
+        // плашки должны читаться поверх фотографии
+        nav.classList.remove("nav--onLight");
         return;
       }
 
