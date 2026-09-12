@@ -1904,7 +1904,19 @@
     max-width: 24ch; margin: 0 auto;
   }
   /* сцена карусели занимает остаток экрана */
-  .band__stage { position: relative; flex: 1 1 auto; min-height: 0; }
+  .band__stage {
+    position: relative; flex: 1 1 auto; min-height: 0;
+    /* Растворяем кадры у краёв сцены. overflow:hidden здесь нельзя —
+       он схлопывает preserve-3d и убивает всю глубину. */
+    -webkit-mask-image:
+      linear-gradient(to right,  transparent 0, #000 9%, #000 91%, transparent 100%),
+      linear-gradient(to bottom, transparent 0, #000 13%, #000 88%, transparent 100%);
+            mask-image:
+      linear-gradient(to right,  transparent 0, #000 9%, #000 91%, transparent 100%),
+      linear-gradient(to bottom, transparent 0, #000 13%, #000 88%, transparent 100%);
+    -webkit-mask-composite: source-in;
+            mask-composite: intersect;
+  }
 
   /* Кнопки слегка приподнимаются при наведении — без смещения вбок.
      Магнитное притяжение к курсору убрано: оно выглядело дёргано. */
@@ -4074,8 +4086,8 @@
          оси, разнесены на три яруса и смещены по фазе. Скролл вращает
          барабан: ближние кадры крупнее и ярче, дальние мельчают
          и уходят в глубину. */
-      const ROWS = 2;
-      const PER_ROW = 11;                    // кадров на ярусе
+      const ROWS = 3;
+      const PER_ROW = 9;                     // кадров на ярусе
       const row = document.createElement("div");
       row.className = "band__row";
 
@@ -4099,9 +4111,9 @@
           items.push({
             el: fig, row: r, idx: k,
             // угловой джиттер: кадры не стоят ровными колоннами
-            jitDeg: (n1 - 0.5) * 16,
+            jitDeg: (n1 - 0.5) * 3,
             // персональный радиус: часть кадров ближе, часть глубже
-            radK: 0.62 + n2 * 0.86,
+            radK: 1,
             // вертикальный джиттер внутри яруса
             jitY: (n3 - 0.5) * 0.42,
             // собственный размер кадра (мелкие/крупные вперемешку)
@@ -4133,7 +4145,7 @@
         const h = items[0].el.offsetHeight || 150;
         /* радиус считаем от ширины контейнера: передняя дуга должна
            умещаться в кадр, а не улетать за края */
-        const radius = cl(W * 0.40, 300, 620);
+        const radius = cl(W * 0.34, 280, 520);
         const stepDeg = 360 / PER_ROW;
         // барабан крутится сам + подкручивается скроллом
         const spin = (p * 130 + (performance.now() - t0) * 0.0042 * 6) * dir;
@@ -4142,38 +4154,39 @@
           const { el, row: rw, idx } = it;
           /* фаза яруса: сдвиг на ~1/3 шага, чтобы кадры соседних
              ярусов не выстраивались в ровные колонны */
-          const deg = idx * stepDeg + rw * stepDeg * 0.37 + it.jitDeg + spin;
+          const deg = idx * stepDeg + it.jitDeg + spin;   // ярусы в одной колонне
           const rad = deg * Math.PI / 180;
           const rr = radius * it.radK;
           const x = Math.sin(rad) * rr;
           const z = Math.cos(rad) * rr - radius;       // ~0 у ближнего края
           const front = Math.cos(rad);                 // 1 — к зрителю
           // вертикальный разлёт ярусов + личный джиттер по высоте
-          const spread = Math.min(h * 1.7, H * 0.31);
+          const spread = Math.min(h * 0.95, H * 0.175);
           const y = (rw - (ROWS - 1) / 2) * spread + it.jitY * spread;
           /* глубина решает размер: ближние ~1.25, дальние ~0.4.
              плюс собственный калибр кадра — размеры вперемешку */
           const depth = (front + 1) / 2;               // 0 дальний .. 1 ближний
-          const sc = (0.40 + 0.85 * Math.pow(depth, 1.5)) * (0.70 + it.sizeK * 0.58);
-          let op = front < -0.12 ? 0 : cl((front + 0.12) / 0.50, 0, 1) * 0.92 + 0.08;
-          /* кадр, вырожденный в полоску, читается как мусор, а не как
-             кадр в профиль — считаем его ширину на экране и гасим */
-          const projW = (items[0].el.offsetWidth || 90) * sc * Math.abs(Math.cos(rad));
-          if (projW < 42) op *= cl((projW - 26) / 16, 0, 1);
-          /* у края контейнера кадры растворяются, а не обрываются рамкой */
-          const edge = cl((W / 2 - Math.abs(x)) / (W * 0.10), 0, 1);
-          op *= edge;
+          const d = 1 - depth;                          // 0 у зрителя .. 1 вдали
+          const sc = 0.34 + 0.78 * Math.pow(depth, 1.35);   // только перспектива
+          /* Заднюю полусферу не рисуем. Полосок-«мусора» больше нет:
+             при billboard кадр не разворачивается в профиль. */
+          let op = front < -0.15 ? 0 : (1 - d * 0.55);
+          /* у края сцены кадры растворяются, а не обрываются рамкой */
+          op *= cl((W / 2 - Math.abs(x)) / (W * 0.10), 0, 1);
           el.style.transform =
             `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, ${z.toFixed(1)}px)` +
-            ` rotateY(${(-deg + it.tiltY).toFixed(2)}deg)` +
-            ` rotateX(${it.tiltX.toFixed(2)}deg) scale(${sc.toFixed(3)})`;
+            ` rotateY(${(-(((deg % 360) + 540) % 360 - 180) * 0.22).toFixed(2)}deg)` +
+            ` scale(${sc.toFixed(3)})`;
           el.style.opacity = op.toFixed(3);
-          // дальние кадры — мягче и темнее: именно это читается как объём
-          const bl = (1 - depth) * 3.4;
-          const br = 0.42 + 0.58 * depth;
-          el.style.filter = bl > 0.25
-            ? `blur(${bl.toFixed(2)}px) brightness(${br.toFixed(2)})`
-            : `brightness(${br.toFixed(2)})`;
+          /* Воздушная перспектива: blur растёт КВАДРАТИЧНО — линейный
+             мылит уже средний план. Квантуем до 0.5px, иначе пересчёт
+             фильтра на три десятка элементов роняет FPS. */
+          const bl = Math.round((d * d * 8) * 2) / 2;
+          const br = (1 - d * 0.62).toFixed(3);
+          const sat = (1 - d * 0.45).toFixed(3);
+          el.style.filter = bl > 0.4
+            ? `blur(${bl}px) brightness(${br}) saturate(${sat})`
+            : `brightness(${br}) saturate(${sat})`;
           el.style.zIndex = String(Math.round(front * 100) + 100);
         });
         return true;
