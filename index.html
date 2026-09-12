@@ -388,6 +388,35 @@
       0 10px 30px rgba(0, 0, 0, 0.28);
   }
 
+  /* Световая кромка — та самая «еле заметная водичка» сверху.
+     Рисуем отдельным слоем, а не border: равномерный контур читается
+     как рамка, а у стекла свет ловится верхним ребром и гаснет книзу.
+     Толщина 1px делается маской из двух градиентов (composite: xor
+     вырезает внутреннюю часть, оставляя только кант). */
+  .glass::after {
+    content: "";
+    position: absolute; inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      178deg,
+      rgba(255, 255, 255, 0.42) 0%,
+      rgba(255, 255, 255, 0.14) 22%,
+      rgba(255, 255, 255, 0.04) 48%,
+      rgba(255, 255, 255, 0.10) 100%
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+            mask-composite: exclude;
+    pointer-events: none;
+    z-index: 2;
+  }
+
   /* Преломление по кромке: backdrop-filter умеет только размывать
      и НЕ смещает пиксели, поэтому линза делается SVG-фильтром.
      Маска держит эффект у краёв — центр стекла остаётся чистым. */
