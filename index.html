@@ -2046,8 +2046,8 @@
     font-family: "Onest", sans-serif; font-weight: 400;
     font-size: clamp(1.05rem, 0.92rem + 0.6vw, 1.4rem);
     line-height: 1.3; letter-spacing: -0.02em; color: #fff;
-    /* по правому краю формы — выравнивание по колонке полей */
-    text-align: right;
+    /* по левому краю формы — в одну линию с подписями полей */
+    text-align: left;
     margin: 0 0 clamp(10px, 1.6vh, 20px);
     text-wrap: balance;
   }
@@ -3232,6 +3232,7 @@
     if (!sec) return;
     const type = document.getElementById("revealType");
     const frame = document.getElementById("revealFrame");
+    let prShown = false;   // держит карточку кейса при обратном скролле
     const img = document.getElementById("revealImg");
     const scrim = document.getElementById("revealScrim");
     const top = document.getElementById("revealTop");
@@ -3338,16 +3339,20 @@
       // На белом блоке выше кадр стоит на Атриуме — как в макете.
       if (window.__prSetRunning) window.__prSetRunning(pr > 0.5);
       // первый показ карточки — запускаем отсчёт цифр от нуля
-      if (window.__prReveal) window.__prReveal(pr > 0.06);
+      if (window.__prReveal) window.__prReveal(pr > 0.06 || prShown);
       if (scrim) scrim.style.opacity = prE;
       /* Контейнер карточки НЕ привязан к прогрессу скролла: раньше
          его opacity тянулась за prE, и чтобы текст стал полностью
          видимым, приходилось докручивать сцену. Теперь контейнер
          просто включается порогом, а сама лесенка слоёв доигрывает
          во времени — одного касания скролла достаточно. */
-      const shown = pr > 0.06;
-      prUi.style.opacity = shown ? 1 : 0;
-      prUi.style.pointerEvents = shown ? "auto" : "none";
+      /* Гистерезис: включаем на 0.06, а гасим только ниже 0.02.
+         С единым порогом карточка на обратном скролле пропадала
+         ровно на границе включения. */
+      if (pr > 0.06) prShown = true;
+      else if (pr < 0.02) prShown = false;
+      prUi.style.opacity = prShown ? 1 : 0;
+      prUi.style.pointerEvents = prShown ? "auto" : "none";
 
       /* Слои карточки кейса больше не выводятся по прогрессу сцены:
          их ведёт одноразовый GSAP-таймлайн «КЕЙС · СПУТНИКИ», который
