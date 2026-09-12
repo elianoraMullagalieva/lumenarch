@@ -693,6 +693,14 @@
   }
   .reveal__h .ln { display: block; }
   .reveal__h .ln > span { display: block; }
+  /* На мобилке фиксированные строки не влезают и рвутся в случайных
+     местах. Собираем текст в один поток — браузер балансирует сам. */
+  @media (max-width: 720px) {
+    .reveal__h { text-wrap: balance; max-width: 100%; }
+    .reveal__h .ln { display: inline; }
+    .reveal__h .ln > span { display: inline; }
+    .reveal__h .ln + .ln::before { content: " "; }
+  }
 
   /* кадр здания — стартует узкой полосой снизу, растёт до fullscreen */
   .reveal__frame {
@@ -1423,6 +1431,23 @@
   }
   /* совсем узкие экраны: кнопка сжимается до иконки, иначе бренду
      и CTA остаётся ~10px и шапка выглядит забитой */
+  /* Контент не должен подлезать под липкую шапку: на мобилке она
+     остаётся на экране, а секции начинались прямо под ней. */
+  @media (max-width: 720px) {
+    .svc, .faq, .ask, .team, .flow { scroll-margin-top: 84px; }
+    /* карусель этапов: карточка не должна перерастать сцену —
+       иначе сверху появляется провал, а снизу карточки срезает */
+    .steps__head { padding-top: clamp(76px, 11vh, 104px); padding-bottom: 0; }
+    .steps__stage { margin-top: 0; }
+    .steps__vp { padding-bottom: clamp(60px, 11vh, 120px); }
+    .step {
+      width: min(74vw, 19rem);
+      height: min(64vh, 30rem);
+    }
+    .step__shot { flex-basis: clamp(6.5rem, 22vw, 9.5rem); height: clamp(6.5rem, 22vw, 9.5rem); }
+    .svc { padding-top: clamp(104px, 16vh, 170px); }
+    .faq { padding-top: clamp(104px, 16vh, 170px); }
+  }
   @media (max-width: 420px) {
     .cta-nav span { display: none; }
     .cta-nav { padding: 0 12px; gap: 0; }
@@ -1847,6 +1872,7 @@
     background-color: #16150f !important;
     color: #fff;
     padding: clamp(80px, 13vh, 150px) 0 clamp(80px, 13vh, 150px);
+    /* запас под липкую шапку на узких экранах */
     overflow: hidden;
   }
   .svc__head {
