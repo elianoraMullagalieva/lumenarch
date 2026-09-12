@@ -4477,12 +4477,17 @@
     const total = assets.length + 1;              // +1 — видео первого экрана
     let shown = 0, target = 0;
     const MIN_MS = 1270;                        // держим экран хотя бы столько
+    const HARD_MS = 4200;                       // дольше этого не держим НИКОГДА
     const t0 = performance.now();
 
     const tick = () => {
+      const el = performance.now() - t0;
       // цифра догоняет реальный прогресс, но не прыгает
-      const byTime = ((performance.now() - t0) / MIN_MS) * 100;
-      const cap = Math.min(target, byTime);     // не обгоняем минимальный показ
+      const byTime = (el / MIN_MS) * 100;
+      // после HARD_MS время побеждает: на медленной сети видео 19 МБ
+      // может качаться минуты, и экран нельзя держать всё это время
+      const floor = el > HARD_MS ? ((el - HARD_MS) / 900) * 100 : 0;
+      const cap = Math.max(floor, Math.min(target, byTime));
       shown += Math.max(0.25, (cap - shown) * 0.07);
       if (shown > cap) shown = cap;
       if (numEl) numEl.textContent = String(Math.min(100, Math.floor(shown))).padStart(3, "0");
