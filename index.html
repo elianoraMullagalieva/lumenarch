@@ -1332,10 +1332,10 @@
   /* кадр: абсолютный, центр — середина сцены, дальше двигает только JS */
   .band__shot {
     position: absolute; left: 50%; top: 50%;
-    width: clamp(5.4rem, 4.0rem + 6.1vw, 9.9rem);
-    height: clamp(6.5rem, 4.8rem + 7.3vw, 11.9rem);
-    margin-left: calc(clamp(5.4rem, 4.0rem + 6.1vw, 9.9rem) / -2);
-    margin-top: calc(clamp(6.5rem, 4.8rem + 7.3vw, 11.9rem) / -2);
+    width: clamp(4.0rem, 3.0rem + 4.4vw, 7.0rem);
+    height: clamp(4.8rem, 3.6rem + 5.3vw, 8.4rem);
+    margin-left: calc(clamp(4.0rem, 3.0rem + 4.4vw, 7.0rem) / -2);
+    margin-top: calc(clamp(4.8rem, 3.6rem + 5.3vw, 8.4rem) / -2);
     overflow: hidden; border-radius: 2px;
     backface-visibility: hidden;
     will-change: transform, opacity;
@@ -4095,7 +4095,7 @@
          барабан: ближние кадры крупнее и ярче, дальние мельчают
          и уходят в глубину. */
       const ROWS = 3;
-      const PER_ROW = 9;                     // кадров на ярусе
+      const PER_ROW = 8;                     // как в эталоне
       const row = document.createElement("div");
       row.className = "band__row";
 
@@ -4153,7 +4153,7 @@
         const h = items[0].el.offsetHeight || 150;
         /* радиус считаем от ширины контейнера: передняя дуга должна
            умещаться в кадр, а не улетать за края */
-        const radius = cl(W * 0.34, 280, 520);
+        const radius = cl(W * 0.42, 380, 620);
         const stepDeg = 360 / PER_ROW;
         // барабан крутится сам + подкручивается скроллом
         const spin = (p * 130 + (performance.now() - t0) * 0.0042 * 6) * dir;
@@ -4162,23 +4162,23 @@
           const { el, row: rw, idx } = it;
           /* фаза яруса: сдвиг на ~1/3 шага, чтобы кадры соседних
              ярусов не выстраивались в ровные колонны */
-          const deg = idx * stepDeg + it.jitDeg + spin;   // ярусы в одной колонне
+          const deg = idx * stepDeg + rw * 22.5 + it.jitDeg + spin;  // сдвиг фазы, как в эталоне
           const rad = deg * Math.PI / 180;
           const rr = radius * it.radK;
           const x = Math.sin(rad) * rr;
           const z = Math.cos(rad) * rr - radius;       // ~0 у ближнего края
           const front = Math.cos(rad);                 // 1 — к зрителю
           // вертикальный разлёт ярусов + личный джиттер по высоте
-          const spread = Math.min(h * 0.95, H * 0.175);
+          const spread = Math.min(h * 1.1, H * 0.19);
           const y = (rw - (ROWS - 1) / 2) * spread + it.jitY * spread;
           /* глубина решает размер: ближние ~1.25, дальние ~0.4.
              плюс собственный калибр кадра — размеры вперемешку */
           const depth = (front + 1) / 2;               // 0 дальний .. 1 ближний
           const d = 1 - depth;                          // 0 у зрителя .. 1 вдали
-          const sc = 0.34 + 0.78 * Math.pow(depth, 1.35);   // только перспектива
+          const sc = 1;                                  // в эталоне масштаб везде 1
           /* Заднюю полусферу не рисуем. Полосок-«мусора» больше нет:
              при billboard кадр не разворачивается в профиль. */
-          let op = front < -0.15 ? 0 : (1 - d * 0.55);
+          let op = 1 - d * 0.55;                         // 1.0 → 0.45, как в эталоне
           /* у края сцены кадры растворяются, а не обрываются рамкой */
           op *= cl((W / 2 - Math.abs(x)) / (W * 0.10), 0, 1);
           el.style.transform =
@@ -4186,15 +4186,9 @@
             ` rotateY(${(-(((deg % 360) + 540) % 360 - 180) * 0.22).toFixed(2)}deg)` +
             ` scale(${sc.toFixed(3)})`;
           el.style.opacity = op.toFixed(3);
-          /* Воздушная перспектива: blur растёт КВАДРАТИЧНО — линейный
-             мылит уже средний план. Квантуем до 0.5px, иначе пересчёт
-             фильтра на три десятка элементов роняет FPS. */
-          const bl = Math.round((d * d * 8) * 2) / 2;
-          const br = (1 - d * 0.62).toFixed(3);
-          const sat = (1 - d * 0.45).toFixed(3);
-          el.style.filter = bl > 0.4
-            ? `blur(${bl}px) brightness(${br}) saturate(${sat})`
-            : `brightness(${br}) saturate(${sat})`;
+          /* В эталоне filter отсутствует: глубина читается ТОЛЬКО
+             прозрачностью. Никакого blur — он и давал «мыло». */
+          el.style.filter = "none";
           el.style.zIndex = String(Math.round(front * 100) + 100);
         });
         return true;
